@@ -25,25 +25,13 @@
             ➕ Agregar biblioteca
         </button>
     </div>
-
-    {{-- Select para tipos de usuario --}}
-    <div class="mb-4">
-        <label for="tipo_usuario" class="block text-gray-700 font-semibold mb-1">Tipo de Usuario:</label>
-        <select id="tipo_usuario" class="w-full md:w-1/3 border-gray-300 rounded-lg p-2">
-            <option value="">Todos</option>
-            @foreach($tiposUsuarios as $tipo)
-                <option value="{{ $tipo['id'] }}">{{ $tipo['nombre'] }}</option>
-            @endforeach
-        </select>
-    </div>
-
     <div class="overflow-x-auto">
         <table id="tabla-usuarios" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
             <thead class="bg-gray-100">
                 <tr>
+                    <th>Abrev.</th>
                     <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Fecha</th>
+                    <th>Dirección</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -62,8 +50,6 @@
         <div id="div_form">
             <form id="formUsuario">
                 <input type="hidden" id="id">
-                <input type="hidden" id="persona_id">
-
                 <div class="modal-content shadow-sm">
                     <div class="modal-header bg-light">
                         <h5 class="modal-title fw-semibold">Registro de Usuario</h5>

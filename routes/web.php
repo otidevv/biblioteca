@@ -33,7 +33,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups');
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas');
     });
 
     // LECTORES

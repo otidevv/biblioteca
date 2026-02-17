@@ -34,4 +34,8 @@ class AdministracionController extends Controller
 
         return view('administracion.roles_permisos', compact('usuarios', 'tiposUsuarios'));
     }
+    protected function bibliotecas()
+    {
+        return view('administracion.biblioteca');
+    }
 }   
