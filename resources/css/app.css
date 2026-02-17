@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+    --bg-main: #0B1020;
+    --bg-panel: #0E1628;
+
+    --primary: #E83D8C;
+    --primary-hover: #F04C9B;
+
+    --success: #22C55E;
+    --purple: #8B5CF6;
+
+    --text-main: #FFFFFF;
+    --text-muted: #CBD5E1;
+}
