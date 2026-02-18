@@ -9,7 +9,8 @@ use App\Http\Controllers\LectoresController;
 
 //controllers de JS en Api
 use App\Http\Controllers\Api\UsuarioController as ApiUsuarioController;
-
+use App\Http\Controllers\Api\RolController as ApiRolController;
+use App\Http\Controllers\Api\BibliotecaController as ApiBibliotecaController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -52,16 +53,24 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         Route::prefix('/usuarios')->group(function () {
             Route::get('/listar', [ApiUsuarioController::class, 'listar'])->name('usuarios.listar');
             Route::post('/nuevo', [ApiUsuarioController::class, 'nuevo'])->name('usuarios.nuevo');
-            Route::put('/edit', [ApiUsuarioController::class, 'edit'])->name('usuarios.edit');
+            Route::post('/edit', [ApiUsuarioController::class, 'edit'])->name('usuarios.edit');
             Route::put('/update', [ApiUsuarioController::class, 'update'])->name('usuarios.update');
             Route::delete('/destroy', [ApiUsuarioController::class, 'destroy'])->name('usuarios.destroy');
         });
         Route::prefix('roles')->group(function () {
-            Route::get('/', [ApiRolController::class, 'index']);
-            Route::post('/nuevo', [ApiRolController::class, 'nuevo']);
-            Route::get('/{id}', [ApiRolController::class, 'show']);
-            Route::put('/{id}', [ApiRolController::class, 'update']);
-            Route::delete('/{id}', [ApiRolController::class, 'destroy']);
+            Route::get('/listar', [ApiRolController::class, 'listar'])->name('roles.listar');
+            Route::post('/nuevo', [ApiRolController::class, 'nuevo'])->name('roles.nuevo');
+            Route::post('/edit', [ApiRolController::class, 'edit'])->name('roles.edit');
+            Route::put('/update', [ApiRolController::class, 'update'])->name('roles.update');
+            Route::post('/permisos/guardar', [ApiRolController::class, 'guardarPermisos'])->name('roles.permisos.guardar');
+            Route::delete('/destroy', [ApiRolController::class, 'destroy'])->name('roles.destroy');
+        });
+        Route::prefix('bibliotecas')->group(function () {
+            Route::get('/listar', [ApiBibliotecaController::class, 'listar']);
+            Route::post('/nuevo', [ApiBibliotecaController::class, 'nuevo']);
+            Route::post('/edit', [ApiBibliotecaController::class, 'edit']);
+            Route::put('/{id}', [ApiBibliotecaController::class, 'update']);
+            Route::delete('/{id}', [ApiBibliotecaController::class, 'destroy']);
         });
     });
 });

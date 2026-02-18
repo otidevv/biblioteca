@@ -8,6 +8,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 use App\Models\User;
 use App\Models\Persona;
+use App\Models\Usuario_rol_biblioteca;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -121,11 +122,12 @@ class UsuarioController extends Controller
             ], 500);
         }
     }
-    public function editar(Request $request)
+    public function edit(Request $request)
     {
         $request->validate([
             // PERSONA
-            'dni'               => 'required|string|max:15|unique:personas,dni',
+            'id'               => 'required|exists:users,id',
+            'dni'               => 'required|string|max:15|',
             'nombres'           => 'required|string|max:150',
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
@@ -133,32 +135,29 @@ class UsuarioController extends Controller
             'telefono'          => 'nullable|string|max:20',
         ]);
         //return $request;   
-        $user=User::where('persona_id',$request->id)->first(); 
+        $user=User::find($request->id);           
+        $persona=Persona::find($user->persona_id); 
         DB::beginTransaction();
         try {
 
             /** =========================
              *  PERSONA
              *  ========================= */
-            $persona = Persona::create([
-                'dni'               => $request->dni,
-                'nombres'           => $request->nombres,
-                'apellido_paterno'  => $request->apellido_paterno,
-                'apellido_materno'  => $request->apellido_materno,
-                'sexo'              => $request->sexo,
-                'telefono'          => $request->telefono,
-                'email_personal'    => $request->correo,
-                'direccion'         => $request->direccion,
-                'activo'            => true,
-            ]);
-
+            $persona->dni=$request->dni;
+            $persona->nombres=$request->nombres;
+            $persona->apellido_paterno=$request->apellido_paterno;
+            $persona->apellido_materno=$request->apellido_materno;
+            $persona->sexo=$request->sexo;
+            $persona->telefono=$request->telefono;
+            $persona->direccion=$request->direccion;
+            $persona->save();
             $user->roles()->sync($request->roles);
 
             // 👉 OPCIÓN B: usuario_rol_bibliotecas
-            Usuario_rol_biblioteca::where('user_id', $user->id)->delete();
+            Usuario_rol_biblioteca::where('user_id', $request->id)->delete();
             foreach ($request->roles as $rolId) {
                 DB::table('usuario_rol_bibliotecas')->insert([
-                    'user_id'       => $user->id,
+                    'user_id'       => $request->id,
                     'rol_id'        => $rolId,
                     'biblioteca_id'=> 1, // o dinámico
                     'activo'        => true,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Rol;
+use App\Models\Permiso;
 class AdministracionController extends Controller
 {
     public function index(string $modulo)
@@ -14,9 +15,10 @@ class AdministracionController extends Controller
             // 👉 USUARIOS
             'usuarios' => $this->usuarios(),
             // 👉 ROLES Y PERMISOS
-            'roles_permisos' => view('administracion.roles_permisos'),
+            'roles_permisos' =>  $this->roles_permisos(),
             // 👉 BACKUPS
             'backups' => view('administracion.backups.index'),
+            'bibliotecas' => $this->bibliotecas(),
             default => abort(404),
         };
     }
@@ -30,9 +32,11 @@ class AdministracionController extends Controller
     }
     protected function roles_permisos()
     {
-        $tiposUsuarios = Rol::withCount('users')->latest()->get();
+        $permisos = Permiso::whereNull('permiso_id')
+            ->with('hijos')
+            ->get();
 
-        return view('administracion.roles_permisos', compact('usuarios', 'tiposUsuarios'));
+        return view('administracion.roles_permisos', compact('permisos'));
     }
     protected function bibliotecas()
     {

@@ -1,13 +1,13 @@
 let tabla;
 $(document).ready(function () {
     alerta('Esto ya debería verse', true);
-    tabla = $('#tabla-usuarios').DataTable({        
+    tablaBibliotecas = $('#tabla-biblioteca').DataTable({        
         processing: true,
         serverSide: true,
         pageLength: 50,
         order: [],
         ajax: {
-            url:  "/api/usuarios/listar",
+            url:  "/api/bibliotecas/listar",
             type: "GET",
             xhrFields: { withCredentials: true },
             data: function (d) {
@@ -16,9 +16,10 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'name', name: 'name' },
-            { data: 'email', name: 'email' },
-            { data: 'created_at', name: 'created_at' },
+            { data: 'codigo', name: 'codigo' },
+            { data: 'nombre', name: 'nombre' },
+            { data: 'direccion', name: 'direccion' },
+            { data: 'estado', name: 'estado' },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -31,36 +32,28 @@ $(document).ready(function () {
         initComplete: default_datatable_buttons
     });
 
-    $('#tipo_usuario').on('change', function() {
-        tablaUsuarios.ajax.reload(); // suponiendo que tu DataTable se llama tablaUsuarios
-    });
     // NUEVO
     $('#btnNuevo').on('click', function () {
-        $('#formUsuario')[0].reset();
-        $('input[name="roles[]"]').prop('checked', false);
+        $('#formBiblioteca')[0].reset();
         $('#id').val('');
-        $('#div_credenciales').show();
         $('.password-group').show();
-        $('#modalUsuario').modal('show');
+        $('#modalBiblioteca').modal('show');
     });
 
     // EDITAR
-    $('#tabla-usuarios').on('click', '.editarUsuario', function () {
-        let data = tabla.row($(this).closest('tr')).data();
+    $('#tabla-biblioteca').on('click', '.editarBiblioteca', function () {
+        if (!validar('#div_form')) return;
+        let data = tablaBibliotecas.row($(this).closest('tr')).data();
         console.log(data);
         
         $('input[name="roles[]"]').prop('checked', false);
-        $('#dni').val(data.persona.dni);
-        $('#nombres').val(data.persona.nombres);
-        $('#apellido_paterno').val(data.persona.apellido_paterno);
-        $('#apellido_materno').val(data.persona.apellido_materno);
-        $('#sexo').val(data.persona.sexo);
-        $('#telefono').val(data.persona.telefono);
         $('#id').val(data.id);
-        $('#sexo').val(data.persona.sexo ?? '');
-        $('#direccion').val(data.persona.direccion ?? '');
-        $('#email').val(data.email);
-        // 🔥 MARCAR roles del usuario
+        $('#codigo').val(data.codigo);
+        $('#nombre').val(data.nombre);
+        $('#direccion').val(data.direccion);
+        $('#descripcion').val(data.descripcion);
+        $('#estado').val(data.estado ?? '');
+        // MARCAR roles del usuario
             if (data.roles && Array.isArray(data.roles)) {
                 data.roles.forEach(function (rol) {
                     $('#rol_' + rol.id).prop('checked', true);
@@ -68,11 +61,10 @@ $(document).ready(function () {
             }
 
         $('#div_credenciales').hide();
-        $('#modalUsuario').modal('show');
+        $('#modalBiblioteca').modal('show');
     });
-    $('#formUsuario').on('submit', function (e) {
+    $('#formBiblioteca').on('submit', function (e) {
         e.preventDefault();
-        if (!validar('#div_form')) return;
 
         let form = $(this);
         let formData = new FormData(this);
@@ -81,8 +73,8 @@ $(document).ready(function () {
         let btn = form.find('button[type="submit"]');
         btn.prop('disabled', true).text('Guardando...');
 
-        $.ajax({        
-            url:$('#id').val()=='' ? '/api/usuarios/nuevo' : '/api/usuarios/edit',
+        $.ajax({
+            url:$('#id').val()=='' ? '/api/bibliotecas/nuevo' : '/api/bibliotecas/edit',
             type:'POST',
             data: formData,
             processData: false,
@@ -96,9 +88,11 @@ $(document).ready(function () {
                     // Reset form
                     form[0].reset();
                     // Cerrar modal
-                    $('#modalUsuario').modal('hide');
+                    $('#modalBiblioteca').modal('hide');
                     // Recargar tabla (si usas DataTable)
-                    tabla.ajax.reload();
+                    if (window.tablaBibliotecas) {
+                        tablaBibliotecas.ajax.reload();
+                    }
                 } else {
                     alerta(response.message??'Error al guardar el usuario', false);
                 }

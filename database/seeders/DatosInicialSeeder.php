@@ -23,15 +23,37 @@ class DatosInicialSeeder extends Seeder
             /** =========================
              *  BIBLIOTECA
              *  ========================= */
-            $biblioteca = Biblioteca::firstOrCreate(
-                ['codigo' => 'BIB-001'],
-                [
-                    'nombre' => 'Biblioteca Central',
-                    'direccion' => 'Principal',
-                    'estado' => 'activo',
-                ]
-            );
 
+            $bibliotecas = [
+                [
+                    'codigo'      => 'CENTRAL',
+                    'nombre'      => 'BIBLIOTECA CENTRAL',
+                    'direccion'   => 'CIUDAD UNIVERSITARIA',
+                    'descripcion' => null,
+                    'estado'      => 'activo',
+                ],
+                [
+                    'codigo'      => 'BEIS',
+                    'nombre'      => 'BIBLIOTECA ESPECIALIZADA DE ING DE SISTEMAS',
+                    'direccion'   => null,
+                    'descripcion' => null,
+                    'estado'      => 'activo',
+                ],
+                [
+                    'codigo'      => 'BEE',
+                    'nombre'      => 'BIBLIOTECA ESPECIALIZADA DE ENFERMERIA',
+                    'direccion'   => null,
+                    'descripcion' => null,
+                    'estado'      => 'activo',
+                ],
+            ];
+
+            foreach ($bibliotecas as $biblioteca) {
+                Biblioteca::updateOrCreate(
+                    ['codigo' => $biblioteca['codigo']], // evita duplicados
+                    $biblioteca
+                );
+            }
             /** =========================
              *  ROL ADMIN
              *  ========================= */

@@ -35,85 +35,93 @@
 @endsection
 @section('modal')
     
-<div class="modal fade" id="modalUsuario" tabindex="-1">
+<div class="modal fade" id="modalRoles" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <form id="formUsuario">
+        <form id="formRoles">
             <input type="hidden" id="id">
             <input type="hidden" id="persona_id">
 
             <div class="modal-content shadow-sm">
                 <div class="modal-header bg-light">
-                    <h5 class="modal-title fw-semibold">Registro de Usuario</h5>
+                    <h5 class="modal-title fw-semibold">Registro de Roles</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
 
                     <!-- ================= DATOS PERSONA ================= -->
-                    <h6 class="text-primary mb-2">Datos personales</h6>
+                    <h6 class="text-primary mb-2">Datos del Rol </h6>
                     <div class="row g-3 mb-3">
 
-                        <div class="col-md-4">
-                            <label class="form-label">DNI</label>
-                            <input type="text" id="dni" name="dni" class="form-control">
-                        </div>
-
-                        <div class="col-md-8">
-                            <label class="form-label">Nombres</label>
-                            <input type="text" id="nombres" name="nombres" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Apellido paterno</label>
-                            <input type="text" id="apellido_paterno" name="apellido_paterno" class="form-control">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Apellido materno</label>
-                            <input type="text" id="apellido_materno" name="apellido_materno" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Sexo</label>
-                            <select id="sexo" name="sexo" class="form-select">
-                                <option value="">Seleccione</option>
-                                <option value="M">Masculino</option>
-                                <option value="F">Femenino</option>
-                                <option value="O">Otro</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Teléfono</label>
-                            <input type="text" id="telefono" name="telefono" class="form-control">
+                        <div class="col-md-12">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control">
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">Dirección</label>
-                            <input type="text" id="direccion" name="direccion" class="form-control">
+                            <label class="form-label">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" class="form-control"></textarea>
                         </div>
-
-
-                    </div>
-                    <hr>
-                    <h6 class="text-primary mb-2 mt-2">Acceso y roles</h6>
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-12">
-                            <label class="form-label">Correo</label>
-                            <input type="email" id="correo" name="correo" class="form-control">
-                        </div>
-                        <div class="col-md-6 password-group">
-                            <label class="form-label">Contraseña</label>
-                            <input type="password" id="password" name="password" class="form-control">
-                        </div>
-                        <div class="col-md-6 password-group">
-                            <label class="form-label">Confirmar 
-                                contraseña</label>
-                            <input type="password" id="re_password" class="form-control">
-                        </div>
-                    <hr>
-
                     </div>
 
                 </div>
 
+                <div class="modal-footer bg-light">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-success px-4" type="submit">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>    
+<div class="modal fade" id="modalPermisos" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <form id="formPermisos">
+            <input type="hidden" id="rol_id" name="rol_id">
+            <div class="modal-content shadow-sm">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-semibold">Registro de Permisos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="row">
+                        @foreach ($permisos as $padre)
+                            <div class="col-md-6 col-lg-6 mb-3">
+                                <div class="border rounded p-3 h-100">
+
+                                    <!-- PADRE SOLO TITULO -->
+                                    <div class="fw-bold text-primary mb-2">
+                                        {{ $padre->nombre }}
+                                    </div>
+
+                                    <!-- HIJOS -->
+                                    <div class="ms-3">
+                                        @foreach ($padre->hijos as $hijo)
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    name="permisos[]"
+                                                    id="permiso_{{ $hijo->id }}"
+                                                    value="{{ $hijo->id }}"
+                                                >
+                                                <label class="form-check-label" for="permiso_{{ $hijo->id }}">
+                                                    {{ $hijo->nombre }}
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>                   
+                </div>
                 <div class="modal-footer bg-light">
                     <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         Cancelar

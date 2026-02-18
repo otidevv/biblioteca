@@ -1,4 +1,19 @@
 let tabla;
+$(document).on('change', '.permiso-padre', function () {
+    let padreId = $(this).val();
+        $('.permiso-hijo-' + padreId).prop('checked', this.checked);
+    });
+// Si todos los hijos están marcados → marcar padre
+$(document).on('change', '.permiso-hijo', function () {
+    let clases = $(this).attr('class').split(' ');
+    let padreClass = clases.find(c => c.startsWith('permiso-hijo-'));
+    let padreId = padreClass.replace('permiso-hijo-', '');
+
+    let total = $('.permiso-hijo-' + padreId).length;
+    let checked = $('.permiso-hijo-' + padreId + ':checked').length;
+
+    $('#permiso_' + padreId).prop('checked', total === checked);
+});
 $(document).ready(function () {
     alerta('Esto ya debería verse', true);
     tabla = $('#tabla-roles').DataTable({        
@@ -17,8 +32,8 @@ $(document).ready(function () {
         },
         columns: [
             { data: 'nombre', name: 'nombre' },
-            { data: 'count_users', name: 'count_users' },
-            { data: 'count_permisos', name: 'count_permisos' },
+            { data: 'total_usuarios', name: 'total_usuarios' },
+            { data: 'total_permisos', name: 'total_permisos' },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -33,25 +48,31 @@ $(document).ready(function () {
 
     // NUEVO
     $('#btnNuevo').on('click', function () {
-        $('#formUsuario')[0].reset();
+        $('#formRoles')[0].reset();
         $('#id').val('');
         $('.password-group').show();
-        $('#modalUsuario').modal('show');
+        $('#modalRoles').modal('show');
     });
 
     // EDITAR
-    $('#tabla-roles').on('click', '.editarUsuario', function () {
-        let id = $(this).data('id');
-
-        $.get(window.routes.edit.replace(':id', id), function (u) {
-            $('#id').val(u.id);
-            $('#name').val(u.name);
-            $('#email').val(u.email);
-            $('.password-group').hide();
-            $('#modalUsuario').modal('show');
-        });
+    $('#tabla-roles').on('click', '.editarRol', function () {
+        let data = tabla.row($(this).closest('tr')).data();
+        console.log(data);
+        $('#id').val(data.id);        
+        $('#nombre').val(data.nombre);
+        $('#descripcion').val(data.descripcion);
+        $('#modalRoles').modal('show');
     });
-    $('#formUsuario').on('submit', function (e) {
+    // PERMISOS
+    $('#tabla-roles').on('click', '.permisosRol', function () {
+        let data = tabla.row($(this).closest('tr')).data();
+        console.log(data);
+        $('#id').val(data.id);        
+        cargarPermisosRol(data.permisos);
+        $('#modalPermisos').modal('show');
+    });
+
+    $('#formRoles').on('submit', function (e) {
         e.preventDefault();
 
         let form = $(this);
@@ -62,7 +83,7 @@ $(document).ready(function () {
         btn.prop('disabled', true).text('Guardando...');
 
         $.ajax({
-            url: '/api/usuarios/nuevo',
+            url:$('#id').val()=='' ? '/api/roles/nuevo' : '/api/roles/edit',
             type: 'POST',
             data: formData,
             processData: false,
@@ -76,11 +97,9 @@ $(document).ready(function () {
                     // Reset form
                     form[0].reset();
                     // Cerrar modal
-                    $('#modalUsuario').modal('hide');
+                    $('#modalRoles').modal('hide');
                     // Recargar tabla (si usas DataTable)
-                    if (window.tablaUsuarios) {
-                        tablaUsuarios.ajax.reload(null, false);
-                    }
+                    tabla.ajax.reload();
                 } else {
                     alerta(response.message??'Error al guardar el usuario', false);
                 }
@@ -109,7 +128,55 @@ $(document).ready(function () {
             }
         });
     });
+    $('#formPermisos').on('submit', function (e) {
+        e.preventDefault();
+
+        let permisos = [];
+        $('input[name="permisos[]"]:checked').each(function () {
+            permisos.push($(this).val());
+        });
+
+        if (permisos.length === 0) {
+            alerta('Debe seleccionar al menos un permiso', false);
+            return;
+        }
+
+        $.ajax({
+            url: '/api/roles/permisos/guardar',
+            type: 'POST',
+            data: {
+                rol_id: $('#id').val(),
+                permisos: permisos
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                alerta('Permisos asignados correctamente', true);
+                tabla.ajax.reload();
+                $('#modalPermisos').modal('hide');
+            },
+            error: function (xhr) {
+                alerta(
+                    xhr.responseJSON?.message ?? 'Error interno del servidor',
+                    false
+                );
+            }
+        });
+    });
+
+
 
 });
 
 
+function cargarPermisosRol(permisosRol) {
+
+    // 1️⃣ Desmarcar todo
+    $('input[name="permisos[]"]').prop('checked', false);
+
+    // 2️⃣ Marcar los que tiene el rol
+    permisosRol.forEach(function (permiso) {
+        $('#permiso_' + permiso.id).prop('checked', true);
+    });
+}
