@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
 
 class UsuarioController extends Controller
 {   
+    // ===================USUARIOS ADMINISTRACIÓN============================
     public function listar(Request $request)
     {
        
@@ -45,6 +46,7 @@ class UsuarioController extends Controller
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
+            'biblioteca'        => 'nullable|string|max:20',
             'telefono'          => 'nullable|string|max:20',
             'correo'            => 'required|email|unique:users,email',
 
@@ -179,6 +181,108 @@ class UsuarioController extends Controller
                 'success' => false,
                 'message' => 'Error al registrar usuario',
                 'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function cambiarContrasena(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = User::findOrFail($request->id);
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Contraseña actualizada correctamente'
+        ]);
+    }
+    // ===================LECTORES LECTORES============================
+    public function listarLectores(Request $request)
+    {
+        $query = User::with('roles','persona')
+            ->whereHas('roles', function($q) {
+                $q->where('name', 'Lector');
+            });
+        return DataTables::of($query)
+            ->addColumn('acciones', function($row) {
+                $btns = '<button class="btn btn-sm btn-primary me-1 editarLector">
+                <svg xmlns="http://www.w3.org/2000/svg" class=" icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 7h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" /><path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" /><line x1="16" y1="5" x2="19" y2="8" /></svg>
+                </button>';
+                return $btns;
+            })
+            ->rawColumns(['acciones'])
+            ->make(true);
+    }
+    public function nuevoLector(Request $request)
+    {
+        $request->validate([
+            // PERSONA
+            'dni'               => 'required|string|max:15|unique:personas,dni',
+            'nombres'           => 'required|string|max:150',
+            'apellido_paterno'  => 'required|string|max:150',
+            'apellido_materno'  => 'nullable|string|max:150',
+            'sexo'              => 'nullable|in:M,F,O',
+            'telefono'          => 'nullable|string|max:20',
+            'email_personal'    => 'required|email|unique:users,email',
+
+            // USUARIO
+            'password'          => 'required|string|min:8|confirmed',
+        ]);
+        //return $request;    
+        DB::beginTransaction();
+
+        try {
+
+            /** =========================
+             *  PERSONA
+             *  ========================= */
+            $persona = Persona::create([
+                'dni'               => $request->dni,
+                'nombres'           => $request->nombres,
+                'apellido_paterno'  => $request->apellido_paterno,
+                'apellido_materno'  => $request->apellido_materno,
+                'sexo'              => $request->sexo,
+                'telefono'          => $request->telefono,
+                'email_personal'    => $request->email_personal,
+                'direccion'         => $request->direccion,
+            ]);
+
+            /** =========================
+             *  USUARIO
+             *  ========================= */
+            $user = User::create([
+                'name'       => $request->nombres,
+                'email'      => $request->email_personal,
+                'password'   => Hash::make($request->password),
+                'estado'     => 'activo',
+                'origen'     => 'local',
+                'persona_id'=> $persona->id,
+            ]);
+
+            /** =========================
+             *  ROLES
+             *  ========================= */
+
+            // 👉 OPCIÓN A: tabla pivote rol_usuarios
+            $user->roles()->sync([5]); // Asignar rol "Lector" (ID=3)
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lector registrado correctamente'
+            ], 201);
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar el lector: ' . $e->getMessage()
             ], 500);
         }
     }

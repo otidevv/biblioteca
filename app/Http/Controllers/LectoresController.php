@@ -6,25 +6,34 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Rol;
 use App\Models\Permiso;
-use App\Models\Biblioteca;
-class AdministracionController extends Controller
+use App\Models\Biblioteca; 
+use App\Models\Carrera;
+
+class LectoresController extends Controller
 {
+    //
     public function index(string $modulo)
     {
         return match ($modulo) {
 
             // 👉 USUARIOS
-            'usuarios' => $this->usuarios(),
+            'registro' => $this->lectores(),
             // 👉 ROLES Y PERMISOS
-            'roles_permisos' =>  $this->roles_permisos(),
+            'prestamos' =>  $this->prestamos(),
+            // 👉 MULTAS
+            'multas' =>  $this->multas(),
             // 👉 BACKUPS
-            'backups' => view('administracion.backups.index'),
-            'bibliotecas' => $this->bibliotecas(),
+            'importaciones' => $this->importaciones(),
             default => abort(404),
         };
     }
 
-    protected function usuarios()
+    protected function lectores()
+    {
+        $carreras=Carrera::latest()->get();
+        return view('lectores.registro_lectores', compact('carreras'));
+    }
+    protected function prestamos()
     {
         $usuarios = User::latest()->get();
         $tiposUsuarios  = Rol::latest()->get();
@@ -32,7 +41,7 @@ class AdministracionController extends Controller
 
         return view('administracion.usuario', compact('usuarios', 'tiposUsuarios', 'bibliotecas'));
     }
-    protected function roles_permisos()
+    protected function multas()
     {
         $permisos = Permiso::whereNull('permiso_id')
             ->with('hijos')
@@ -40,8 +49,8 @@ class AdministracionController extends Controller
 
         return view('administracion.roles_permisos', compact('permisos'));
     }
-    protected function bibliotecas()
+    protected function importaciones()
     {
         return view('administracion.biblioteca');
     }
-}   
+}

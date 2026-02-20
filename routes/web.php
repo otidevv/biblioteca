@@ -11,6 +11,8 @@ use App\Http\Controllers\LectoresController;
 use App\Http\Controllers\Api\UsuarioController as ApiUsuarioController;
 use App\Http\Controllers\Api\RolController as ApiRolController;
 use App\Http\Controllers\Api\BibliotecaController as ApiBibliotecaController;
+use App\Http\Controllers\Api\LectorController as ApiLectorController;
+use App\Http\Controllers\Api\ConsultaApiController as ApiConsultaApiController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -51,26 +53,39 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     
     Route::prefix('api')->group(function () {
         Route::prefix('/usuarios')->group(function () {
+            //metodos de modulos usuarios de administracion
             Route::get('/listar', [ApiUsuarioController::class, 'listar'])->name('usuarios.listar');
             Route::post('/nuevo', [ApiUsuarioController::class, 'nuevo'])->name('usuarios.nuevo');
             Route::post('/edit', [ApiUsuarioController::class, 'edit'])->name('usuarios.edit');
-            Route::put('/update', [ApiUsuarioController::class, 'update'])->name('usuarios.update');
-            Route::delete('/destroy', [ApiUsuarioController::class, 'destroy'])->name('usuarios.destroy');
+            Route::delete('/contrasena', [ApiUsuarioController::class, 'cambiarContrasena'])->name('usuarios.cambiar.contrasena');
+            //metodos del modulo lectores de Lectores
+            Route::get('/lectores/listar', [ApiUsuarioController::class, 'listarLectores'])->name('lectores.listar');
+            Route::post('/lectores/nuevo', [ApiUsuarioController::class, 'nuevoLector'])->name('lectores.nuevo');
+            Route::post('/lectores/edit', [ApiUsuarioController::class, 'editLector'])->name('lectores.edit');
+            //busqueda de dni en api externa
+
         });
         Route::prefix('roles')->group(function () {
             Route::get('/listar', [ApiRolController::class, 'listar'])->name('roles.listar');
             Route::post('/nuevo', [ApiRolController::class, 'nuevo'])->name('roles.nuevo');
             Route::post('/edit', [ApiRolController::class, 'edit'])->name('roles.edit');
-            Route::put('/update', [ApiRolController::class, 'update'])->name('roles.update');
             Route::post('/permisos/guardar', [ApiRolController::class, 'guardarPermisos'])->name('roles.permisos.guardar');
-            Route::delete('/destroy', [ApiRolController::class, 'destroy'])->name('roles.destroy');
         });
         Route::prefix('bibliotecas')->group(function () {
             Route::get('/listar', [ApiBibliotecaController::class, 'listar']);
             Route::post('/nuevo', [ApiBibliotecaController::class, 'nuevo']);
             Route::post('/edit', [ApiBibliotecaController::class, 'edit']);
-            Route::put('/{id}', [ApiBibliotecaController::class, 'update']);
-            Route::delete('/{id}', [ApiBibliotecaController::class, 'destroy']);
+        });
+        Route::prefix('lectores')->group(function () {
+            Route::get('/listar', [ApiLectorController::class, 'listar']);
+            Route::post('/nuevo', [ApiLectorController::class, 'nuevo']);
+            Route::post('/edit', [ApiLectorController::class, 'edit']);
+            Route::put('/{id}', [ApiLectorController::class, 'update']);
+            Route::delete('/{id}', [ApiLectorController::class, 'destroy']);
+        });
+        //CONSULTA DE DNI EN API EXTERNA
+        Route::prefix('externo')->group(function () {
+            Route::get('/buscar-dni', [ApiConsultaApiController::class, 'consulta_api'])->name('usuarios.buscar.dni');            
         });
     });
 });

@@ -661,7 +661,32 @@ function validar(ident_form) //validar_fecha, validar_entero, validar_decimal
 
     return resultado;
 }
+// validar input  debe ser diferente de 0 por id
+function validar_select_id(selectId) {
 
+    const select = $('#' + selectId);
+
+    // Si no existe el select → no validar
+    if (!select.length) return true;
+
+    // Limpiar errores previos
+    select.removeClass('is-invalid');
+    select.closest('.form-group').find('.invalid-feedback').remove();
+
+    // Validar valor
+    if (select.val() === "0" || select.val() === "") {
+
+        select.addClass('is-invalid');
+
+        select.closest('.form-group').append(
+            '<div class="invalid-feedback">Seleccione una opción</div>'
+        );
+
+        return false;
+    }
+
+    return true;
+}
 //limpiar validaciones de formulario
 function limpiar(ident_form) {
     $(ident_form+" .form-group").each(function() {

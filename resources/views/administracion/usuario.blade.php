@@ -73,25 +73,25 @@
                         <h6 class="text-primary mb-2">Datos personales</h6>
                         <div class="row g-3 mb-3">
 
-                            <div class="col-md-4 form-group">
+                            <div class="col-md-4 form-group form-required">
                                 <label class="form-label">DNI</label>
                                 <input type="text" id="dni" name="dni" class="form-control validar_numero">
                             </div>
 
-                            <div class="col-md-8">
+                            <div class="col-md-8 form-group form-required">
                                 <label class="form-label">Nombres</label>
                                 <input type="text" id="nombres" name="nombres" class="form-control">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 form-group form-required">
                                 <label class="form-label">Apellido paterno</label>
                                 <input type="text" id="apellido_paterno" name="apellido_paterno" class="form-control">
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-6 form-group form-required">
                                 <label class="form-label">Apellido materno</label>
                                 <input type="text" id="apellido_materno" name="apellido_materno" class="form-control">
                             </div>
-                            <div class="col-md-6 ">
+                            <div class="col-md-6 form-group form-required ">
                                 <label class="form-label">Sexo</label>
                                 <select id="sexo" name="sexo" class="form-select validar_select">
                                     <option value="0">Seleccione</option>
@@ -100,12 +100,22 @@
                                     <option value="O">Otro</option>
                                 </select>
                             </div>
+                            <div class="col-md-6 form-group form-required">
+                                <label class="form-label">Biblioteca</label>
+                                <select id="biblioteca" name="biblioteca" class="form-select validar_select">
+                                    <option value="0">Seleccione</option>
+                                    <option value="">Todos</option>
+                                    @foreach ($bibliotecas as $biblioteca)
+                                        <option value="{{ $biblioteca->id }}">{{ $biblioteca->nombre }}</option>    
+                                    @endforeach
+                                </select>
+                            </div>
 
-                            <div class="col-md-6 form-group">
+                            <div class="col-md-6 form-group form-required">
                                 <label class="form-label">Teléfono</label>
                                 <input type="text" id="telefono" name="telefono" class="form-control validar_numero">
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6 form-group form-required">
                                 <label class="form-label">Dirección</label>
                                 <input type="text" id="direccion" name="direccion" class="form-control">
                             </div>
@@ -113,24 +123,15 @@
                         <div class="row g-3 mb-3" id="div_credenciales">
                             <hr>
                             <h6 class="text-primary mb-2 mt-2">Credenciales de acceso</h6>
-                            <div class="col-md-6">
+                            <div class="col-md-6 form-group form-required">
                                 <label class="form-label">Correo</label>
                                 <input type="email" id="correo" name="correo" class="form-control">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Biblioteca</label>
-                                <select id="biblioteca" name="biblioteca" class="form-select validar_select">
-                                    <option value="0">Seleccione</option>
-                                    <option value="M">Masculino</option>
-                                    <option value="F">Femenino</option>
-                                    <option value="O">Otro</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 password-group">
+                            <div class="col-md-6 form-group password-group form-required">
                                 <label class="form-label">Contraseña</label>
                                 <input type="password" id="password" name="password" class="form-control">
                             </div>
-                            <div class="col-md-6 password-group">
+                            <div class="col-md-6 form-group password-group form-required">
                                 <label class="form-label">Confirmar 
                                     contraseña</label>
                                 <input type="password" id="re_password" class="form-control">
@@ -177,4 +178,99 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="modalContraseña" tabindex="-1">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <form id="formContraseña">
+            <div class="modal-content shadow-lg border-0">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-semibold d-flex align-items-center gap-2">
+                        🔐 Cambiar contraseña
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body px-4 py-3">
+
+                    <!-- USUARIO -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-muted">Usuario</label>
+                        <input id="p_apodo" type="text" class="form-control" disabled>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <!-- NUEVA CONTRASEÑA -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Nueva contraseña
+                        </label>
+
+                        <div class="input-group">
+                            <input
+                                id="pchange"
+                                type="password"
+                                class="form-control validar_minimo:8"
+                                placeholder="Mínimo 8 caracteres"
+                            >
+                            <button class="btn btn-outline-secondary toggle-password"
+                                    type="button"
+                                    data-target="pchange">
+                                👁
+                            </button>
+                        </div>
+
+                        <div class="form-text">
+                            <span id="password-strength" class="small text-muted">
+                                Usa al menos 8 caracteres
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- CONFIRMAR -->
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">
+                            Confirmar contraseña
+                        </label>
+
+                        <div class="input-group">
+                            <input
+                                id="pchange_confirmed"
+                                type="password"
+                                class="form-control validar_igual:pchange"
+                                placeholder="Repetir contraseña"
+                            >
+                            <button class="btn btn-outline-secondary toggle-password"
+                                    type="button"
+                                    data-target="pchange_confirmed">
+                                👁
+                            </button>
+                        </div>
+
+                        <div class="form-text" id="password-match-status">
+                            <span class="text-muted small">
+                                Las contraseñas deben coincidir
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success px-4">
+                        Guardar cambios
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
  @endsection

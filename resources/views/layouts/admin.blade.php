@@ -7,6 +7,7 @@
     <title>Sistema Biblioteca</title>
 
     <link href="{{ asset('lib/tabler/css/tabler.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('css')
 </head>
