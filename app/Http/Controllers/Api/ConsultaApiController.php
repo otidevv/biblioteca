@@ -13,16 +13,17 @@ class ConsultaApiController extends Controller
     
     public function consulta_api(Request $request)
     {
-        if ($request->tipo_usuario == 1) { // estudiante
+        $consulta=$request->tipo_usuario=="ESTUDIANTE"? 1 : ($request->tipo_usuario=="DOCENTE"? 2 : ($request->tipo_usuario=="ADMINISTRATIVO"? 3 : ($request->tipo_usuario=="EXTERNO"? 4 : 0))) ;
+        if ($consulta== 1) { // estudiante
             return $this->consultarEstudiante($request->nro_documento);
         }
-        if ($request->tipo_usuario == 2) { // docente
+        if ($consulta== 2) { // docente
             return $this->consultarTeacher($request->nro_documento);
         }
-        if ($request->tipo_usuario == 3) { // administrativo
+        if ($consulta== 3) { // administrativo
             return $this->consultarExterno($request->nro_documento);
         }
-        if ($request->tipo_usuario == 4) { // externo
+        if ($consulta== 4) { // externo
             return $this->consultarExterno($request->nro_documento);
         }
 

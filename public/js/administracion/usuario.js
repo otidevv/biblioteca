@@ -11,13 +11,43 @@ $(document).ready(function () {
             xhrFields: { withCredentials: true },
             data: function (d) {
                 // si necesitas enviar parámetros extra
+                d.tipo_usuario=$('#tipo_usuario').val();
             },
             error: default_error_handler        
         },
         columns: [
             { data: 'name', name: 'name' },
             { data: 'email', name: 'email' },
-            { data: 'created_at', name: 'created_at' },
+            {  data: 'roles',
+        name: 'rol',
+        render: function (data, type, row) {
+
+            if (!Array.isArray(data) || data.length === 0) {
+                return '<span class="badge bg-secondary">Sin rol</span>';
+            }
+
+            return data.map(rol => {
+                    let color = 'bg-primary';
+
+                    switch (rol.nombre.toLowerCase()) {
+                        case 'admin':
+                            color = 'bg-danger';
+                            break;
+                        case 'programador':
+                            color = 'bg-warning text-dark';
+                            break;
+                        case 'lector':
+                            color = 'bg-info text-dark';
+                            break;
+                        case 'atencion a estudiantes':
+                            color = 'bg-success';
+                            break;
+                    }
+
+                    return `<span class="badge ${color} me-1" style="color: white;">${rol.nombre}</span>`;
+                }).join('');
+            }
+            },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -31,7 +61,7 @@ $(document).ready(function () {
     });
 
     $('#tipo_usuario').on('change', function() {
-        tablaUsuarios.ajax.reload(); // suponiendo que tu DataTable se llama tablaUsuarios
+        tabla.ajax.reload(); // suponiendo que tu DataTable se llama tablaUsuarios
     });
     // ABRE MODAL DE NUEVO USUARIO
     $('#btnNuevo').on('click', function () {
@@ -57,7 +87,7 @@ $(document).ready(function () {
         $('#sexo').val(data.persona.sexo);
         $('#telefono').val(data.persona.telefono);
         $('#id').val(data.id);
-        $('#biblioteca').val(data.id);
+        $('#biblioteca').val(data.roles[0]?.pivot.biblioteca_id ?? '');
         $('#sexo').val(data.persona.sexo ?? '');
         $('#direccion').val(data.persona.direccion ?? '');
         $('#email').val(data.email);

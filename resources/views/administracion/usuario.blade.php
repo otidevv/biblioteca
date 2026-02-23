@@ -32,6 +32,9 @@
         <select id="tipo_usuario" class="w-full md:w-1/3 border-gray-300 rounded-lg p-2">
             <option value="">Todos</option>
             @foreach($tiposUsuarios as $tipo)
+                @if($tipo['id'] == 5) <!-- O el ID que corresponda al rol de administrador -->
+                    @continue <!-- Saltar este rol para que no aparezca en el filtro -->
+                @endif
                 <option value="{{ $tipo['id'] }}">{{ $tipo['nombre'] }}</option>
             @endforeach
         </select>
@@ -42,8 +45,8 @@
             <thead class="bg-gray-100">
                 <tr>
                     <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>

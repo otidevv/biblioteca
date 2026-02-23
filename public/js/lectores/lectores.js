@@ -17,8 +17,17 @@ $(document).ready(function () {
         },
         columns: [
             { data: 'name', name: 'name' },
+            { data: 'persona.dni', name: 'persona.dni' },
             { data: 'email', name: 'email' },
-            { data: 'created_at', name: 'created_at' },
+            { data: 'persona.tipo_persona', name: 'persona.tipo_persona'
+                    , render: function (data, type, row) {
+                        if (data === 'ESTUDIANTE') return 'ESTUDIANTE';
+                        if (data === 'DOCENTE') return 'DOCENTE';
+                        if (data === 'ADMINISTRATIVO') return 'ADMINISTRATIVO';
+                        if (data === 'EXTERNO') return 'EXTERNO';
+                        return 'Otro';
+                    }
+             },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -237,9 +246,14 @@ function buscarDNIapi(dni, btn) {
         data: { nro_documento: dni, tipo_usuario: $('#tipo_persona').val() },
 
         success: function (res) {
+            console.log(res.respuesta.codigo+ ' -- '+res.respuesta.correo);
+            
             $('#nombres').val(res.respuesta.nombre ?? '');
             $('#apellido_paterno').val(res.respuesta.apaterno ?? '');
             $('#apellido_materno').val(res.respuesta.amaterno ?? '');
+            $('#email_personal').val(res.respuesta.correo ?? '');
+            $('#email').val(res.respuesta.correo ?? '');
+            $('#codigo_institucional').val(res.respuesta.codigo ?? '');
             // 🔒 Bloquear campos
             bloquearCamposPersona(true);
 
@@ -274,8 +288,8 @@ function toggleCamposEstudiante() {
 
     const tipo = $('#tipo_persona').val();
 
-    if (tipo === '1') {
-        $('#bloqueEstudiante').slideDown();
+    if (tipo === 'ESTUDIANTE') {
+        $('#bloqueEstudiante').slideDown(); 
     } else {
         // Ocultar
         $('#bloqueEstudiante').slideUp();

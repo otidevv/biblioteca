@@ -26,12 +26,13 @@
         </button>
     </div>
     <div class="overflow-x-auto">
-        <table id="tabla-lectores" class="w-full table-auto border-collapse">
+        <table id="tabla-lectores" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
             <thead class="bg-gray-100">
                 <tr>
                     <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Fecha</th>
+                    <th>Documento</th>
+                    <th>Usuario</th>
+                    <th>Tipo</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -77,10 +78,10 @@
                                         <select id="tipo_persona" name="tipo_persona"
                                                 class="form-select validar_select">
                                             <option value="0">-- Seleccionar --</option>
-                                            <option value="1">ESTUDIANTE</option>
-                                            <option value="2">DOCENTE</option>
-                                            <option value="3">ADMINISTRATIVO</option>
-                                            <option value="4">EXTERNO</option>
+                                            <option value="ESTUDIANTE">ESTUDIANTE</option>
+                                            <option value="DOCENTE">DOCENTE</option>
+                                            <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
+                                            <option value="EXTERNO">EXTERNO</option>
                                         </select>
                                     </div>
 
@@ -101,7 +102,7 @@
                                     <div class="col-md-4 form-group form-required">
                                         <label class="form-label">Sexo</label>
                                         <select id="sexo" name="sexo"
-                                                class="form-select validar_select">
+                                                class="form-select mayuscula validar_select">
                                             <option value="0">Selecciona</option>
                                             <option value="M">Masculino</option>
                                             <option value="F">Femenino</option>
@@ -112,21 +113,21 @@
                                     <div class="col-md-4 form-group form-required">
                                         <label class="form-label">Nombres</label>
                                         <input type="text" id="nombres" name="nombres"
-                                               class="form-control">
+                                               class="form-control mayuscula">
                                     </div>
 
                                     <div class="col-md-4 form-group form-required">
                                         <label class="form-label">Apellido Paterno</label>
                                         <input type="text" id="apellido_paterno"
                                                name="apellido_paterno"
-                                               class="form-control">
+                                               class="form-control mayuscula">
                                     </div>
 
                                     <div class="col-md-4 form-group form-required">
                                         <label class="form-label">Apellido Materno</label>
                                         <input type="text" id="apellido_materno"
                                                name="apellido_materno"
-                                               class="form-control">
+                                               class="form-control mayuscula">
                                     </div>
 
                                 </div>
@@ -146,13 +147,13 @@
                                         <label class="form-label">Código Institucional</label>
                                         <input type="text" id="codigo_institucional"
                                                name="codigo_institucional"
-                                               class="form-control">
+                                               class="form-control mayuscula">
                                     </div>
 
                                     <div class="col-md-4">
                                         <label class="form-label">Carrera</label>
                                         <select id="carrera_id" name="carrera_id"
-                                                class="form-select">
+                                                class="form-select mayuscula">
                                             <option value="0">-- Seleccionar --</option>
                                             @foreach($carreras as $carrera)
                                                 <option value="{{ $carrera['id'] }}">
@@ -164,9 +165,13 @@
 
                                     <div class="col-md-4">
                                         <label class="form-label">Estado Académico</label>
-                                        <input type="text" id="estado_academico"
+                                        <select type="text" id="estado_academico"
                                                name="estado_academico"
-                                               class="form-control">
+                                               class="form-control mayuscula">
+                                            <option value="0">-- Seleccionar --</option>
+                                            <option value="1">ESTUDIANTE</option>   
+                                            <option value="2">EGRESADO</option>
+                                        </select>
                                     </div>
 
                                 </div>
@@ -199,7 +204,7 @@
                                         <label class="form-label">Dirección</label>
                                         <input type="text" id="direccion"
                                                name="direccion"
-                                               class="form-control">
+                                               class="form-control mayuscula">
                                     </div>
 
                                 </div>
