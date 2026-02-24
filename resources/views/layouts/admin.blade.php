@@ -8,6 +8,10 @@
 
     <link href="{{ asset('lib/tabler/css/tabler.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
+    <script>
+        permisosUsuario = @json($permisosUsuario);
+        console.log('Permisos del usuario:', permisosUsuario);
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('css')
 </head>

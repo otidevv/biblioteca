@@ -20,6 +20,7 @@ class AdministracionController extends Controller
             // 👉 BACKUPS
             'backups' => view('administracion.backups.index'),
             'bibliotecas' => $this->bibliotecas(),
+            'proveedores' => $this->proveedores(),
             default => abort(404),
         };
     }
@@ -43,5 +44,9 @@ class AdministracionController extends Controller
     protected function bibliotecas()
     {
         return view('administracion.biblioteca');
+    }
+    protected function proveedores()
+    {
+        return view('administracion.proveedor');
     }
 }   

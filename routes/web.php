@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\RolController as ApiRolController;
 use App\Http\Controllers\Api\BibliotecaController as ApiBibliotecaController;
 use App\Http\Controllers\Api\LectorController as ApiLectorController;
 use App\Http\Controllers\Api\ConsultaApiController as ApiConsultaApiController;
+use App\Http\Controllers\Api\ProveedorController as ApiProveedorController;
+use App\Http\Controllers\Api\EditorialController as ApiEditorialController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -36,7 +38,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas');
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores');
     });
 
     // LECTORES
@@ -75,6 +77,16 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/listar', [ApiBibliotecaController::class, 'listar']);
             Route::post('/nuevo', [ApiBibliotecaController::class, 'nuevo']);
             Route::post('/edit', [ApiBibliotecaController::class, 'edit']);
+        });
+        Route::prefix('proveedores')->group(function () {
+            Route::get('/listar', [ApiProveedorController::class, 'listar']);
+            Route::post('/nuevo', [ApiProveedorController::class, 'nuevo']);
+            Route::post('/edit', [ApiProveedorController::class, 'edit']);
+        });
+        Route::prefix('editoriales')->group(function () {
+            Route::get('/listar', [ApiEditorialController::class, 'listar']);
+            Route::post('/nuevo', [ApiEditorialController::class, 'nuevo']);
+            Route::post('/edit', [ApiEditorialController::class, 'edit']);
         });
         Route::prefix('lectores')->group(function () {
             Route::get('/listar', [ApiLectorController::class, 'listar']);

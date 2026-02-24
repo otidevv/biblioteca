@@ -141,8 +141,12 @@ class DatosInicialSeeder extends Seeder
             $this->crearPermisos([
                 ['administracion.usuarios', 'Gestión de Usuarios'],
                 ['administracion.roles_permisos', 'Roles y Permisos'],
-                ['administracion.bibliotecas', 'Bibliotecas'],
+                ['administracion.bibliotecas', 'Gestión de Bibliotecas'],
                 ['administracion.backups', 'Backups'],
+                ['administracion.proveedores', 'Gestión de proveedores'],
+                ['administracion.editoriales', 'Gestión de editoriales'],
+                ['administracion.tipo_registros', 'Gestión de tipo_registros'],
+                ['administracion.autores', 'Gestión de autores'],
             ], $permisoAdmin->id);
 
             // LECTORES

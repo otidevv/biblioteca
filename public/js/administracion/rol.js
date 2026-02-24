@@ -15,7 +15,6 @@ $(document).on('change', '.permiso-hijo', function () {
     $('#permiso_' + padreId).prop('checked', total === checked);
 });
 $(document).ready(function () {
-    alerta('Esto ya debería verse', true);
     tabla = $('#tabla-roles').DataTable({        
         processing: true,
         serverSide: true,

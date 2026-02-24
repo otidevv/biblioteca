@@ -12,36 +12,35 @@ class CargarPermisosUsuario
     {
         if (auth()->check()) {
 
-            $permisos = auth()->user()
-                ->roles()
-                ->with([
-                    'permisos' => function ($q) {
-                        $q->whereNull('permisos.permiso_id')
-                          ->with('hijos');
-                    }
-                ])
-                ->get()
-                ->pluck('permisos')
-                ->flatten()
-                ->unique('id')
-                ->map(function ($permiso) {
-                    return [
-                        'codigo' => $permiso->codigo,
-                        'nombre' => $permiso->nombre,
-                        'icono'  => $permiso->icono,
-                        'subpermisos' => $permiso->hijos->map(function ($hijo) {
-                        return [
-                            'codigo' => $hijo->codigo,
-                            'nombre' => $hijo->nombre,
-                            'ruta'   => str_replace('.', '/', $hijo->codigo),
-                        ];
-                    })->toArray()
-                    ];
-                })
-                ->values()
-                ->toArray();
+          $permisos = auth()->user()
+    ->roles()
+    ->with('permisos.padre')
+    ->get()
+    ->pluck('permisos')
+    ->flatten()
+    ->unique('id')
+    ->groupBy(fn ($permiso) => $permiso->padre?->id ?? $permiso->id)
+    ->map(function ($grupo) {
 
-            View::share('permisosUsuario', $permisos);
+        $padre = $grupo->first()->padre ?? $grupo->first();
+
+        return [
+            'codigo' => $padre->codigo,
+            'nombre' => $padre->nombre,
+            'icono'  => $padre->icono,
+            'subpermisos' => $grupo->map(function ($hijo) {
+                return [
+                    'codigo' => $hijo->codigo,
+                    'nombre' => $hijo->nombre,
+                    'ruta'   => str_replace('.', '/', $hijo->codigo),
+                ];
+            })->values()->toArray()
+        ];
+    })
+    ->values()
+    ->toArray();
+
+View::share('permisosUsuario', $permisos);
         }
 
         return $next($request);

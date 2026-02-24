@@ -7,14 +7,13 @@
 @section('content')
 <div class="bg-white p-6 rounded-xl shadow-lg">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>
+        <h1 class="text-2xl font-bold text-gray-800">Gestión de roles y permisos</h1>
         <button id="btnNuevo"
             class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-            ➕ Agregar Usuario
+            ➕ Agregar Rol
         </button>
     </div>
 
-    {{-- Select para tipos de usuario --}}
     <div class="overflow-x-auto">
         <table id="tabla-roles" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
             <thead class="bg-gray-100">
