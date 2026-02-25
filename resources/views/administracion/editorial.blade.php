@@ -2,7 +2,7 @@
 
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('/js/administracion/proveedor.js') }}"></script>
+    <script src="{{ asset('/js/administracion/editorial.js') }}"></script>
 @endsection
 @section('content')
 <nav class="mb-4 text-sm text-gray-600">
@@ -19,7 +19,7 @@
 
 <div class="bg-white p-6 rounded-xl shadow-lg">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Gestión de proveedores</h1>
+        <h1 class="text-2xl font-bold text-gray-800">Gestión de editoriales</h1>
         <button id="btnNuevo"
             class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
             ➕ Agregar Editorial

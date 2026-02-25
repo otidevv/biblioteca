@@ -1,12 +1,12 @@
 let tabla;
 $(document).ready(function () {
-    tablaBibliotecas = $('#tabla-biblioteca').DataTable({        
+    tabla = $('#tabla-editorial').DataTable({        
         processing: true,
         serverSide: true,
         pageLength: 50,
         order: [],
         ajax: {
-            url:  "/api/bibliotecas/listar",
+            url:  "/api/editoriales/listar",
             type: "GET",
             xhrFields: { withCredentials: true },
             data: function (d) {
@@ -15,9 +15,18 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'codigo', name: 'codigo' },
-            { data: 'nombre', name: 'nombre' },
-            { data: 'direccion', name: 'direccion' },
+            { data: 'tipo_documento', name: 'tipo_documento',
+                render: function (data, type, row) {
+                    return `<strong>${data}</strong><br><small class="text-muted">${row.nro_documento ?? ''}</small>`;
+                }
+             },
+            { data: 'responsable', name: 'responsable',
+                render: function (data, type, row) {
+                    return `<strong>${data}</strong><br><small class="text-muted">${row.nombre ?? ''}</small>`;
+                }
+            },
+            { data: 'telefono', name: 'telefono' },
+            { data: 'correo', name: 'correo' },
             { data: 'estado', name: 'estado' },
             { 
                 data: 'acciones', 
@@ -33,23 +42,25 @@ $(document).ready(function () {
 
     // NUEVO
     $('#btnNuevo').on('click', function () {
-        $('#formBiblioteca')[0].reset();
+        $('#formEditorial')[0].reset();
         $('#id').val('');
         $('.password-group').show();
-        $('#modalBiblioteca').modal('show');
+        $('#modalEditorial').modal('show');
     });
 
     // EDITAR
-    $('#tabla-biblioteca').on('click', '.editarBiblioteca', function () {
-        let data = tablaBibliotecas.row($(this).closest('tr')).data();
-        console.log(data);
+    $('#tabla-editorial').on('click', '.editarEditorial', function () {
+        let data = tabla.row($(this).closest('tr')).data();
         
         $('input[name="roles[]"]').prop('checked', false);
         $('#id').val(data.id);
-        $('#codigo').val(data.codigo);
+        $('#tipo_documento').val(data.tipo_documento);
+        $('#nro_documento').val(data.nro_documento);
         $('#nombre').val(data.nombre);
+        $('#responsable').val(data.responsable);
+        $('#telefono').val(data.telefono);
         $('#direccion').val(data.direccion);
-        $('#descripcion').val(data.descripcion);
+        $('#web').val(data.web);
         $('#estado').val(data.estado ?? '');
         // MARCAR roles del usuario
             if (data.roles && Array.isArray(data.roles)) {
@@ -57,11 +68,9 @@ $(document).ready(function () {
                     $('#rol_' + rol.id).prop('checked', true);
                 });
             }
-
-        $('#div_credenciales').hide();
-        $('#modalBiblioteca').modal('show');
+        $('#modalEditorial').modal('show');
     });
-    $('#formBiblioteca').on('submit', function (e) {
+    $('#formEditorial').on('submit', function (e) {
         e.preventDefault();
 
         let form = $(this);
@@ -70,9 +79,13 @@ $(document).ready(function () {
         // Botón loading
         let btn = form.find('button[type="submit"]');
         btn.prop('disabled', true).text('Guardando...');
+        if(!validar('#formEditorial')) {
+            btn.prop('disabled', false).text('Guardar');
+            return;
+        }
 
         $.ajax({
-            url:$('#id').val()=='' ? '/api/bibliotecas/nuevo' : '/api/bibliotecas/edit',
+            url:$('#id').val()=='' ? '/api/editoriales/nuevo' : '/api/editoriales/edit',
             type:'POST',
             data: formData,
             processData: false,
@@ -82,17 +95,14 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
-                    alerta("Usuario guardado correctamente", true);
+                    alerta("Editorial guardado correctamente", true);
                     // Reset form
                     form[0].reset();
                     // Cerrar modal
-                    $('#modalBiblioteca').modal('hide');
-                    // Recargar tabla (si usas DataTable)
-                    if (window.tablaBibliotecas) {
-                        tablaBibliotecas.ajax.reload();
-                    }
+                    $('#modalEditorial').modal('hide');
+                        tabla.ajax.reload();
                 } else {
-                    alerta(response.message??'Error al guardar el usuario', false);
+                    alerta(response.message??'Error al guardar el editorial', false);
                 }
             },
             error: function (xhr) {
@@ -110,7 +120,7 @@ $(document).ready(function () {
                         alerta(messages[0], false);
                     });
                 } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar el usuario', false);
+                    alerta(xhr.responseJSON.message??'Error al guardar el editorial', false);
                     //toastr.error('Error interno del servidor');
                 }
             },

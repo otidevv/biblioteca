@@ -56,7 +56,6 @@ $(document).ready(function () {
     // EDITAR
     $('#tabla-roles').on('click', '.editarRol', function () {
         let data = tabla.row($(this).closest('tr')).data();
-        console.log(data);
         $('#id').val(data.id);        
         $('#nombre').val(data.nombre);
         $('#descripcion').val(data.descripcion);

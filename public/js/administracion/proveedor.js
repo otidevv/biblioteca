@@ -50,10 +50,7 @@ $(document).ready(function () {
 
     // EDITAR
     $('#tabla-proveedor').on('click', '.editarProveedor', function () {
-        if (!validar('#div_form')) return;
-        let data = tabla.row($(this).closest('tr')).data();
-        console.log(data);
-        
+        let data = tabla.row($(this).closest('tr')).data();        
         $('input[name="roles[]"]').prop('checked', false);
         $('#id').val(data.id);
         $('#tipo_documento').val(data.tipo_documento);

@@ -77,7 +77,6 @@ $(document).ready(function () {
     // ABRE MODAL DE EDICIÓN
     $('#tabla-usuarios').on('click', '.editarUsuario', function () {
         let data = tabla.row($(this).closest('tr')).data();
-        console.log(data);
         
         $('input[name="roles[]"]').prop('checked', false);
         $('#dni').val(data.persona.dni);
