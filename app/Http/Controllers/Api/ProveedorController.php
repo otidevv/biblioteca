@@ -37,7 +37,7 @@ class ProveedorController extends Controller
         $request->validate([
             // PROVEEDOR
             'tipo_documento'            => 'required|string|max:20',
-            'responsable'            => 'required|string|max:150',
+            'razon_social'            => 'required|string|max:150',
             'telefono'            => 'required|string|max:20',
             'nro_documento'            => 'required|string|max:20|unique:proveedores,nro_documento',
         ]);

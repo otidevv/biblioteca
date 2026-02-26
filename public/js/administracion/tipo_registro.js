@@ -1,12 +1,12 @@
 let tabla;
 $(document).ready(function () {
-    tabla = $('#tabla-editorial').DataTable({        
+    tabla = $('#tabla-tipo-registro').DataTable({        
         processing: true,
         serverSide: true,
         pageLength: 50,
         order: [],
         ajax: {
-            url:  "/api/editoriales/listar",
+            url:  "/api/tipo_registro/listar",
             type: "GET",
             xhrFields: { withCredentials: true },
             data: function (d) {
@@ -15,25 +15,14 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'tipo_documento', name: 'tipo_documento',
-                render: function (data, type, row) {
-                    return `<strong>${data}</strong><br><small class="text-muted">${row.nro_documento ?? ''}</small>`;
-                }
-             },
-            { data: 'responsable', name: 'responsable',
-                render: function (data, type, row) {
-                    return `<strong>${data}</strong><br><small class="text-muted">${row.nombre ?? ''}</small>`;
-                }
-            },
-            { data: 'telefono', name: 'telefono' },
-            { data: 'correo', name: 'correo' },
+            { data: 'nombre', name: 'nombre' },
             { data: 'estado', name: 'estado' },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
                 orderable: false, 
                 searchable: false 
-            }
+            },
         ],        
         dom: default_datatable_dom,
         language: default_datatable_language,
@@ -42,14 +31,14 @@ $(document).ready(function () {
 
     // NUEVO
     $('#btnNuevo').on('click', function () {
-        $('#formEditorial')[0].reset();
+        $('#formTipoRegistro')[0].reset();
         $('#id').val('');
         $('.password-group').show();
-        $('#modalEditorial').modal('show');
+        $('#modalTipoRegistro').modal('show');
     });
 
     // EDITAR
-    $('#tabla-editorial').on('click', '.editarEditorial', function () {
+    $('#tabla-tipo-registro').on('click', '.editarTipoRegistro', function () {
         let data = tabla.row($(this).closest('tr')).data();
         
         $('#id').val(data.id);

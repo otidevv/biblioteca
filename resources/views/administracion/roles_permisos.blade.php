@@ -37,9 +37,7 @@
 <div class="modal fade" id="modalRoles" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <form id="formRoles">
-            <input type="hidden" id="id">
-            <input type="hidden" id="persona_id">
-
+            <input type="hidden" id="id" name="id">
             <div class="modal-content shadow-sm">
                 <div class="modal-header bg-light">
                     <h5 class="modal-title fw-semibold">Registro de Roles</h5>
@@ -77,7 +75,7 @@
     </div>
 </div>    
 <div class="modal fade" id="modalPermisos" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <form id="formPermisos">
             <input type="hidden" id="rol_id" name="rol_id">
             <div class="modal-content shadow-sm">
@@ -85,30 +83,20 @@
                     <h5 class="modal-title fw-semibold">Registro de Permisos</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body">
-
                     <div class="row">
                         @foreach ($permisos as $padre)
                             <div class="col-md-6 col-lg-6 mb-3">
                                 <div class="border rounded p-3 h-100">
-
                                     <!-- PADRE SOLO TITULO -->
                                     <div class="fw-bold text-primary mb-2">
                                         {{ $padre->nombre }}
                                     </div>
-
                                     <!-- HIJOS -->
                                     <div class="ms-3">
                                         @foreach ($padre->hijos as $hijo)
                                             <div class="form-check">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    name="permisos[]"
-                                                    id="permiso_{{ $hijo->id }}"
-                                                    value="{{ $hijo->id }}"
-                                                >
+                                                <input class="form-check-input" type="checkbox" name="permisos[]" id="permiso_{{ $hijo->id }}" value="{{ $hijo->id }}">
                                                 <label class="form-check-label" for="permiso_{{ $hijo->id }}">
                                                     {{ $hijo->nombre }}
                                                 </label>

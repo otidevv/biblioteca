@@ -21,39 +21,39 @@ class DatosInicialSeeder extends Seeder
         DB::transaction(function () {
 
             /** =========================
-             *  BIBLIOTECA
+             *  BIBLIOTECAS
              *  ========================= */
-
             $bibliotecas = [
                 [
-                    'codigo'      => 'CENTRAL',
-                    'nombre'      => 'BIBLIOTECA CENTRAL',
-                    'direccion'   => 'CIUDAD UNIVERSITARIA',
+                    'codigo' => 'CENTRAL',
+                    'nombre' => 'BIBLIOTECA CENTRAL',
+                    'direccion' => 'CIUDAD UNIVERSITARIA',
                     'descripcion' => null,
-                    'estado'      => 'activo',
+                    'estado' => 'activo',
                 ],
                 [
-                    'codigo'      => 'BEIS',
-                    'nombre'      => 'BIBLIOTECA ESPECIALIZADA DE ING DE SISTEMAS',
-                    'direccion'   => null,
+                    'codigo' => 'BEIS',
+                    'nombre' => 'BIBLIOTECA ESPECIALIZADA DE ING DE SISTEMAS',
+                    'direccion' => null,
                     'descripcion' => null,
-                    'estado'      => 'activo',
+                    'estado' => 'activo',
                 ],
                 [
-                    'codigo'      => 'BEE',
-                    'nombre'      => 'BIBLIOTECA ESPECIALIZADA DE ENFERMERIA',
-                    'direccion'   => null,
+                    'codigo' => 'BEE',
+                    'nombre' => 'BIBLIOTECA ESPECIALIZADA DE ENFERMERIA',
+                    'direccion' => null,
                     'descripcion' => null,
-                    'estado'      => 'activo',
+                    'estado' => 'activo',
                 ],
             ];
 
-            foreach ($bibliotecas as $biblioteca) {
+            foreach ($bibliotecas as $data) {
                 Biblioteca::updateOrCreate(
-                    ['codigo' => $biblioteca['codigo']], // evita duplicados
-                    $biblioteca
+                    ['codigo' => $data['codigo']],
+                    $data
                 );
             }
+
             /** =========================
              *  ROL ADMIN
              *  ========================= */
@@ -61,7 +61,10 @@ class DatosInicialSeeder extends Seeder
                 ['nombre' => 'ADMIN'],
                 ['descripcion' => 'Administrador del sistema']
             );
-
+            Rol::firstOrCreate(
+                ['nombre' => 'LECTOR'],
+                ['descripcion' => 'Lector del sistema']
+            );
             /** =========================
              *  CARRERA
              *  ========================= */
@@ -76,7 +79,7 @@ class DatosInicialSeeder extends Seeder
             );
 
             /** =========================
-             *  PERSONA (ADMIN)
+             *  PERSONA ADMIN
              *  ========================= */
             $personaAdmin = Persona::firstOrCreate(
                 ['dni' => '00000000'],
@@ -110,13 +113,14 @@ class DatosInicialSeeder extends Seeder
             );
 
             /** =========================
-             *  ASIGNACIÓN ROL + BIBLIOTECA
+             *  ASIGNACIÓN ROL (GLOBAL)
+             *  biblioteca_id = NULL
              *  ========================= */
             DB::table('usuario_rol_bibliotecas')->updateOrInsert(
                 [
                     'user_id' => $usuarioAdmin->id,
                     'rol_id' => $rolAdmin->id,
-                    'biblioteca_id' => $biblioteca->id,
+                    'biblioteca_id' => null, // 👈 acceso a TODAS
                 ],
                 [
                     'activo' => true,
@@ -132,10 +136,7 @@ class DatosInicialSeeder extends Seeder
             // ADMINISTRACIÓN
             $permisoAdmin = Permiso::firstOrCreate(
                 ['codigo' => 'administracion'],
-                [
-                    'nombre' => 'Administración',
-                    'icono' => '<svg class="w-6 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path> </svg>',
-                ]
+                ['nombre' => 'Administración']
             );
 
             $this->crearPermisos([
@@ -152,10 +153,7 @@ class DatosInicialSeeder extends Seeder
             // LECTORES
             $lectores = Permiso::firstOrCreate(
                 ['codigo' => 'lectores'],
-                [
-                    'nombre' => 'Lectores',
-                    'icono' => '<svg class="w-6 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path> </svg>',
-                ]
+                ['nombre' => 'Lectores']
             );
 
             $this->crearPermisos([
@@ -166,10 +164,7 @@ class DatosInicialSeeder extends Seeder
             ], $lectores->id);
 
             // CATÁLOGO
-            Permiso::firstOrCreate(
-                ['codigo' => 'catalogo'],
-                ['nombre' => 'Catálogo']
-            );
+            Permiso::firstOrCreate(['codigo' => 'catalogo'], ['nombre' => 'Catálogo']);
 
             // PRÉSTAMOS
             $prestamos = Permiso::firstOrCreate(
@@ -183,17 +178,8 @@ class DatosInicialSeeder extends Seeder
                 ['prestamos.multas', 'Multas y Sanciones'],
             ], $prestamos->id);
 
-            // BÚSQUEDA
-            Permiso::firstOrCreate(
-                ['codigo' => 'busqueda'],
-                ['nombre' => 'Búsqueda y Consulta']
-            );
-
             // REPORTES
-            Permiso::firstOrCreate(
-                ['codigo' => 'reportes'],
-                ['nombre' => 'Reportes']
-            );
+            Permiso::firstOrCreate(['codigo' => 'reportes'], ['nombre' => 'Reportes']);
 
             // INVENTARIO
             $inventario = Permiso::firstOrCreate(
@@ -206,14 +192,12 @@ class DatosInicialSeeder extends Seeder
                 ['inventario.digital', 'Material Digital'],
                 ['notificaciones', 'Notificaciones'],
             ], $inventario->id);
-            /** =========================
-             *  ASIGNAR PERMISOS AL ROL ADMIN
-             *  ========================= */
 
-            // Obtener TODOS los permisos
+            /** =========================
+             *  ASIGNAR TODOS LOS PERMISOS AL ADMIN
+             *  ========================= */
             $permisos = Permiso::pluck('id');
 
-            // Asignar todos los permisos al rol ADMIN
             foreach ($permisos as $permisoId) {
                 DB::table('rol_permisos')->updateOrInsert(
                     [

@@ -37,24 +37,25 @@
 ></div>
 
 <div class="flex min-h-screen">
+<aside
+    class="
+        bg-gradient-to-b from-emerald-600 to-cyan-700
+        text-white shadow-2xl overflow-y-auto
+        transition-all duration-300 ease-in-out
+        min-h-screen
+        fixed md:relative
+        top-0 left-0 z-40
+    "
+    :class="{
+        /* MOBILE */
+        '-translate-x-full w-72': !sidebarMobile && windowWidth < 768,
+        'translate-x-0 w-72': sidebarMobile && windowWidth < 768,
 
-    <!-- SIDEBAR -->
-    <aside
-        class="fixed top-0 left-0 z-40 h-screen
-               bg-gradient-to-b from-emerald-600 to-cyan-700
-               text-white shadow-2xl overflow-y-auto
-               transition-all duration-300 ease-in-out
-               md:relative"
-        :class="{
-            /* MOBILE */
-            '-translate-x-full w-72': !sidebarMobile && windowWidth < 768,
-            'translate-x-0 w-72': sidebarMobile && windowWidth < 768,
-
-            /* DESKTOP */
-            'w-72': windowWidth >= 768 && !sidebarCollapsed,
-            'w-20': windowWidth >= 768 && sidebarCollapsed
-        }"
-    >
+        /* DESKTOP */
+        'w-72': windowWidth >= 768 && !sidebarCollapsed,
+        'w-20': windowWidth >= 768 && sidebarCollapsed
+    }"
+>
 
         <!-- HEADER -->
         <div class="flex items-center justify-between p-4">

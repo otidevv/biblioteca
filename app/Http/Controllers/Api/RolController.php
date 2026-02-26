@@ -76,11 +76,11 @@ class RolController extends Controller
     }
     public function edit(Request $request)
     {
-        return "hola desde edit";
+       // return "hola desde edit";
         $request->validate([
             // ROL
-            'id'                => 'required|exists:bibliotecas,id',
-            'nombre'            => 'required|string|max:150|unique:bibliotecas,nombre,'.$request->id,
+            'id'                => 'required|exists:roles,id',
+            'nombre'            => 'required|string|max:150|unique:roles,nombre,'.$request->id,
             'descripcion'       => 'nullable|string|max:500',
         ]);
         DB::beginTransaction();
