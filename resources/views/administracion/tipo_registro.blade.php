@@ -29,6 +29,8 @@
         <table id="tabla-tipo-registro" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
             <thead class="bg-gray-100">
                 <tr>
+                    <th>Codigo</th>
+                    <th>Abreviatura</th>
                     <th>Nombre</th>
                     <th>Estado</th>
                     <th class="text-center">Acciones</th>
@@ -61,8 +63,20 @@
 
                         <!-- Razón social -->
                         <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Codigo</label>
+                            <input type="text" id="codigo" name="codigo" class="form-control mayuscula" placeholder="Ingrese el código del tipo de registro">
+                        </div>
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Abreviatura</label>
+                            <input type="text" id="abreviatura" name="abreviatura" class="form-control mayuscula" placeholder="Ingrese la abreviatura del tipo de registro">
+                        </div>
+                        <div class="col-md-6 form-group form-required">
                             <label class="form-label">Nombre</label>
-                            <input type="text" id="nombre" name="nombre" class="form-control">
+                            <input type="text" id="nombre" name="nombre" class="form-control mayuscula" placeholder="Ingrese el nombre del tipo de registro">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="form-label">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" class="form-control mayuscula" placeholder="Ingrese la descripción del tipo de registro"></textarea>
                         </div>
                     </div>
                 </div>

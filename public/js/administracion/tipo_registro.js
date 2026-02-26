@@ -6,7 +6,7 @@ $(document).ready(function () {
         pageLength: 50,
         order: [],
         ajax: {
-            url:  "/api/tipo_registro/listar",
+            url:  "/api/tipo_registros/listar",
             type: "GET",
             xhrFields: { withCredentials: true },
             data: function (d) {
@@ -15,8 +15,25 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
+            { data: 'codigo', name: 'codigo' },
+            { data: 'abreviatura', name: 'abreviatura' },
             { data: 'nombre', name: 'nombre' },
-            { data: 'estado', name: 'estado' },
+            {
+                data: 'estado',
+                name: 'estado',
+                render: function (data) {
+
+                    const activo = Number(data) === 1;
+
+                    return `
+                        <button type="button"
+                            class="btn btn-sm ${activo ? 'btn-success' : 'btn-secondary'}"
+                            title="${activo ? 'Activo' : 'Inactivo'}">
+                            <i class="bi ${activo ? 'bi-eye-fill text-white' : 'bi-eye-slash-fill text-danger'}"></i>
+                        </button>
+                    `;
+                }
+            },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -42,25 +59,20 @@ $(document).ready(function () {
         let data = tabla.row($(this).closest('tr')).data();
         
         $('#id').val(data.id);
-        $('#tipo_documento').val(data.tipo_documento);
-        $('#nro_documento').val(data.nro_documento);
         $('#nombre').val(data.nombre);
-        $('#responsable').val(data.responsable);
-        $('#pais').val(data.pais);
-        $('#correo').val(data.correo);
-        $('#telefono').val(data.telefono);
-        $('#direccion').val(data.direccion);
-        $('#web').val(data.web);
-        $('#estado').val(data.estado ?? '');
+        $('#codigo').val(data.codigo ?? '');
+        $('#abreviatura').val(data.abreviatura ?? '');
+        $('#descripcion').val(data.descripcion ?? '');
         // MARCAR roles del usuario
             if (data.roles && Array.isArray(data.roles)) {
                 data.roles.forEach(function (rol) {
                     $('#rol_' + rol.id).prop('checked', true);
                 });
             }
-        $('#modalEditorial').modal('show');
+        $('#modalTipoRegistro').modal('show');
     });
-    $('#formEditorial').on('submit', function (e) {
+    $('#formTipoRegistro').on('submit', function (e) {
+
         e.preventDefault();
 
         let form = $(this);
@@ -69,13 +81,12 @@ $(document).ready(function () {
         // Botón loading
         let btn = form.find('button[type="submit"]');
         btn.prop('disabled', true).text('Guardando...');
-        if(!validar('#formEditorial')) {
+        if(!validar('#formTipoRegistro')) {
             btn.prop('disabled', false).text('Guardar');
             return;
-        }
-
+        }  
         $.ajax({
-            url:$('#id').val()=='' ? '/api/editoriales/nuevo' : '/api/editoriales/edit',
+            url:$('#id').val()=='' ? '/api/tipo_registros/nuevo' : '/api/tipo_registros/edit',
             type:'POST',
             data: formData,
             processData: false,
@@ -85,14 +96,14 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
-                    alerta("Editorial guardado correctamente", true);
+                    alerta("Tipo de registro guardado correctamente", true);
                     // Reset form
                     form[0].reset();
                     // Cerrar modal
-                    $('#modalEditorial').modal('hide');
+                    $('#modalTipoRegistro').modal('hide');
                         tabla.ajax.reload();
                 } else {
-                    alerta(response.message??'Error al guardar el editorial', false);
+                    alerta(response.message??'Error al guardar el tipo de registro', false);
                 }
             },
             error: function (xhr) {
@@ -110,7 +121,7 @@ $(document).ready(function () {
                         alerta(messages[0], false);
                     });
                 } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar el editorial', false);
+                    alerta(xhr.responseJSON.message??'Error al guardar el tipo de registro', false);
                     //toastr.error('Error interno del servidor');
                 }
             },

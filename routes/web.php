@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\LectorController as ApiLectorController;
 use App\Http\Controllers\Api\ConsultaApiController as ApiConsultaApiController;
 use App\Http\Controllers\Api\ProveedorController as ApiProveedorController;
 use App\Http\Controllers\Api\EditorialController as ApiEditorialController;
+use App\Http\Controllers\Api\Tipo_registroController as ApiTipoRegistroController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -94,6 +95,12 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/edit', [ApiLectorController::class, 'edit']);
             Route::put('/{id}', [ApiLectorController::class, 'update']);
             Route::delete('/{id}', [ApiLectorController::class, 'destroy']);
+        });
+        Route::prefix('tipo_registros')->group(function () {
+            Route::get('/listar', [ApiTipoRegistroController::class, 'listar']);
+            Route::post('/nuevo', [ApiTipoRegistroController::class, 'nuevo']);
+            Route::post('/edit', [ApiTipoRegistroController::class, 'edit']);
+            Route::delete('/{id}', [ApiTipoRegistroController::class, 'destroy']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

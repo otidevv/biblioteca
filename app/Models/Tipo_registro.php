@@ -8,6 +8,5 @@ class Tipo_registro extends Model
 {
     //
     protected $table = 'tipo_registros'; 
-    protected $fillable = ['nombre','estado'];
-
+    protected $fillable = ['nombre','estado','codigo','abreviatura','descripcion'];
 }

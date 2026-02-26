@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tipo_registro;
+use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class Tipo_registroController extends Controller
 {
@@ -34,6 +36,8 @@ class Tipo_registroController extends Controller
         $request->validate([
             // TIPO REGISTRO
             'nombre'            => 'required|string|max:150',
+            'codigo'            => 'nullable|string|max:50|unique:tipo_registros,codigo',
+            'abreviatura'       => 'nullable|string|max:20|unique:tipo_registros,abreviatura',
         ]);
         //return $request;    
         DB::beginTransaction();
@@ -45,6 +49,9 @@ class Tipo_registroController extends Controller
              *  ========================= */
             $tipo_registro = Tipo_registro::create([
                 'nombre'        => $request->nombre,
+                'codigo'        => $request->codigo,
+                'abreviatura'   => $request->abreviatura,
+                'descripcion'   => $request->descripcion,   
             ]);
             DB::commit();
             return response()->json([
@@ -68,6 +75,8 @@ class Tipo_registroController extends Controller
             // 
             'id'                => 'required|exists:tipo_registros,id',
             'nombre'            => 'required|string|max:150|unique:tipo_registros,nombre,'.$request->id,
+            'codigo'            => 'nullable|string|max:50|unique:tipo_registros,codigo,'.$request->id,
+            'abreviatura'       => 'nullable|string|max:20|unique:tipo_registros,abreviatura,'.$request->id,
         ]);
         DB::beginTransaction();
         try {
@@ -78,6 +87,9 @@ class Tipo_registroController extends Controller
             $tipo_registro = Tipo_registro::where('id', $request->id)->first();
             $tipo_registro->update([
                 'nombre'        => $request->nombre,
+                'codigo'        => $request->codigo,
+                'abreviatura'   => $request->abreviatura,
+                'descripcion'   => $request->descripcion,
             ]);
             DB::commit();
             return response()->json([

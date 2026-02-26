@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('tipo_registros', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->unique();
+            $table->string('abreviatura');
             $table->string('nombre');
+            $table->tex('descripcion')->nullable();
             $table->boolean('estado')->default(true);
             $table->timestamps();
         });
