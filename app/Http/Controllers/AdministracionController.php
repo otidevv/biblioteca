@@ -23,6 +23,7 @@ class AdministracionController extends Controller
             'proveedores' => $this->proveedores(),
             'editoriales' => $this->editoriales(),
             'tipo_registros' => $this->tipo_registros(),
+            'autores' => $this->autores(),
             default => abort(404),
         };
     }
@@ -58,5 +59,9 @@ class AdministracionController extends Controller
     protected function tipo_registros()
     {
         return view('administracion.tipo_registro');
+    }
+    protected function autores()    
+    {
+        return view('administracion.autor');    
     }
 }   

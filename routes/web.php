@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ConsultaApiController as ApiConsultaApiController;
 use App\Http\Controllers\Api\ProveedorController as ApiProveedorController;
 use App\Http\Controllers\Api\EditorialController as ApiEditorialController;
 use App\Http\Controllers\Api\Tipo_registroController as ApiTipoRegistroController;
+use App\Http\Controllers\Api\AutorController as ApiAutorController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -39,7 +40,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros');
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores');
     });
 
     // LECTORES
@@ -101,6 +102,12 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/nuevo', [ApiTipoRegistroController::class, 'nuevo']);
             Route::post('/edit', [ApiTipoRegistroController::class, 'edit']);
             Route::delete('/{id}', [ApiTipoRegistroController::class, 'destroy']);
+        });
+        Route::prefix('autores')->group(function () {
+            Route::get('/listar', [ApiAutorController::class, 'listar']);
+            Route::post('/nuevo', [ApiAutorController::class, 'nuevo']);
+            Route::post('/edit', [ApiAutorController::class, 'edit']);
+            Route::delete('/{id}', [ApiAutorController::class, 'destroy']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('codigo')->unique();
             $table->string('abreviatura');
             $table->string('nombre');
-            $table->tex('descripcion')->nullable();
+            $table->text('descripcion')->nullable();
             $table->boolean('estado')->default(true);
             $table->timestamps();
         });
