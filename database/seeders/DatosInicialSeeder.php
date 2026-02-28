@@ -190,7 +190,8 @@ class DatosInicialSeeder extends Seeder
             $this->crearPermisos([
                 ['inventario.fisico', 'Inventario Físico'],
                 ['inventario.digital', 'Material Digital'],
-                ['notificaciones', 'Notificaciones'],
+                ['inventario.notificaciones', 'Notificaciones'],
+                ['inventario.compras', 'Gestión de Compras'],
             ], $inventario->id);
 
             /** =========================
