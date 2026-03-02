@@ -24,6 +24,7 @@ class AdministracionController extends Controller
             'editoriales' => $this->editoriales(),
             'tipo_registros' => $this->tipo_registros(),
             'autores' => $this->autores(),
+            'compras' => $this->compras(),
             default => abort(404),
         };
     }
@@ -63,5 +64,9 @@ class AdministracionController extends Controller
     protected function autores()    
     {
         return view('administracion.autor');    
+    }
+    protected function compras()    
+    {
+        return view('inventario.compras');    
     }
 }   

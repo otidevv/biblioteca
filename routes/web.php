@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 // Controllers
 use App\Http\Controllers\AdministracionController;
 use App\Http\Controllers\LectoresController;
-
+use App\Http\Controllers\InventarioController;
 
 //controllers de JS en Api
 use App\Http\Controllers\Api\UsuarioController as ApiUsuarioController;
@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\ProveedorController as ApiProveedorController;
 use App\Http\Controllers\Api\EditorialController as ApiEditorialController;
 use App\Http\Controllers\Api\Tipo_registroController as ApiTipoRegistroController;
 use App\Http\Controllers\Api\AutorController as ApiAutorController;
+use App\Http\Controllers\Api\InventarioController as ApiInventarioController;
+
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -40,7 +42,12 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores');
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras');
+    }); 
+    // INVENTARIO
+    Route::prefix('inventario')->group(function () {
+        Route::get('{modulo}', [InventarioController::class, 'index'])
+            ->where('modulo', 'catalogo|compras|reportes|compra_nuevo');
     });
 
     // LECTORES
@@ -109,10 +116,15 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/edit', [ApiAutorController::class, 'edit']);
             Route::delete('/{id}', [ApiAutorController::class, 'destroy']);
         });
+        //CONSULTA DE COMPRAS EN INVENTARIO
+        Route::prefix('inventario')->group(function () {
+            Route::get('/compras/listar', [ApiInventarioController::class, 'listarCompras'])->name('inventario.compras');
+        });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {
             Route::get('/buscar-dni', [ApiConsultaApiController::class, 'consulta_api'])->name('usuarios.buscar.dni');            
         });
+
     });
 });
 
