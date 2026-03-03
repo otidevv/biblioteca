@@ -178,14 +178,13 @@
 
                                     <div>
                                         <label>Autor</label>
-                                        <input type="text" id="input_autor" 
-                                            class="form-control" disabled>
+                                        <select id="input_autor" class="form-control" multiple disabled></select>
+
                                     </div>
 
                                     <div>
                                         <label>Editorial</label>
-                                        <input type="text" id="input_editorial" 
-                                            class="form-control" disabled>
+                                        <select id="input_editorial" class="form-control" disabled></select>
                                     </div>
 
                                 </div>

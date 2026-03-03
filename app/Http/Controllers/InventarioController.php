@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Proveedor;
 use App\Models\Editorial;
 use App\Models\Libro;
+use App\Models\Tipo_registro;
 class InventarioController extends Controller
 {
     //
@@ -16,6 +17,8 @@ class InventarioController extends Controller
             // 👉 USUARIOS
             'compras' => $this->compras(),
             'compra_nuevo' => $this->compra_nuevo(),
+            'libros' => $this->libros(),
+            'libros_nuevo' => $this->libros_nuevo(),
             default => abort(404),
         };
     }
@@ -30,5 +33,14 @@ class InventarioController extends Controller
         $editoriales = Editorial::latest()->get();
         $libros = Libro::with(['autor','editorial'])->get();
         return view('inventario.compra_nuevo', compact('proveedores', 'editoriales','libros'));
+    }
+    protected function libros()
+    {
+        return view('inventario.libros');
+    }   
+    protected function libros_nuevo()
+    {
+        $tipo_registros = Tipo_registro::latest()->get();
+        return view('inventario.libros_nuevo', compact('tipo_registros'));
     }
 }

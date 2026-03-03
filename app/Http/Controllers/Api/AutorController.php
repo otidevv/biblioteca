@@ -118,4 +118,18 @@ class AutorController extends Controller
             'message' => 'Autor eliminado correctamente',
         ], 200);
     }
+    // metodos para select2 en nuevo libro
+    public function listarAutores(Request $request)
+    {
+        $query = Autor::query();
+        if ($request->has('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('nombres', 'LIKE', "%$search%")
+                  ->orWhere('apellidos', 'LIKE', "%$search%");
+            });
+        }
+        $autores = $query->select('id', DB::raw("CONCAT(nombres, ' ', apellidos) AS text"))->get();
+        return response()->json($autores);
+    }
 }

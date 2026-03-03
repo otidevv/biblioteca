@@ -6,7 +6,7 @@ $(document).ready(function () {
         pageLength: 50,
         order: [],
         ajax: {
-            url:  "/api/compras/listar",
+            url:  "/api/inventario/compras/listar",
             type: "GET",
             xhrFields: { withCredentials: true },
             data: function (d) {

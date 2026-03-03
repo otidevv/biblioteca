@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('libro_materias', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('libro_id')->nullable()->constrained("libros");
+            $table->foreignId('materia_id')->nullable()->constrained("materias");
             $table->timestamps();
         });
     }

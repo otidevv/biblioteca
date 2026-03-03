@@ -19,7 +19,101 @@ class DatosInicialSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-
+            /** =========================
+             *  MATERIA
+             *  ========================= */
+            DB::table('materias')->insert([
+                        [
+                            'codigo' => '001',
+                            'abreviatura' => 'CI',
+                            'nombre' => 'COMPUTACION E INFORMATICA',
+                            'descripcion' => null,
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => '0652955D',
+                            'abreviatura' => 'CEI',
+                            'nombre' => 'COMPUTACION E INFORMATICA',
+                            'descripcion' => 'Materia de COMPUTACION E INFORMATICA',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => 'D35DCE48',
+                            'abreviatura' => 'INV',
+                            'nombre' => 'INVESTIGACION',
+                            'descripcion' => 'Materia de INVESTIGACION',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => '500',
+                            'abreviatura' => 'MAT',
+                            'nombre' => 'MATEMATICA',
+                            'descripcion' => 'Materia de MATEMATICA',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => 'A2336E80',
+                            'abreviatura' => 'QUI',
+                            'nombre' => 'QUIMICA',
+                            'descripcion' => 'Materia de QUIMICA',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => 'B4176A09',
+                            'abreviatura' => 'FIS',
+                            'nombre' => 'FISICA',
+                            'descripcion' => 'Materia de FISICA',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => 'FB23EF1B',
+                            'abreviatura' => 'OL',
+                            'nombre' => 'OBRAS LITERARIAS',
+                            'descripcion' => 'Materia de OBRAS LITERARIAS',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => '30CFB849',
+                            'abreviatura' => 'HIS',
+                            'nombre' => 'HISTORIA',
+                            'descripcion' => 'Materia de HISTORIA',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => 'F062EE99',
+                            'abreviatura' => 'GEO',
+                            'nombre' => 'GEOGRAFIA',
+                            'descripcion' => 'Materia de GEOGRAFIA',
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                        [
+                            'codigo' => 'PSI',
+                            'abreviatura' => 'PSI',
+                            'nombre' => 'PSICOLOGIA',
+                            'descripcion' => null,
+                            'estado' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
+                    ]);
             /** =========================
              *  BIBLIOTECAS
              *  ========================= */
@@ -281,6 +375,7 @@ class DatosInicialSeeder extends Seeder
                 ['inventario.digital', 'Material Digital'],
                 ['inventario.notificaciones', 'Notificaciones'],
                 ['inventario.compras', 'Gestión de Compras'],
+                ['inventario.libros', 'Gestión de Libros'],
             ], $inventario->id);
 
             /** =========================

@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Tipo_registroController as ApiTipoRegistroControlle
 use App\Http\Controllers\Api\AutorController as ApiAutorController;
 use App\Http\Controllers\Api\InventarioController as ApiInventarioController;
 use App\Http\Controllers\Api\LibroController as ApiLibroController;
+use App\Http\Controllers\Api\MateriaController as ApiMateriaController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -47,7 +48,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // INVENTARIO
     Route::prefix('inventario')->group(function () {
         Route::get('{modulo}', [InventarioController::class, 'index'])
-            ->where('modulo', 'catalogo|compras|reportes|compra_nuevo');
+            ->where('modulo', 'catalogo|compras|reportes|compra_nuevo|libros|libros_nuevo');
     });
 
     // LECTORES
@@ -118,7 +119,10 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         });
         //CONSULTA DE COMPRAS EN INVENTARIO
         Route::prefix('inventario')->group(function () {
-            Route::get('/compras/listar', [ApiInventarioController::class, 'listarCompras'])->name('inventario.compras');
+            Route::get('/compras/listar', [ApiInventarioController::class, 'listarCompras']);
+            Route::get('/autores', [ApiAutorController::class, 'listarAutores']);
+            Route::get('/editoriales', [ApiEditorialController::class, 'listarEditoriales']);
+            Route::get('/materias', [ApiMateriaController::class, 'listarMaterias']);
             Route::get('/libros', [ApiLibroController::class, 'buscar']);
         });
         //CONSULTA DE DNI EN API EXTERNA

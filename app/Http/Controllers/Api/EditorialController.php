@@ -136,4 +136,15 @@ class EditorialController extends Controller
             'message' => 'Editorial eliminado correctamente',
         ], 200);
     }
+    //metodo para listar editoriales en select2
+    public function listarEditoriales(Request $request)
+    {
+        $query = Editorial::query();
+        if ($request->has('q')) {
+            $search = $request->q;
+            $query->where('nombre', 'like', "%$search%");
+        }
+        $editoriales = $query->select('id', 'nombre')->get();
+        return response()->json($editoriales);
+    }
 }

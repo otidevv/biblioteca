@@ -34,7 +34,6 @@ $(document).ready(function () {
             if (term === '') {
                 return null;
             }
-
             return {
                 id: 'nuevo:' + term,
                 text: '➕ Agregar "' + term + '"',
@@ -43,7 +42,7 @@ $(document).ready(function () {
         },
 
         ajax: {
-            url: '/api/inventarios?libros',
+            url: '/api/inventario/libros',
             dataType: 'json',
             delay: 250,
             data: function (params) {
@@ -72,31 +71,33 @@ $(document).ready(function () {
             habilitarModoNuevoLibro(tituloNuevo);
             return;
         }
+        /*
+            // 👉 SI ES LIBRO EXISTENTE
+            $('#input_titulo')
+                .val(data.text)
+                .prop('disabled', true);
 
-        // 👉 SI ES LIBRO EXISTENTE
-        $('#input_titulo')
-            .val(data.text)
-            .prop('disabled', true);
+            $('#input_autor')
+                .val(data.autor || '')
+                .prop('disabled', true);
 
-        $('#input_autor')
-            .val(data.autor || '')
-            .prop('disabled', true);
+            $('#input_editorial')
+                .val(data.editorial || '')
+                .prop('disabled', true);
 
-        $('#input_editorial')
-            .val(data.editorial || '')
-            .prop('disabled', true);
+            if (data.imagen) {
+                $('#preview_imagen')
+                    .attr('src', data.imagen)
+                    .show();
+            } else {
+                $('#preview_imagen')
+                    .hide()
+                    .attr('src','');
+            }
 
-        if (data.imagen) {
-            $('#preview_imagen')
-                .attr('src', data.imagen)
-                .show();
-        } else {
-            $('#preview_imagen')
-                .hide()
-                .attr('src','');
-        }
-
-        $('#input_imagen').addClass('d-none');
+            $('#input_imagen').addClass('d-none');
+        */
+        modoLibroExistente(data);
 
     });
 
@@ -114,7 +115,67 @@ $(document).ready(function () {
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
+function modoLibroExistente(data) {
 
+    // TÍTULO
+    $('#input_titulo')
+        .val(data.text)
+        .prop('disabled', true);
+
+    // ===============================
+    // AUTORES (select2 múltiple)
+    // ===============================
+    if (data.autores && data.autores.length > 0) {
+
+        let autoresSeleccionados = data.autores.map(a => ({
+            id: a.id,
+            text: a.nombre
+        }));
+
+        // cargar valores manualmente
+        $('#input_autor')
+            .empty()
+            .select2({
+                data: autoresSeleccionados
+            })
+            .val(autoresSeleccionados.map(a => a.id))
+            .trigger('change')
+            .prop('disabled', true);
+    }
+
+    // ===============================
+    // EDITORIAL
+    // ===============================
+    if (data.editorial) {
+
+        let editorialOption = new Option(
+            data.editorial.nombre,
+            data.editorial.id,
+            true,
+            true
+        );
+
+        $('#input_editorial')
+            .append(editorialOption)
+            .trigger('change')
+            .prop('disabled', true);
+    }
+
+    // ===============================
+    // IMAGEN
+    // ===============================
+    if (data.imagen) {
+        $('#preview_imagen')
+            .attr('src', data.imagen)
+            .show();
+    } else {
+        $('#preview_imagen')
+            .hide()
+            .attr('src','');
+    }
+
+    $('#input_imagen').addClass('d-none');
+}
 function habilitarModoNuevoLibro(titulo) {
 
     $('#input_titulo')
@@ -122,12 +183,14 @@ function habilitarModoNuevoLibro(titulo) {
         .prop('disabled', false);
 
     $('#input_autor')
-        .val('')
-        .prop('disabled', false);
+        .val(null)
+        .prop('disabled', false)
+        .trigger('change');
 
     $('#input_editorial')
-        .val('')
-        .prop('disabled', false);
+        .val(null)
+        .prop('disabled', false)
+        .trigger('change');
 
     $('#preview_imagen')
         .hide()
@@ -137,25 +200,37 @@ function habilitarModoNuevoLibro(titulo) {
         .removeClass('d-none');
 }
 
-
 function limpiarCamposLibro() {
 
+    // TÍTULO
     $('#input_titulo')
         .val('')
         .prop('disabled', true);
 
+    // =========================
+    // AUTORES (select2 múltiple)
+    // =========================
     $('#input_autor')
-        .val('')
+        .val(null)              // limpiar selección
+        .trigger('change')      // actualizar select2
         .prop('disabled', true);
 
+    // =========================
+    // EDITORIAL (select2 simple)
+    // =========================
     $('#input_editorial')
-        .val('')
+        .val(null)
+        .trigger('change')
         .prop('disabled', true);
 
+    // =========================
+    // IMAGEN
+    // =========================
     $('#preview_imagen')
         .hide()
-        .attr('src','');
+        .attr('src', '');
 
     $('#input_imagen')
+        .val('')               // limpiar archivo seleccionado
         .addClass('d-none');
 }
