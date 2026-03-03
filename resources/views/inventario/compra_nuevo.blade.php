@@ -1,7 +1,11 @@
 @extends('layouts.admin')
-
+@section('css')
+    <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
+@endsection
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
+    <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
     <script src="{{ asset('/js/inventario/compra_nueva.js') }}"></script>
 @endsection
 @section('content')
@@ -78,7 +82,7 @@
             <div class="border-t pt-4">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-lg font-bold text-gray-800">Detalle de Libros</h2>
-                    <button type="button" id="btnAgregarDetalle"
+                    <button type="button" id="btnNuevoLibro"
                         class="px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
                         ➕ Agregar Libro
                     </button>
@@ -117,88 +121,91 @@
     </div>
 </div>
  @endsection
- @section('modals')
+ @section('modal')
     {{-- ================= MODAL AGREGAR LIBRO ================= --}}
     
 <div class="modal fade" id="modalLibro" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div id="div_form">
             <form id="formLibro">
                 <input type="hidden" id="id" name="id">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700">Título *</label>
-                            <input type="text" id="modal_titulo"
-                                class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700">Autor *</label>
-                            <input type="text" id="modal_autor"
-                                class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700">Cantidad *</label>
-                            <input type="number" id="modal_cantidad" value="1" min="1"
-                                class="w-full mt-1 border-gray-300 rounded-lg">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700">Precio *</label>
-                            <input type="number" step="0.01" id="modal_precio"
-                                class="w-full mt-1 border-gray-300 rounded-lg">
-                        </div>
+                <div class="modal-content shadow-sm">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-semibold">Registro de Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- ================= DATOS DETALLE ================= -->
+                                <h6 class="text-primary mb-2">Datos detalle</h6>                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-semibold text-gray-700">Título *</label>
+                                        <select id="libros" style="width:100%"></select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700">Cantidad *</label>
+                                        <input type="number" id="modal_cantidad" value="1" min="1"
+                                            class="w-full mt-1 border-gray-300 rounded-lg">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700">Precio *</label>
+                                        <input type="number" step="0.01" id="modal_precio"
+                                            class="w-full mt-1 border-gray-300 rounded-lg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-2">DATOS DEL LIBRO</h6>                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                    <div class="md:col-span-2 text-center">
+                                        <img id="preview_imagen" 
+                                            class="img-fluid rounded shadow mb-2"
+                                            style="max-height:150px; display:none;">
+
+                                        <input type="file" id="input_imagen" 
+                                            class="form-control d-none">
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label>Título</label>
+                                        <input type="text" id="input_titulo" 
+                                            class="form-control" disabled>
+                                    </div>
+
+                                    <div>
+                                        <label>Autor</label>
+                                        <input type="text" id="input_autor" 
+                                            class="form-control" disabled>
+                                    </div>
+
+                                    <div>
+                                        <label>Editorial</label>
+                                        <input type="text" id="input_editorial" 
+                                            class="form-control" disabled>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="modal-footer bg-light">
+                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button class="btn btn-success px-4" type="submit">
+                            Guardar
+                        </button>
+                    </div>
+                </div>
             </form>
 
-        </div>
-    </div>
-</div>
-<div id="modalLibro"
-    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">
-            ➕ Agregar Libro
-        </h3>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
-                <label class="block text-sm font-semibold text-gray-700">Título *</label>
-                <input type="text" id="modal_titulo"
-                    class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
-            </div>
-
-            <div class="md:col-span-2">
-                <label class="block text-sm font-semibold text-gray-700">Autor *</label>
-                <input type="text" id="modal_autor"
-                    class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-700">Cantidad *</label>
-                <input type="number" id="modal_cantidad" value="1" min="1"
-                    class="w-full mt-1 border-gray-300 rounded-lg">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-700">Precio *</label>
-                <input type="number" step="0.01" id="modal_precio"
-                    class="w-full mt-1 border-gray-300 rounded-lg">
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" id="btnCancelarModal"
-                class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
-                Cancelar
-            </button>
-
-            <button type="button" id="btnGuardarLibro"
-                class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                Agregar
-            </button>
         </div>
     </div>
 </div>

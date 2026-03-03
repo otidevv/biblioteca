@@ -77,6 +77,95 @@ class DatosInicialSeeder extends Seeder
                     'activo' => true,
                 ]
             );
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'ADM'],
+                [
+                    'nombre' => 'ADMINISTRACION',
+                    'facultad' => 'FACULTAD DE CIENCIAS EMPRESARIALES',
+                    'descripcion' => 'CARRERA PROFESIONAL DE ADMINISTRACION',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'CON'],
+                [
+                    'nombre' => 'CONTABILIDAD Y FINANZAS',
+                    'facultad' => 'FACULTAD DE CIENCIAS EMPRESARIALES',
+                    'descripcion' => 'CARRERA PROFESIONAL DE CONTABILIDAD Y FINANZAS',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'ECO'],
+                [
+                    'nombre' => 'ECOTURISMO',
+                    'facultad' => 'FACULTAD DE ECOTURISMO',
+                    'descripcion' => 'CARRERA PROFESIONAL DE ECOTURISMO',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'FOR'],
+                [
+                    'nombre' => 'INGENIERIA FORESTAL Y MEDIO AMBIENTE',
+                    'facultad' => 'FACULTAD DE INGENIERIA FORESTAL Y MEDIO AMBIENTE',
+                    'descripcion' => 'CARRERA PROFESIONAL DE INGENIERIA FORESTAL Y MEDIO AMBIENTE',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'SIS'],
+                [
+                    'nombre' => 'INGENIERIA DE SISTEMAS E INFORMATICA',
+                    'facultad' => 'FACULTAD DE INGENIERIA',
+                    'descripcion' => 'CARRERA PROFESIONAL DE INGENIERIA DE SISTEMAS E INFORMATICA',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'AGRO'],
+                [
+                    'nombre' => 'INGENIERIA AGROINDUSTRIAL',
+                    'facultad' => 'FACULTAD DE INGENIERIA',
+                    'descripcion' => 'CARRERA PROFESIONAL DE INGENIERIA AGROINDUSTRIAL',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'MEDVET'],
+                [
+                    'nombre' => 'MEDICINA VETERINARIA Y ZOOTECNIA',
+                    'facultad' => 'FACULTAD DE MEDICINA VETERINARIA Y ZOOTECNIA',
+                    'descripcion' => 'CARRERA PROFESIONAL DE MEDICINA VETERINARIA Y ZOOTECNIA',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'DER'],
+                [
+                    'nombre' => 'DERECHO Y CIENCIAS POLITICAS',
+                    'facultad' => 'FACULTAD DE DERECHO Y CIENCIAS POLITICAS',
+                    'descripcion' => 'CARRERA PROFESIONAL DE DERECHO Y CIENCIAS POLITICAS',
+                    'activo' => true,
+                ]
+            );
+
+            $carrera = Carrera::firstOrCreate(
+                ['codigo' => 'ENF'],
+                [
+                    'nombre' => 'ENFERMERIA',
+                    'facultad' => 'FACULTAD DE CIENCIAS DE LA SALUD',
+                    'descripcion' => 'CARRERA PROFESIONAL DE ENFERMERIA',
+                    'activo' => true,
+                ]
+            );
 
             /** =========================
              *  PERSONA ADMIN

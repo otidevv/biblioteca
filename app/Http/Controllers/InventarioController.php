@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Models\Proveedor;
+use App\Models\Editorial;
+use App\Models\Libro;
 class InventarioController extends Controller
 {
     //
@@ -24,8 +26,9 @@ class InventarioController extends Controller
     }
     protected function compra_nuevo()
     {
-        $proveedores = \App\Models\Proveedor::latest()->get();
-        $editoriales = \App\Models\Editorial::latest()->get();
-        return view('inventario.compra_nuevo', compact('proveedores', 'editoriales'));
+        $proveedores = Proveedor::latest()->get();
+        $editoriales = Editorial::latest()->get();
+        $libros = Libro::with(['autor','editorial'])->get();
+        return view('inventario.compra_nuevo', compact('proveedores', 'editoriales','libros'));
     }
 }

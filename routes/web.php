@@ -18,7 +18,7 @@ use App\Http\Controllers\Api\EditorialController as ApiEditorialController;
 use App\Http\Controllers\Api\Tipo_registroController as ApiTipoRegistroController;
 use App\Http\Controllers\Api\AutorController as ApiAutorController;
 use App\Http\Controllers\Api\InventarioController as ApiInventarioController;
-
+use App\Http\Controllers\Api\LibroController as ApiLibroController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -119,6 +119,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         //CONSULTA DE COMPRAS EN INVENTARIO
         Route::prefix('inventario')->group(function () {
             Route::get('/compras/listar', [ApiInventarioController::class, 'listarCompras'])->name('inventario.compras');
+            Route::get('/libros', [ApiLibroController::class, 'buscar']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {
