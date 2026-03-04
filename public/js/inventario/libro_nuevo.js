@@ -1,19 +1,20 @@
 $(document).ready(function () {
     // ================= EDITORIAL =================
     $('#editorial_id').select2({
-        placeholder: "Seleccione editorial",
-        width: '100%',
+        placeholder: "Buscar editorial",
+        allowClear: true,
         ajax: {
-            url: '/api/inventario/editoriales',
+            url: '/api/editoriales/listar',
             dataType: 'json',
             delay: 250,
-            data: params => ({ q: params.term }),
-            processResults: data => ({
-                results: data.map(item => ({
-                    id: item.id,
-                    text: item.nombre
-                }))
-            })
+            processResults: function (data) {
+                return {
+                    results: data.map(item => ({
+                        id: item.id,
+                        text: item.text
+                    }))
+                };
+            }
         }
     });
 
@@ -56,3 +57,6 @@ $(document).ready(function () {
     });
 });
 
+$('#btnNuevaEditorial').click(function(){
+    $('#modalEditorial').modal('show');
+});
