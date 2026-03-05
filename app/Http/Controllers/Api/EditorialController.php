@@ -38,7 +38,6 @@ class EditorialController extends Controller
             // EDITORIAL
             'tipo_documento'            => 'required|string|max:20',
             'nombre'            => 'required|string|max:150',
-            'telefono'            => 'required|string|max:20',
             'nro_documento'            => 'required|string|max:20|unique:editoriales,nro_documento',
         ]);
         //return $request;    
@@ -55,7 +54,6 @@ class EditorialController extends Controller
                 'responsable'        => $request->responsable,
                 'telefono'     => $request->telefono,
                 'nro_documento'     => $request->nro_documento,
-                'razon_social'     => $request->razon_social,
                 'correo'     => $request->correo,
                 'pais'     => $request->pais,
                 'web'     => $request->web,
@@ -85,9 +83,8 @@ class EditorialController extends Controller
             // EDITORIAL
             'id'                => 'required|exists:editoriales,id',
             'nro_documento'            => 'required|string|max:20|unique:editoriales,nro_documento,'.$request->id,
-            'telefono'            => 'required|string|max:20',        
             'tipo_documento'            => 'required|string|max:20',
-            'razon_social'     => 'nullable|string|max:255',
+            'nombre'            => 'required|string|max:150',
         ]);
         DB::beginTransaction();
         try {
@@ -103,7 +100,7 @@ class EditorialController extends Controller
                 'telefono'     => $request->telefono,
                 'correo'     => $request->correo,
                 'pais'     => $request->pais,
-                'razon_social'     => $request->razon_social,
+                'nombre'     => $request->nombre,
                 'web'     => $request->web,
                 'direccion'     => $request->direccion,
             ]);

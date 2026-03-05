@@ -93,7 +93,7 @@
                         </div>
 
                         <!-- Contacto -->
-                        <div class="col-md-6 form-group form-required">
+                        <div class="col-md-6 form-group">
                             <label class="form-label">Teléfono</label>
                             <input type="text" id="telefono" name="telefono" class="form-control validar_numero">
                         </div>

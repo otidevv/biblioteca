@@ -22,7 +22,7 @@ $(document).ready(function () {
              },
             { data: 'responsable', name: 'responsable',
                 render: function (data, type, row) {
-                    return `<strong>${data}</strong><br><small class="text-muted">${row.nombre ?? ''}</small>`;
+                    return `<strong>${row.nombre}</strong><br><small class="text-muted">${ data?? ''}</small>`;
                 }
             },
             { data: 'telefono', name: 'telefono' },
