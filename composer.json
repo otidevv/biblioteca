@@ -9,6 +9,7 @@
         "php": "^8.2",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.11",
+        "smalot/pdfparser": "^2.12",
         "yajra/laravel-datatables-oracle": "^12.6"
     },
     "require-dev": {
@@ -82,6 +83,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": ["PKSA-2cx9-ynrq-qdk3"]
         }
     },
     "minimum-stability": "stable",

@@ -118,7 +118,7 @@ $(document).ready(function () {
             processResults: data => ({
                 results: data.map(item => ({
                     id: item.id,
-                    text: item.text
+                    text: item.nombre
                 }))
             })
         }
@@ -186,54 +186,153 @@ $(document).ready(function () {
     });
     // generar codigo    
     // Evento para generar código automáticamente al seleccionar autores
-    $('#autor_id').on('change', function() {
-        
-        let selectedData = $(this).select2('data'); // array de autores seleccionados
+    $('#autor_id').on('change', function () {
+
+        let selectedData = $(this).select2('data');
+
         if (selectedData.length === 0) {
             $('input[name="codigo"]').val('');
             return;
         }
 
-        // Tomamos el primer autor para generar el código
         let autor = selectedData[0];
-        let apellido = autor.apellido;
-        let nombre = autor.nombre;
-        console.log(autor);
 
-        if (!apellido || !nombre) return;
+        if(!autor) return;
 
-        let primeraLetra = apellido.charAt(0).toUpperCase();
-        let tresLetras = apellido.substring(0,3).toUpperCase();
+        let apellido = (autor.apellido || '').toUpperCase();
+        let nombre = (autor.nombre || '').toUpperCase();
+        let titulo = ($('#titulo').val() || '').toUpperCase();
 
-        // Consultamos la tabla de códigos Cutter
-        $.ajax({
-            url: '/api/inventario/codigo_cutter',
-            type: 'GET',
-            data: { letras: tresLetras },
-            success: function(cutterData) {
-                let codigoCutter = cutterData.codigo; // ejemplo: "LOP"
+        if(!apellido || !nombre){
+            console.warn('Autor sin apellido o nombre');
+            return;
+        }
 
-                // Verificamos si ya existe un código para este apellido
-                $.ajax({
-                    url: '/api/inventario/libros/check_codigo',
-                    type: 'GET',
-                    data: { apellido: apellido, cutter: codigoCutter },
-                    success: function(res) {
-                        let letraNombre = '';
-                        if (res.existe) {
-                            letraNombre = nombre.charAt(0).toUpperCase();
+        let primeraLetra = apellido.charAt(0);
+        let letrasBusqueda = 3;
+
+        generarCodigo();
+
+        function generarCodigo(){
+
+            let letrasApellido = apellido.substring(0, letrasBusqueda);
+
+            $.ajax({
+                url:'/api/inventario/codigo_cutter',
+                type:'GET',
+                data:{ letras: letrasApellido },
+                success:function(cutterData){
+
+                    let cutter = cutterData.codigo;
+                    let baseCodigo = primeraLetra + cutter;
+
+                    $.ajax({
+                        url:'/api/inventario/libros/check_codigo',
+                        type:'GET',
+                        data:{ codigo: baseCodigo },
+                        success:function(res){
+
+                            if(!res.existe){
+                                $('input[name="codigo"]').val(baseCodigo);
+                                return;
+                            }
+
+                            // MISMO AUTOR
+                            console.log(res.autor_id+" = "+autor.id);
+                            
+                            if(res.autor_id == autor.id){
+                                let letraTitulo = titulo.charAt(0);
+                                $('input[name="codigo"]').val(baseCodigo + letraTitulo);
+                                return;
+                            }
+
+                            // MISMO APELLIDO DIFERENTE AUTOR
+                            if(res.apellido === apellido){
+
+                                let letraNombre = nombre.charAt(0);
+                                $('input[name="codigo"]').val(baseCodigo + letraNombre);
+                                return;
+                            }
+
+                            // MUCHOS AUTORES MISMAS 3 LETRAS
+                            letrasBusqueda++;
+
+                            if(letrasBusqueda <= apellido.length){
+                                generarCodigo();
+                            }else{
+                                $('input[name="codigo"]').val(baseCodigo);
+                            }
+
                         }
+                    });
 
-                        // Generamos código final
-                        let codigoFinal = primeraLetra + codigoCutter + letraNombre;
+                }
+            });
 
-                        // Actualizamos el input
-                        $('input[name="codigo"]').val(codigoFinal);
-                    }
-                });
-            }
-        });
+        }
+
     });
+    // Vista previa imagen
+    $('#imagen').on('change', function(e){
+
+        let file = e.target.files[0];
+
+        if(file){
+
+            let reader = new FileReader();
+
+            reader.onload = function(e){
+                $('#previewImagen').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(file);
+        }
+
+    });
+
+    // mostrar nombre PDF
+    $('#archivo_indice').on('change', function(){
+
+        let file = this.files[0];
+
+        if(file){
+            $('#nombrePdf').text(file.name);
+        }
+
+    });
+    //mandar datos del libro
+    $('#formLibro').submit(function(e){
+
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    $.ajax({
+
+        url: "/api/inventario/libros/guardar",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+
+        success: function(resp){
+
+            alert("Libro guardado correctamente");
+
+            $('#formLibro')[0].reset();
+            $('#previewImagen').attr('src','https://via.placeholder.com/150x200?text=Sin+imagen');
+
+        },
+
+        error: function(xhr){
+
+            alert("Error al guardar");
+
+        }
+
+    });
+
+});
 });
 
 $('#btnNuevaEditorial').click(function(){

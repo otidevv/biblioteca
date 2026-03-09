@@ -14,6 +14,6 @@ class Materia extends Model
 
     public function libros()
     {
-        return $this->belongsToMany(Libro::class);
+        return $this->belongsToMany(Libro::class, 'libro_materias');
     }
 }

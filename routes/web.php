@@ -129,6 +129,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/dewey/buscar', [ApiDeweyController::class, 'dewey_buscar']);
             Route::get('/codigo_cutter', [ApiCutterController::class, 'codigoCutter']);
             Route::get('/libros/check_codigo', [ApiCutterController::class, 'checkCodigo']);
+            Route::post('/libros/guardar', [ApiLibroController::class, 'nuevo']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

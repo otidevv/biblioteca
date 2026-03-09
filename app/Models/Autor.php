@@ -11,7 +11,8 @@ class Autor extends Model
     protected $table = 'autores';
     public function libros()
     {
-        return $this->belongsToMany(Libro::class);
+        return $this->belongsToMany(Libro::class, 'autor_libros')
+                ->withTimestamps();
     }
     public function pais()
     {

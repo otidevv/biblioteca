@@ -25,14 +25,31 @@ class CutterController extends Controller
     }
     public function checkCodigo(Request $request)
     {
-        $apellido = $request->get('apellido', '');
-        $cutter = $request->get('cutter', '');
+        $codigo = $request->codigo;
 
-        // Buscamos coincidencias en la tabla libros
-        $existe = DB::table('libros')
-            ->where('codigo', 'like', $apellido.'%'.$cutter.'%')
-            ->exists();
+        $libro = DB::table('libros')
+            ->join('autor_libros','autor_libros.libro_id','=','libros.id')
+            ->join('autores','autores.id','=','autor_libros.autor_id')
+            ->where('libros.codigo','like',$codigo.'%')
+            ->select(
+                'libros.id',
+                'autores.id as autor_id',
+                'autores.apellidos',
+                'autores.nombres'
+            )
+            ->first();
 
-        return response()->json(['existe' => $existe]);
+        if(!$libro){
+            return response()->json([
+                'existe'=>false
+            ]);
+        }
+
+        return response()->json([
+            'existe'=>true,
+            'autor_id'=>$libro->autor_id,
+            'apellido'=>$libro->apellidos,
+            'nombre'=>$libro->nombres
+        ]);
     }
 }

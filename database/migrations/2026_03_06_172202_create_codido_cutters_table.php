@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('codido_cutters', function (Blueprint $table) {
             $table->id();
             $table->string('codigo');
-            $table->string('nombre')->unique();
+            $table->string('nombre');
             $table->timestamps();
         });
     }

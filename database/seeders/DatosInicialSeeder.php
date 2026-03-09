@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Smalot\PdfParser\Parser;
 
 use App\Models\User;
 use App\Models\Rol;
@@ -21,6 +22,59 @@ class DatosInicialSeeder extends Seeder
     public function run(): void
     {
         
+        /** =========================
+         *  NOTACION DEL LOS CODIGOS MALAGA O CUTTER
+         *  ========================= */
+          $parser = new Parser();
+        $pdf = $parser->parseFile(database_path('data/notacion.pdf'));
+
+        $texto = $pdf->getText();
+
+        $lineas = explode("\n", $texto);
+
+        foreach ($lineas as $linea) {
+
+            $linea = trim($linea);
+
+            if($linea == '') continue;
+
+            if(preg_match('/^([A-Za-zÁÉÍÓÚÑñ\.\- ]+)\s+(\d+)\s+([A-Za-zÁÉÍÓÚÑñ\.\- ]+)$/u', $linea, $m)){
+
+                $izq = trim($m[1]);
+                $codigo = trim($m[2]);
+                $der = trim($m[3]);
+
+                DB::table('codido_cutters')->insert([
+                    'codigo'=>$codigo,
+                    'nombre'=>$izq,
+                    'created_at'=>now(),
+                    'updated_at'=>now()
+                ]);
+
+                DB::table('codido_cutters')->insert([
+                    'codigo'=>$codigo,
+                    'nombre'=>$der,
+                    'created_at'=>now(),
+                    'updated_at'=>now()
+                ]);
+
+            }
+
+            elseif(preg_match('/^([A-Za-zÁÉÍÓÚÑñ\.\- ]+)\s+(\d+)$/u', $linea, $m)){
+
+                $nombre = trim($m[1]);
+                $codigo = trim($m[2]);
+
+                DB::table('codido_cutters')->insert([
+                    'codigo'=>$codigo,
+                    'nombre'=>$nombre,
+                    'created_at'=>now(),
+                    'updated_at'=>now()
+                ]);
+
+            }
+
+        }
         /** =========================
          *  tIPO DE REGISTRO
          *  ========================= */
@@ -417,7 +471,7 @@ class DatosInicialSeeder extends Seeder
         /** =========================
          *  CODIGOS CUTTER
          *  ========================= */
-        DB::transaction(function(){
+        /*DB::transaction(function(){
             $data = json_decode(
                 file_get_contents(database_path('data/codigos.json')),
                 true
@@ -428,7 +482,7 @@ class DatosInicialSeeder extends Seeder
                     'nombre' => $item['valor'],
                 ]);
             }
-        });
+        });*/
         /** =========================
          *  CODIGOS DEWEY
          *  ========================= */

@@ -16,12 +16,13 @@ class Libro extends Model
 
     public function autores()
     {
-        return $this->belongsToMany(Autor::class);
+        return $this->belongsToMany(Autor::class, 'autor_libros')
+                ->withTimestamps();
     }
-
     public function materias()
     {
-        return $this->belongsToMany(Materia::class);
+        return $this->belongsToMany(Materia::class,'libro_materias')
+                ->withTimestamps();
     }
 
     public function ejemplares()

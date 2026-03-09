@@ -17,7 +17,7 @@
         </li>
         <li class="text-gray-400">›</li>
         <li class="text-emerald-700 font-semibold">
-            Compras
+            Libros
         </li>
     </ol>
 </nav>
@@ -29,7 +29,7 @@
                 <form id="formLibro" enctype="multipart/form-data">
 
                     <!-- ================= IDENTIFICACIÓN ================= -->
-
+                    <h4>Codigo:</h4>
                     <h5 class="border-bottom pb-2 mb-3">Identificación</h5>
 
                     <div class="row g-3 mb-3">               
@@ -172,15 +172,17 @@
                             <label>Imagen portada</label>
 
                             <input type="file" name="imagen" class="form-control">
-
+                            <div class="mt-2">
+                                <img id="previewImagen" 
+                                    src="https://via.placeholder.com/150x200?text=Sin+imagen"
+                                    style="max-height:200px; border:1px solid #ddd; padding:5px;">
+                            </div>
                         </div>
 
                         <div class="col-md-6">
-
                             <label>Archivo índice (PDF)</label>
-
                             <input type="file" name="archivo_indice" class="form-control">
-
+                            <small id="nombrePdf" class="text-muted"></small>
                         </div>
 
                     </div>
