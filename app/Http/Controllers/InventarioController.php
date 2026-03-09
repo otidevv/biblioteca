@@ -7,6 +7,9 @@ use App\Models\Proveedor;
 use App\Models\Editorial;
 use App\Models\Libro;
 use App\Models\Tipo_registro;
+use App\Models\Idioma;
+use App\Models\Pais;
+use App\Models\Dewey;
 class InventarioController extends Controller
 {
     //
@@ -41,6 +44,9 @@ class InventarioController extends Controller
     protected function libros_nuevo()
     {
         $tipo_registros = Tipo_registro::latest()->get();
-        return view('inventario.libros_nuevo', compact('tipo_registros'));
+        $paises = Pais::latest()->get();
+        $idiomas = Idioma::latest()->get();
+        $deweys = Dewey::latest()->get();
+        return view('inventario.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys'));
     }
 }

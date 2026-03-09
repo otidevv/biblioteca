@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Rol;
 use App\Models\Permiso;
 use App\Models\Biblioteca;
+use App\Models\Pais;
 class AdministracionController extends Controller
 {
     public function index(string $modulo)
@@ -55,7 +56,8 @@ class AdministracionController extends Controller
     }
     protected function editoriales()
     {
-        return view('administracion.editorial');
+        $paises = Pais::latest()->get();
+        return view('administracion.editorial',compact('paises'));
     }
     protected function tipo_registros()
     {
@@ -63,7 +65,8 @@ class AdministracionController extends Controller
     }
     protected function autores()    
     {
-        return view('administracion.autor');    
+        $paises = Pais::latest()->get();
+        return view('administracion.autor',compact('paises'));    
     }
     protected function compras()    
     {

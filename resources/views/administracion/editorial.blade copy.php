@@ -108,18 +108,11 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label class="form-label">País</label>
-                            <select id="pais" name="pais" class="form-select">
+                            <select id="pais" name="pais" class="form-select select2">
                                 <option value="0">Seleccione</option>
-                                <option value="Perú">Perú</option>
-                                <option value="Chile">Chile</option>
-                                <option value="Argentina">Argentina</option>
-                                <option value="Colombia">Colombia</option>
-                                <option value="Ecuador">Ecuador</option>
-                                <option value="Bolivia">Bolivia</option>
-                                <option value="Uruguay">Uruguay</option>    
-                                <option value="Venezuela">Venezuela</option>
-                                <option value="Paraguay">Paraguay</option>
-                                <option value="Otros">Otros</option>
+                                @foreach($paises as $pais)
+                                    <option value="{{$pais->id}}">{{$pais->nombre}}</option>
+                                @endforeach
                             </select>
                         </div>
 

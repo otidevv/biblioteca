@@ -20,6 +20,8 @@ use App\Http\Controllers\Api\AutorController as ApiAutorController;
 use App\Http\Controllers\Api\InventarioController as ApiInventarioController;
 use App\Http\Controllers\Api\LibroController as ApiLibroController;
 use App\Http\Controllers\Api\MateriaController as ApiMateriaController;
+use App\Http\Controllers\Api\DeweyController as ApiDeweyController;
+use App\Http\Controllers\Api\CutterController as ApiCutterController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -124,6 +126,9 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/editoriales', [ApiEditorialController::class, 'listarEditoriales']);
             Route::get('/materias', [ApiMateriaController::class, 'listarMaterias']);
             Route::get('/libros', [ApiLibroController::class, 'buscar']);
+            Route::get('/dewey/buscar', [ApiDeweyController::class, 'dewey_buscar']);
+            Route::get('/codigo_cutter', [ApiCutterController::class, 'codigoCutter']);
+            Route::get('/libros/check_codigo', [ApiCutterController::class, 'checkCodigo']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

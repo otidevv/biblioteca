@@ -13,4 +13,8 @@ class Autor extends Model
     {
         return $this->belongsToMany(Libro::class);
     }
+    public function pais()
+    {
+        return $this->belongsTo(Pais::class, 'pais');
+    }
 }

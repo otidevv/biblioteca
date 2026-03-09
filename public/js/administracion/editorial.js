@@ -1,5 +1,18 @@
 let tabla;
 $(document).ready(function () {
+    
+    $('.select2').select2({
+        width: '100%'
+    });
+
+    $('#modalEditorial').on('shown.bs.modal', function () {
+
+        $('#pais').select2({
+            dropdownParent: $('#modalEditorial'),
+            width: '100%'
+        });
+
+    });
     tabla = $('#tabla-editorial').DataTable({        
         processing: true,
         serverSide: true,
@@ -44,7 +57,6 @@ $(document).ready(function () {
     $('#btnNuevo').on('click', function () {
         $('#formEditorial')[0].reset();
         $('#id').val('');
-        $('.password-group').show();
         $('#modalEditorial').modal('show');
     });
 
@@ -63,12 +75,6 @@ $(document).ready(function () {
         $('#direccion').val(data.direccion);
         $('#web').val(data.web);
         $('#estado').val(data.estado ?? '');
-        // MARCAR roles del usuario
-        if (data.roles && Array.isArray(data.roles)) {
-            data.roles.forEach(function (rol) {
-                $('#rol_' + rol.id).prop('checked', true);
-            });
-        }
         $('#modalEditorial').modal('show');
     });
     $('#formEditorial').on('submit', function (e) {

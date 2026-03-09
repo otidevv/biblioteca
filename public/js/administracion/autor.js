@@ -1,5 +1,25 @@
 let tabla;
 $(document).ready(function () {
+    $('.select2').select2({
+        width: '100%'
+    });
+
+    $('#modalAutor').on('shown.bs.modal', function () {
+
+        $('#pais').select2({
+            dropdownParent: $('#modalAutor'),
+            width: '100%'
+        });
+
+    });
+    $('#modalEditorial').on('shown.bs.modal', function () {
+
+        $('#pais').select2({
+            dropdownParent: $('#modalEditorial'),
+            width: '100%'
+        });
+
+    });
     tabla = $('#tabla-autor').DataTable({        
         processing: true,
         serverSide: true,

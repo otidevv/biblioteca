@@ -25,181 +25,184 @@
 <div class="bg-white p-6 rounded-xl shadow-lg">
     <div class="overflow-x-auto">
         <div class="bg-white p-6 rounded-xl shadow-lg">
+            <div  id="div_form_libro">
+                <form id="formLibro" enctype="multipart/form-data">
 
-            <form id="formLibro" enctype="multipart/form-data">
+                    <!-- ================= IDENTIFICACIÓN ================= -->
 
-                <!-- ================= IDENTIFICACIÓN ================= -->
+                    <h5 class="border-bottom pb-2 mb-3">Identificación</h5>
 
-                <h5 class="border-bottom pb-2 mb-3">Identificación</h5>
+                    <div class="row g-3 mb-3">               
 
-                <div class="row g-3">
-
-                    <div class="col-md-3">
-                        <label>Código *</label>
-                        <input type="text" name="codigo" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label>Código Dewey</label>
-                        <input type="text" name="codigo_dewey" class="form-control">
-                    </div>
-
-                    <div class="col-md-3">
-                        <label>ISBN</label>
-                        <input type="text" name="isbn" class="form-control">
-                    </div>
-
-                    <div class="col-md-3">
-                        <label>Tipo Registro</label>
-                        <select name="tipo_registro_id" class="form-select">
-                        <option value="">Seleccione...</option>
-
-                        @foreach ($tipo_registros as $tr)
-                        <option value="{{ $tr->id }}">{{ $tr->nombre }}</option>
-                        @endforeach
-
-                        </select>
-                    </div>
-
-                </div>
-
-
-                <!-- ================= INFORMACIÓN BIBLIOGRÁFICA ================= -->
-
-                <h5 class="border-bottom pb-2 mt-4 mb-3">Información Bibliográfica</h5>
-
-                <div class="row g-3">
-
-                    <div class="col-md-12">
-                        <label>Título *</label>
-                        <input type="text" name="titulo" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label>Editorial</label>
-
-                        <div class="d-flex">
-
-                            <select id="editorial_id" name="editorial_id" class="form-select select2 flex-grow-1">
-                                <option value="">Seleccione</option>
+                        <div class="col-md-2 form-group form-required">
+                            <label>ISBN</label>
+                            <input type="text" name="isbn" class="form-control">
+                        </div>
+                        <div class="col-md-4 form-group form-required">
+                            <label>Tipo Registro</label>
+                            <select name="tipo_registro_id" class="form-select">
+                            <option value="">Seleccione...</option>
+                            @foreach ($tipo_registros as $tr)
+                            <option value="{{ $tr->id }}">{{ $tr->nombre }}</option>
+                            @endforeach
                             </select>
+                        </div>
+                        <div class="col-md-4 form-group form-required">
+                            <label>Código Dewey</label>
+                            <select id="codigo_dewey" name="codigo_dewey" class="form-select select2">
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 form-group form-required">
+                            <label>Código</label>
+                            <input type="text" name="codigo" class="form-control" required>
+                        </div>
+                    </div>
 
-                            <button type="button" class="btn btn-primary" id="btnNuevaEditorial">
+
+                    <!-- ================= INFORMACIÓN BIBLIOGRÁFICA ================= -->
+
+                    <h5 class="border-bottom pb-2 mt-4 mb-3">Información Bibliográfica</h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-12 form-group form-required">
+                            <label>Título</label>
+                            <input type="text" name="titulo" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 form-group form-required">
+                            <label>Editorial</label>
+
+                            <div class="d-flex">
+
+                                <select id="editorial_id" name="editorial_id" class="form-select select2 flex-grow-1">
+                                    <option value="">Seleccione</option>
+                                </select>
+
+                                <button type="button" class="btn btn-primary" id="btnNuevaEditorial">
+                                    +
+                                </button>
+
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Edición</label>
+                            <input type="text" name="edicion" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Año edición</label>
+                            <input type="number" name="anio_edicion" class="form-control">
+                        </div>
+
+
+                        <div class="col-md-3 form-group form-required">
+                            <label>Idioma</label>
+                            <select name="idioma" class="form-select select2">
+                                <option value="">Seleccione...</option>
+                                @foreach ($idiomas as $tr)
+                                    <option value="{{ $tr->id }}">{{ $tr->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group form-required">
+                            <label>Páginas</label>
+                            <input type="number" name="paginas" class="form-control">
+                        </div>
+
+                        <div class="col-md-3 form-group form-required">
+                            <label>Fecha publicación</label>
+                            <input type="date" name="fecha_publicacion" class="form-control">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Lugar publicación</label>
+                            <input type="text" name="lugar_publicacion" class="form-control">
+                        </div>
+                    </div>
+                    <!-- ================= RELACIONES ================= -->
+                    <h5 class="border-bottom pb-2 mt-4 mb-3">Relaciones</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6 form-group form-required">
+                            <label>Autores</label>
+                            <div class="d-flex">
+                                <select id="autor_id" name="autor_id[]" class="form-select select2 flex-grow-1" multiple>
+                                <option value="">Seleccione autor(es)</option>
+                                </select>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAutor">
                                 +
-                            </button>
-
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Materias</label>
+                            <select name="materias[]" id="materias" class="form-select select2" multiple></select>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <label>Edición</label>
-                        <input type="text" name="edicion" class="form-control">
-                    </div>
 
-                    <div class="col-md-4">
-                        <label>Año edición</label>
-                        <input type="number" name="anio_edicion" class="form-control">
-                    </div>
 
-                    <div class="col-md-3">
-                        <label>Páginas</label>
-                        <input type="number" name="paginas" class="form-control">
-                    </div>
+                    <!-- ================= DESCRIPCIÓN ================= -->
 
-                    <div class="col-md-3">
-                        <label>Idioma</label>
-                        <input type="text" name="idioma" class="form-control">
-                    </div>
+                    <h5 class="border-bottom pb-2 mt-4 mb-3">Descripción</h5>
 
-                    <div class="col-md-3">
-                        <label>Fecha publicación</label>
-                        <input type="date" name="fecha_publicacion" class="form-control">
-                    </div>
+                    <div class="row g-3">
 
-                    <div class="col-md-3">
-                        <label>Lugar publicación</label>
-                        <input type="text" name="lugar_publicacion" class="form-control">
-                    </div>
-                </div>
-                <!-- ================= RELACIONES ================= -->
-                <h5 class="border-bottom pb-2 mt-4 mb-3">Relaciones</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label>Autores</label>
-                        <div class="d-flex">
-                            <select id="autor_id" name="autor_id[]" class="form-select select2 flex-grow-1" multiple>
-                            <option value="">Seleccione autor(es)</option>
-                            </select>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAutor">
-                            +
-                            </button>
+                        <div class="col-md-12">
+                            <label>Resumen</label>
+                            <textarea name="resumen" rows="3" class="form-control"></textarea>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label>Materias</label>
-                        <select name="materias[]" id="materias" class="form-select select2" multiple></select>
-                    </div>
-                </div>
 
-
-                <!-- ================= DESCRIPCIÓN ================= -->
-
-                <h5 class="border-bottom pb-2 mt-4 mb-3">Descripción</h5>
-
-                <div class="row g-3">
-
-                    <div class="col-md-12">
-                        <label>Resumen</label>
-                        <textarea name="resumen" rows="3" class="form-control"></textarea>
-                    </div>
-
-                    <div class="col-md-12">
-                        <label>Anotaciones</label>
-                        <textarea name="anotaciones" rows="3" class="form-control"></textarea>
-                    </div>
-
-                </div>
-
-
-                <!-- ================= ARCHIVOS ================= -->
-
-                <h5 class="border-bottom pb-2 mt-4 mb-3">Archivos</h5>
-
-                <div class="row g-3">
-
-                    <div class="col-md-6">
-
-                        <label>Imagen portada</label>
-
-                        <input type="file" name="imagen" class="form-control">
+                        <div class="col-md-12">
+                            <label>Anotaciones</label>
+                            <textarea name="anotaciones" rows="3" class="form-control"></textarea>
+                        </div>
 
                     </div>
 
-                    <div class="col-md-6">
 
-                        <label>Archivo índice (PDF)</label>
+                    <!-- ================= ARCHIVOS ================= -->
 
-                        <input type="file" name="archivo_indice" class="form-control">
+                    <h5 class="border-bottom pb-2 mt-4 mb-3">Archivos</h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <label>Imagen portada</label>
+
+                            <input type="file" name="imagen" class="form-control">
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label>Archivo índice (PDF)</label>
+
+                            <input type="file" name="archivo_indice" class="form-control">
+
+                        </div>
 
                     </div>
 
-                </div>
 
+                    <!-- ================= BOTÓN ================= -->
 
-                <!-- ================= BOTÓN ================= -->
+                    <div class="mt-4 text-end">
 
-                <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-success px-4">
 
-                    <button type="submit" class="btn btn-success px-4">
+                        Guardar Libro
 
-                    Guardar Libro
+                        </button>
 
-                    </button>
+                    </div>
 
-                </div>
-
-            </form>
+                </form>
 
             </div>
+
+        </div>
     </div>
 </div>
 @endsection
@@ -256,18 +259,11 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <label class="form-label">País</label>
-                                <select id="pais" name="edpais" name="pais" class="form-select">
+                                <select id="ed_pais" name="pais" class="form-select select2">
                                     <option value="0">Seleccione</option>
-                                    <option value="Perú">Perú</option>
-                                    <option value="Chile">Chile</option>
-                                    <option value="Argentina">Argentina</option>
-                                    <option value="Colombia">Colombia</option>
-                                    <option value="Ecuador">Ecuador</option>
-                                    <option value="Bolivia">Bolivia</option>
-                                    <option value="Uruguay">Uruguay</option>    
-                                    <option value="Venezuela">Venezuela</option>
-                                    <option value="Paraguay">Paraguay</option>
-                                    <option value="Otros">Otros</option>
+                                    @foreach($paises as $pais)
+                                        <option value="{{$pais->id}}">{{$pais->nombre}}</option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -309,48 +305,41 @@
 
                             <div class="col-md-6 form-group mb-3 form-required">
                             <label class="form-label">Nombre</label>
-                            <input type="text" id="ed_nombre" name="nombre" class="form-control">
+                            <input type="text" id="au_nombre" name="nombre" class="form-control">
                             </div>
 
                             <div class="col-md-6 form-group mb-3">
                                 <label class="form-label">Responsable</label>
-                                <input type="text" id="ed_responsable" name="responsable" class="form-control">
+                                <input type="text" id="au_responsable" name="responsable" class="form-control">
                             </div>
 
                             <div class="col-md-6 form-group mb-3">
                                 <label class="form-label">Teléfono</label>
-                                <input type="text" id="ed_telefono" name="telefono" class="form-control">
+                                <input type="text" id="au_telefono" name="telefono" class="form-control">
                             </div>
 
                             <div class="col-md-6 form-group mb-3">
                                 <label class="form-label">Correo</label>
-                                <input type="email" id="ed_correo" name="correo" class="form-control">
+                                <input type="email" id="au_correo" name="correo" class="form-control">
                             </div>
 
                             <div class="col-md-6 form-group mb-3">
                                 <label class="form-label">Web</label>
-                                <input type="text" id="ed_web" name="web" class="form-control">
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label class="form-label">País</label>
-                                <select id="pais" name="edpais" name="pais" class="form-select">
-                                    <option value="0">Seleccione</option>
-                                    <option value="Perú">Perú</option>
-                                    <option value="Chile">Chile</option>
-                                    <option value="Argentina">Argentina</option>
-                                    <option value="Colombia">Colombia</option>
-                                    <option value="Ecuador">Ecuador</option>
-                                    <option value="Bolivia">Bolivia</option>
-                                    <option value="Uruguay">Uruguay</option>    
-                                    <option value="Venezuela">Venezuela</option>
-                                    <option value="Paraguay">Paraguay</option>
-                                    <option value="Otros">Otros</option>
-                                </select>
+                                <input type="text" id="au_web" name="web" class="form-control">
                             </div>
 
+                            <div class="col-md-6 form-group">
+                                <label class="form-label">País</label>
+                                <select id="au_pais" name="pais" class="form-select select2">
+                                    <option value="0">Seleccione</option>
+                                    @foreach($paises as $pais)
+                                        <option value="{{$pais->id}}">{{$pais->nombre}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="col-md-12 form-group mb-3">
                                 <label class="form-label">Dirección</label>
-                                <input type="text" id="ed_direccion" class="form-control">
+                                <input type="text" id="au_direccion" class="form-control">
                             </div>
 
 

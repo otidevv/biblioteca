@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('imagen')->nullable();
             $table->string('edicion')->nullable();
             $table->integer('anio_edicion')->nullable();
-            $table->string('idioma')->nullable();
             $table->text('anotaciones')->nullable();
 
+            $table->foreignId('idioma')->nullable()->constrained("idiomas");
             $table->foreignId('editorial_id')->nullable()->constrained("editoriales");
             $table->foreignId('tipo_registro_id')->nullable()->constrained("tipo_registros");
 

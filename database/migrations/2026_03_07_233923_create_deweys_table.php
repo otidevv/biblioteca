@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('codido_cutters', function (Blueprint $table) {
+        Schema::create('deweys', function (Blueprint $table) {
             $table->id();
             $table->string('codigo');
             $table->string('nombre')->unique();
+            $table->string('nivel');
+            $table->foreignId('dewey_id')->nullable()->constrained('deweys')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('codido_cutters');
+        Schema::dropIfExists('deweys');
     }
 };

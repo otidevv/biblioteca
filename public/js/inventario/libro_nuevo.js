@@ -2,6 +2,70 @@ $(document).ready(function () {
     $('.select2').select2({
         width: '100%'
     });
+    $('#modalEditorial').on('shown.bs.modal', function () {
+
+        $('#ed_pais').select2({
+            dropdownParent: $('#modalEditorial'),
+            width: '100%'
+        });
+
+    });
+    $('#modalAutor').on('shown.bs.modal', function () {
+
+        $('#au_pais').select2({
+            dropdownParent: $('#modalAutor'),
+            width: '100%'
+        });
+
+    });
+    // Inicializamos Select2 con búsqueda manual
+    $('#codigo_dewey').select2({
+        placeholder: 'Seleccione código Dewey',
+        allowClear: true,
+        ajax: {
+            url: '/api/inventario/dewey/buscar',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                let titulo = $('input[name="titulo"]').val().trim(); // Toma el título si existe
+                return { q: params.term || titulo }; 
+            },
+            processResults: function(data) {
+                return {
+                    results: data.map(item => ({ id: item.id, text: item.codigo + ' - ' + item.nombre }))
+                };
+            },
+            cache: true
+        }
+    });
+    // Evento para buscar Dewey según el título
+    $('input[name="titulo"]').on('blur', function() {
+        let titulo = $(this).val().trim();
+        if(titulo.length > 0){
+            $.ajax({
+                url: '/api/inventario/dewey/buscar',
+                type: 'GET',
+                data: { q: titulo },
+                success: function(response){
+                    // Limpiamos el select
+                    $('#codigo_dewey').empty().trigger('change');
+
+                    if(response.length > 0){
+                        // Agregamos todas las coincidencias
+                        response.forEach(function(item){
+                            let newOption = new Option(item.codigo + ' - ' + item.nombre, item.id, false, false);
+                            $('#codigo_dewey').append(newOption);
+                        });
+                        // Abrimos el dropdown para que el usuario vea las opciones
+                        $('#codigo_dewey').select2('open');
+                    }
+                },
+                error: function(err){
+                    console.error('Error al buscar Dewey', err);
+                }
+            });
+        }
+    });
     // ================= EDITORIAL =================
     $('#editorial_id').select2({
         placeholder: "Buscar editorial",
@@ -25,7 +89,6 @@ $(document).ready(function () {
     $('#autor_id').select2({
         placeholder: "Seleccione autor(es)",
         width: '100%',
-        multiple: true,
         ajax: {
             url: '/api/inventario/autores',
             dataType: 'json',
@@ -34,7 +97,9 @@ $(document).ready(function () {
             processResults: data => ({
                 results: data.map(item => ({
                     id: item.id,
-                    text: item.text
+                    text: item.text,
+                    apellido: item.apellidos, // importante: traer apellido desde backend
+                    nombre: item.nombres    // importante: traer nombre desde backend
                 }))
             })
         }
@@ -116,6 +181,56 @@ $(document).ready(function () {
             },
             complete: function () {
                 btn.prop('disabled', false).text('Guardar');
+            }
+        });
+    });
+    // generar codigo    
+    // Evento para generar código automáticamente al seleccionar autores
+    $('#autor_id').on('change', function() {
+        
+        let selectedData = $(this).select2('data'); // array de autores seleccionados
+        if (selectedData.length === 0) {
+            $('input[name="codigo"]').val('');
+            return;
+        }
+
+        // Tomamos el primer autor para generar el código
+        let autor = selectedData[0];
+        let apellido = autor.apellido;
+        let nombre = autor.nombre;
+        console.log(autor);
+
+        if (!apellido || !nombre) return;
+
+        let primeraLetra = apellido.charAt(0).toUpperCase();
+        let tresLetras = apellido.substring(0,3).toUpperCase();
+
+        // Consultamos la tabla de códigos Cutter
+        $.ajax({
+            url: '/api/inventario/codigo_cutter',
+            type: 'GET',
+            data: { letras: tresLetras },
+            success: function(cutterData) {
+                let codigoCutter = cutterData.codigo; // ejemplo: "LOP"
+
+                // Verificamos si ya existe un código para este apellido
+                $.ajax({
+                    url: '/api/inventario/libros/check_codigo',
+                    type: 'GET',
+                    data: { apellido: apellido, cutter: codigoCutter },
+                    success: function(res) {
+                        let letraNombre = '';
+                        if (res.existe) {
+                            letraNombre = nombre.charAt(0).toUpperCase();
+                        }
+
+                        // Generamos código final
+                        let codigoFinal = primeraLetra + codigoCutter + letraNombre;
+
+                        // Actualizamos el input
+                        $('input[name="codigo"]').val(codigoFinal);
+                    }
+                });
             }
         });
     });

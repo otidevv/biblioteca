@@ -1,7 +1,13 @@
 @extends('layouts.admin')
 
+@section('css')
+    <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/select2.css') }}" rel="stylesheet" />
+@endsection
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
+    <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
     <script src="{{ asset('/js/administracion/autor.js') }}"></script>
 @endsection
 @section('content')
@@ -75,18 +81,11 @@
 
                         <div class="col-md-6 form-group">
                             <label class="form-label">País</label>
-                            <select id="pais" name="pais" class="form-select">
+                            <select id="pais" name="pais" class="form-select select2">
                                 <option value="0">Seleccione</option>
-                                <option value="Perú">Perú</option>
-                                <option value="Chile">Chile</option>
-                                <option value="Argentina">Argentina</option>
-                                <option value="Colombia">Colombia</option>
-                                <option value="Ecuador">Ecuador</option>
-                                <option value="Bolivia">Bolivia</option>
-                                <option value="Uruguay">Uruguay</option>    
-                                <option value="Venezuela">Venezuela</option>
-                                <option value="Paraguay">Paraguay</option>
-                                <option value="Otros">Otros</option>
+                                @foreach($paises as $pais)
+                                    <option value="{{$pais->id}}">{{$pais->nombre}}</option>
+                                @endforeach
                             </select>
                         </div>
 
