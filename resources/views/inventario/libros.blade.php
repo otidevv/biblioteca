@@ -31,8 +31,8 @@
         <table id="tabla-libros" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
             <thead class="bg-gray-100">
                 <tr>
-                    <th>Codigo</th>
                     <th>Codigo Dewey</th>
+                    <th>Codigo</th>
                     <th>ISBN</th>
                     <th>Tipo</th>
                     <th>Título</th>
