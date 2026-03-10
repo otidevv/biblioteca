@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\LibroController as ApiLibroController;
 use App\Http\Controllers\Api\MateriaController as ApiMateriaController;
 use App\Http\Controllers\Api\DeweyController as ApiDeweyController;
 use App\Http\Controllers\Api\CutterController as ApiCutterController;
+use App\Http\Controllers\Api\EjemplarController as ApiEjemplarController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -44,13 +45,14 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     });    
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
-        Route::get('{modulo}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras');
+        Route::get('{modulo}/{id?}', [AdministracionController::class, 'index'])
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|
+            proveedores|editoriales|tipo_registros|autores|compras|libros|libros_nuevo|ejemplares');
     }); 
     // INVENTARIO
     Route::prefix('inventario')->group(function () {
         Route::get('{modulo}', [InventarioController::class, 'index'])
-            ->where('modulo', 'catalogo|compras|reportes|compra_nuevo|libros|libros_nuevo');
+            ->where('modulo', 'catalogo|compras|reportes|compra_nuevo');
     });
 
     // LECTORES
@@ -119,6 +121,19 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/edit', [ApiAutorController::class, 'edit']);
             Route::delete('/{id}', [ApiAutorController::class, 'destroy']);
         });
+        //NUEVOS LIBROS EJEMPLARES
+        Route::prefix('administracion')->group(function () {
+            Route::get('/libros/ejemplar/listar', [ApiEjemplarController::class, 'listar']);
+            Route::get('/autores', [ApiAutorController::class, 'listarAutores']);
+            Route::get('/editoriales', [ApiEditorialController::class, 'listarEditoriales']);
+            Route::get('/materias', [ApiMateriaController::class, 'listarMaterias']);
+            Route::get('/libros', [ApiLibroController::class, 'buscar']);
+            Route::get('/dewey/buscar', [ApiDeweyController::class, 'dewey_buscar']);
+            Route::get('/codigo_cutter', [ApiCutterController::class, 'codigoCutter']);
+            Route::get('/libros/check_codigo', [ApiCutterController::class, 'checkCodigo']);
+            Route::post('/libros/guardar', [ApiLibroController::class, 'nuevo']);
+            Route::get('/libros/listar', [ApiLibroController::class, 'listar']);
+        });
         //CONSULTA DE COMPRAS EN INVENTARIO
         Route::prefix('inventario')->group(function () {
             Route::get('/compras/listar', [ApiInventarioController::class, 'listarCompras']);
@@ -130,6 +145,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/codigo_cutter', [ApiCutterController::class, 'codigoCutter']);
             Route::get('/libros/check_codigo', [ApiCutterController::class, 'checkCodigo']);
             Route::post('/libros/guardar', [ApiLibroController::class, 'nuevo']);
+            Route::get('/libros/listar', [ApiLibroController::class, 'listar']);
+            Route::post('/ejemplares/guardar', [ApiEjemplarController::class, 'guardar']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

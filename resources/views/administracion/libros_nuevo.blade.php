@@ -7,7 +7,7 @@
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
     <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
-    <script src="{{ asset('/js/inventario/libro_nuevo.js') }}"></script>
+    <script src="{{ asset('/js/administracion/libro_nuevo.js') }}"></script>
 @endsection
 @section('content')
 <nav class="mb-4 text-sm text-gray-600">

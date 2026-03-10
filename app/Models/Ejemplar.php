@@ -9,11 +9,15 @@ class Ejemplar extends Model
     //
     protected $table = 'ejemplares';
     protected $fillable = [
-        'codigo_interno','libro_id','biblioteca_id','estado'
+       'siaf','tipo','codigo_dewey','codigo_interno','libro_id','biblioteca_id','estado','Compra_detalle'
     ];
 
     public function libro()
     {
-        return $this->belongsTo(Libro::class);
+        return $this->belongsTo(Libro::class, 'libro_id');
+    }
+    public function detalle_compra()
+    {
+        return $this->belongsTo(Compra_detalle::class,'Compra_detalle');
     }
 }

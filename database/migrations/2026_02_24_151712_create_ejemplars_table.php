@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('ejemplares', function (Blueprint $table) {
             $table->id();
-            $table->string('codigo_interno')->unique();
+            $table->integer('codigo_interno');
+            $table->string('codigo_dewey');
+            $table->string('tipo')->unique();//ejemplar, tomo, volumen
+            $table->string('siaf')->unique();
             $table->foreignId('libro_id')->constrained();
             $table->foreignId('biblioteca_id')->nullable()->constrained();
-            $table->foreignId('compra_detalle_id')->constrained('compra_detalles');
+            $table->foreignId('compra_detalle_id')->nullable()->constrained('compra_detalles');
             $table->enum('estado',['DISPONIBLE','PRESTADO','BAJA'])->default('DISPONIBLE');
             $table->timestamps();
         });

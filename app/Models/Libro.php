@@ -29,4 +29,12 @@ class Libro extends Model
     {
         return $this->hasMany(Ejemplar::class);
     }
+    public function tipo_registro()
+    {
+        return $this->belongsTo(Tipo_registro::class,'tipo_registro_id');
+    }
+    public function editorial()
+    {
+        return $this->belongsTo(Editorial::class,'editorial_id');
+    }
 }
