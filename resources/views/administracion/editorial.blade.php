@@ -73,8 +73,7 @@
                         <!-- Documento -->
                         <div class="col-md-6 form-group form-required">
                             <label class="form-label">Tipo de documento</label>
-                            <select id="tipo_documento" name="tipo_documento"
-                                    class="form-select validar_select">
+                            <select id="tipo_documento" name="tipo_documento" class="form-select validar_select">
                                 <option value="0">Seleccione</option>
                                 <option value="DNI">DNI</option>
                                 <option value="RUC">RUC</option>

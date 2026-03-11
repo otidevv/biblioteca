@@ -1243,3 +1243,37 @@ $( document ).ready(function() {
 
 
 });
+//=======================
+// activa y descativa requiered
+function requiredCampo(selector, activar = true){
+
+    $(selector).each(function(){
+
+        let grupo = $(this).closest('.form-group');
+
+        if(activar){
+            grupo.addClass('form-required');
+        }else{
+            grupo.removeClass('form-required');
+        }
+
+        // limpiar errores solo de ese campo
+        $(this).removeClass('is-invalid');
+        grupo.find('.invalid-feedback').remove();
+
+    });
+}
+//mostrar elemento o ocultar
+function mostrarElemento(selector, mostrar = true){
+
+    $(selector).each(function(){
+
+        if(mostrar){
+            $(this).show();
+        }else{
+            $(this).hide();
+        }
+
+    });
+
+}

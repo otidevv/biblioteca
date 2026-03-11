@@ -20,4 +20,8 @@ class Ejemplar extends Model
     {
         return $this->belongsTo(Compra_detalle::class,'Compra_detalle');
     }
+    public function biblioteca()
+    {
+        return $this->belongsTo(Biblioteca::class, 'biblioteca_id');
+    }
 }

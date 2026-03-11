@@ -32,7 +32,7 @@ class InventarioController extends Controller
     {
         $proveedores = Proveedor::latest()->get();
         $editoriales = Editorial::latest()->get();
-        $libros = Libro::with(['autor','editorial'])->get();
+        $libros = Libro::with(['autores','editorial'])->get();
         return view('inventario.compra_nuevo', compact('proveedores', 'editoriales','libros'));
     }
 }

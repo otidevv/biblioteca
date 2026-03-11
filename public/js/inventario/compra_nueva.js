@@ -71,32 +71,6 @@ $(document).ready(function () {
             habilitarModoNuevoLibro(tituloNuevo);
             return;
         }
-        /*
-            // 👉 SI ES LIBRO EXISTENTE
-            $('#input_titulo')
-                .val(data.text)
-                .prop('disabled', true);
-
-            $('#input_autor')
-                .val(data.autor || '')
-                .prop('disabled', true);
-
-            $('#input_editorial')
-                .val(data.editorial || '')
-                .prop('disabled', true);
-
-            if (data.imagen) {
-                $('#preview_imagen')
-                    .attr('src', data.imagen)
-                    .show();
-            } else {
-                $('#preview_imagen')
-                    .hide()
-                    .attr('src','');
-            }
-
-            $('#input_imagen').addClass('d-none');
-        */
         modoLibroExistente(data);
 
     });
@@ -166,7 +140,7 @@ function modoLibroExistente(data) {
     // ===============================
     if (data.imagen) {
         $('#preview_imagen')
-            .attr('src', data.imagen)
+        .attr('src', '/storage/' + data.imagen.replace('storage/',''))
             .show();
     } else {
         $('#preview_imagen')

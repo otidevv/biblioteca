@@ -53,7 +53,7 @@ class LibroController extends Controller
     {
         $search = $request->get('q');
 
-        $libros = Libro::with(['autor','editorial'])
+        $libros = Libro::with(['autores','editorial'])
             ->when($search, function ($query) use ($search) {
                 $query->where('titulo', 'like', "%{$search}%");
             })

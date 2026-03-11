@@ -46,8 +46,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}/{id?}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|
-            proveedores|editoriales|tipo_registros|autores|compras|libros|libros_nuevo|ejemplares');
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras|libros|libros_nuevo|ejemplares');
     }); 
     // INVENTARIO
     Route::prefix('inventario')->group(function () {
@@ -147,6 +146,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/libros/guardar', [ApiLibroController::class, 'nuevo']);
             Route::get('/libros/listar', [ApiLibroController::class, 'listar']);
             Route::post('/ejemplares/guardar', [ApiEjemplarController::class, 'guardar']);
+            Route::post('/ejemplares/actualizar', [ApiEjemplarController::class, 'actualizar']);
+            Route::post('/ejemplares/enviar-biblioteca', [ApiEjemplarController::class, 'enviarBiblioteca']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

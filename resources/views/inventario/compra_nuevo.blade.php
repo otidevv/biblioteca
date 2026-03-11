@@ -137,24 +137,19 @@
 
                     <div class="modal-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <!-- ================= DATOS DETALLE ================= -->
-                                <h6 class="text-primary mb-2">Datos detalle</h6>                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="md:col-span-2">
-                                        <label class="block text-sm font-semibold text-gray-700">Título *</label>
-                                        <select id="libros" style="width:100%"></select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700">Cantidad *</label>
-                                        <input type="number" id="modal_cantidad" value="1" min="1"
-                                            class="w-full mt-1 border-gray-300 rounded-lg">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700">Precio *</label>
-                                        <input type="number" step="0.01" id="modal_precio"
-                                            class="w-full mt-1 border-gray-300 rounded-lg">
-                                    </div>
+                            <div class="row col-md-6">
+                                <h6 class="text-primary">Datos detalle</h6>                                                              
+                                <div class="col-md-12 form-group form-required validar-div">
+                                    <label class="form-label">Título</label>
+                                    <select id="libros" class="form-select"></select>
+                                </div>
+                                <div class="col-md-6 form-group form-required validar-div">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" id="modal_cantidad" value="1" min="1" class="form-control">
+                                </div>
+                                <div class="col-md-6 form-group form-required validar-div">
+                                    <label class="form-label">Precio</label>
+                                    <input type="number" step="0.01" id="modal_precio" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -162,12 +157,8 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                                     <div class="md:col-span-2 text-center">
-                                        <img id="preview_imagen" 
-                                            class="img-fluid rounded shadow mb-2"
-                                            style="max-height:150px; display:none;">
-
-                                        <input type="file" id="input_imagen" 
-                                            class="form-control d-none">
+                                        <img id="preview_imagen" class="img-fluid rounded shadow mb-2" style="max-height:150px; display:none;">
+                                        <input type="file" id="input_imagen" class="form-control d-none">
                                     </div>
 
                                     <div class="md:col-span-2">
