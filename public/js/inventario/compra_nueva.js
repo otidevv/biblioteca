@@ -140,7 +140,7 @@ function modoLibroExistente(data) {
     // ===============================
     if (data.imagen) {
         $('#preview_imagen')
-        .attr('src', '/storage/' + data.imagen.replace('storage/',''))
+        .attr('src',data.imagen.replace('storage/',''))
             .show();
     } else {
         $('#preview_imagen')
