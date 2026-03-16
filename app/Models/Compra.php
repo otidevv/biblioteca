@@ -12,8 +12,12 @@ class Compra extends Model
         'usuario_id','monto_total','observaciones'
     ];
 
-    public function detalles()
+    public function compra_detalles()
     {
-        return $this->hasMany(CompraDetalle::class);
+        return $this->hasMany(Compra_detalle::class,'compra_id');
+    }
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class,'proveedor_id');
     }
 }

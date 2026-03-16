@@ -20,9 +20,13 @@ $(document).ready(function () {
                     return `<strong>${data}</strong><br><small class="text-muted">${row.nro_documento ?? ''}</small>`;
                 }
              },
-            { data: 'responsable', name: 'responsable',
+            {data: 'responsable',name: 'responsable',
                 render: function (data, type, row) {
-                    return `<strong>${data}</strong><br><small class="text-muted">${row.razon_social ?? ''}</small>`;
+                    if (data) {
+                        return `<strong>${data}</strong><br><small class="text-muted">${row.razon_social ?? ''}</small>`;
+                    } else {
+                        return `<strong>${row.razon_social ?? ''}</strong>`;
+                    }
                 }
             },
             { data: 'telefono', name: 'telefono' },

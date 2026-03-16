@@ -15,12 +15,18 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'n', name: 'nombres', 
+            { data: 'numero_siaf', name: 'numero_siaf'},
+            { data: 'proveedor.', name: 'proveedor.',                
                 render: function (data, type, row) {
-                return row.nombres + ' ' + row.apellidos;
+                    if (data.responsable) {
+                        return `<strong>${data.responsable}</strong><br><small class="text-muted">${data.razon_social ?? ''}</small>`;
+                    } else {
+                        return `<strong>${data.razon_social}</strong>`;
+                    }
                 }
             },
-            { data: 'pais', name: 'pais' },
+            { data: 'fecha_compra', name: 'fecha_compra' },
+            { data: 'monto_total', name: 'monto_total' },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -119,6 +125,62 @@ $(document).ready(function () {
                 btn.prop('disabled', false).text('Guardar');
             }
         });
+    });
+
+
+
+
+
+
+    $(document).on('click','.verCompra',function(){
+
+        let tabla = $('#tabla-compras').DataTable();
+        let data = tabla.row($(this).closest('tr')).data();
+
+        $('#ver_siaf').val(data.numero_siaf);
+        $('#ver_fecha').val(data.fecha_compra);
+        $('#ver_proveedor').val(data.proveedor.razon_social);
+        $('#ver_total').val(data.monto_total);
+
+        let html='';
+
+        data.compra_detalles.forEach(det => {
+
+            let ejemplares='';
+
+            if(det.ejemplares.length>0){
+
+                ejemplares = `<div class="ejemplares-box">` +
+
+                det.ejemplares.map(e =>
+                    `<span class="badge bg-primary text-white"style="margin-right: 8px;">
+                        ${e.codigo_dewey}${e.tipo}-${e.codigo_interno}
+                    </span>`
+                ).join('')
+
+                + `</div>`;
+
+            }else{
+
+                ejemplares = '<span class="text-muted">Sin ejemplares</span>';
+
+            }
+
+            html+=`
+            <tr>
+                <td>${det.libro.titulo}</td>
+                <td>${det.cantidad}</td>
+                <td>${det.precio_unitario}</td>
+                <td>${det.monto_total}</td>
+                <td>${ejemplares}</td>
+            </tr>
+            `;
+        });
+
+        $('#tablaDetalleCompra').html(html);
+
+        $('#modalVerCompra').modal('show');
+
     });
 
 });

@@ -15,7 +15,7 @@ class EjemplarController extends Controller
     //
     public function listar(Request $request)
     {
-        $query = Ejemplar::with(['detalle_compra.compra','biblioteca'])->where('libro_id',$request->id);
+        $query = Ejemplar::with(['compra_detalle.compra','biblioteca'])->where('libro_id',$request->id);
 
         // filtro biblioteca
         if ($request->has('biblioteca_id')) {

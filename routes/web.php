@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\MateriaController as ApiMateriaController;
 use App\Http\Controllers\Api\DeweyController as ApiDeweyController;
 use App\Http\Controllers\Api\CutterController as ApiCutterController;
 use App\Http\Controllers\Api\EjemplarController as ApiEjemplarController;
+use App\Http\Controllers\Api\CompraController as ApiCompraController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -135,7 +136,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         });
         //CONSULTA DE COMPRAS EN INVENTARIO
         Route::prefix('inventario')->group(function () {
-            Route::get('/compras/listar', [ApiInventarioController::class, 'listarCompras']);
+            Route::get('/compras/listar', [ApiCompraController::class, 'listarCompras']);
             Route::get('/autores', [ApiAutorController::class, 'listarAutores']);
             Route::get('/editoriales', [ApiEditorialController::class, 'listarEditoriales']);
             Route::get('/materias', [ApiMateriaController::class, 'listarMaterias']);
@@ -148,6 +149,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/ejemplares/guardar', [ApiEjemplarController::class, 'guardar']);
             Route::post('/ejemplares/actualizar', [ApiEjemplarController::class, 'actualizar']);
             Route::post('/ejemplares/enviar-biblioteca', [ApiEjemplarController::class, 'enviarBiblioteca']);
+            Route::post('/compras/guardar', [ApiCompraController::class, 'guardarCompra']);
         });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

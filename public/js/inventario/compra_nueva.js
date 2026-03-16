@@ -1,210 +1,300 @@
+let detalleCompra = [];
+let libroSeleccionado = null;
+
 $(document).ready(function () {
 
     // ===============================
-    // ABRIR MODAL NUEVO
+    // SELECT2
     // ===============================
-    $('#btnNuevoLibro').on('click', function () {
+    $('#proveedor_id').select2({
+        placeholder: "Seleccione proveedor",
+        allowClear: true,
+        width: '100%',
+        language: "es"
+    });
 
-        $('#formLibro').trigger('reset');
-        $('#id').val('');
+    // ===============================
+    // ABRIR MODAL
+    // ===============================
+    $('#btnNuevoLibro').click(function () {
 
+        $('#formLibro')[0].reset();
         $('#libros').val(null).trigger('change');
 
         limpiarCamposLibro();
 
         $('#modalLibro').modal('show');
+
     });
 
 
     // ===============================
-    // SELECT2 CON AJAX
+    // SELECT2 LIBROS
     // ===============================
     $('#libros').select2({
+
         dropdownParent: $('#modalLibro'),
         placeholder: "Buscar libro...",
         width: '100%',
         language: 'es',
         allowClear: true,
-        tags: true,
-
-        createTag: function (params) {
-
-            let term = $.trim(params.term);
-
-            if (term === '') {
-                return null;
-            }
-            return {
-                id: 'nuevo:' + term,
-                text: '➕ Agregar "' + term + '"',
-                nuevo: true
-            };
-        },
 
         ajax: {
+
             url: '/api/inventario/libros',
             dataType: 'json',
             delay: 250,
+
             data: function (params) {
                 return { q: params.term };
             },
+
             processResults: function (data) {
                 return { results: data };
-            },
-            cache: true
+            }
+
         }
+
     });
 
 
     // ===============================
-    // CUANDO SE SELECCIONA
+    // SELECCIONAR LIBRO
     // ===============================
     $('#libros').on('select2:select', function (e) {
 
         let data = e.params.data;
 
-        // 👉 SI ES NUEVO LIBRO
-        if (data.nuevo) {
+        libroSeleccionado = data;
 
-            let tituloNuevo = data.id.replace('nuevo:', '');
-
-            habilitarModoNuevoLibro(tituloNuevo);
-            return;
-        }
         modoLibroExistente(data);
 
     });
 
 
     // ===============================
-    // CUANDO LIMPIA SELECCIÓN
+    // LIMPIAR SELECT
     // ===============================
     $('#libros').on('select2:clear', function () {
+
         limpiarCamposLibro();
+
+    });
+
+
+    // ===============================
+    // AGREGAR LIBRO AL DETALLE
+    // ===============================
+    $('#formLibro').submit(function(e){
+
+        e.preventDefault();
+
+        if(!libroSeleccionado){
+            alert("Seleccione un libro");
+            return;
+        }
+
+        let cantidad = parseInt($('#modal_cantidad').val());
+        let precio = parseFloat($('#modal_precio').val());
+
+        if(cantidad <= 0 || precio <= 0){
+            alert("Cantidad y precio son obligatorios");
+            return;
+        }
+
+        let subtotal = cantidad * precio;
+
+        let autores = libroSeleccionado.autores
+            ? libroSeleccionado.autores.map(a=>a.nombre).join(', ')
+            : '';
+
+        let item = {
+
+            libro_id: libroSeleccionado.id,
+            titulo: libroSeleccionado.text,
+            autor: autores,
+            cantidad: cantidad,
+            precio: precio,
+            subtotal: subtotal
+
+        };
+
+        detalleCompra.push(item);
+
+        agregarFilaTabla(item);
+
+        calcularTotal();
+
+        $('#modalLibro').modal('hide');
+
+    });
+
+
+    // ===============================
+    // ELIMINAR FILA
+    // ===============================
+    $(document).on('click','.btnEliminarDetalle',function(){
+
+        let fila = $(this).closest('tr');
+        let index = fila.index();
+
+        detalleCompra.splice(index,1);
+
+        fila.remove();
+
+        calcularTotal();
+
+    });
+
+
+    // ===============================
+    // GUARDAR COMPRA
+    // ===============================
+    $('#btnGuardarCompra').click(function(e){
+
+        e.preventDefault();
+
+        if(detalleCompra.length == 0){
+            alert("Debe agregar al menos un libro");
+            return;
+        }
+
+        let datosCompra = {
+
+            siaf: $('input[name="numero_siaf"]').val(),
+            fecha_compra: $('input[name="fecha_compra"]').val(),
+            proveedor_id: $('select[name="proveedor_id"]').val(),
+            observaciones: $('textarea[name="observaciones"]').val(),
+            detalle: detalleCompra
+
+        };
+
+        $.ajax({
+
+            url:'/api/inventario/compras/guardar',
+            method:'POST',
+            data:JSON.stringify(datosCompra),
+            contentType:'application/json',
+
+            headers:{
+                'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')
+            },
+
+            success:function(){
+
+                alert("Compra guardada correctamente");
+
+                location.reload();
+
+            }
+
+        });
+
     });
 
 });
 
 
-// ===================================
-// FUNCIONES AUXILIARES
-// ===================================
-function modoLibroExistente(data) {
+// ===============================
+// MOSTRAR DATOS DEL LIBRO
+// ===============================
+function modoLibroExistente(data){
 
-    // TÍTULO
-    $('#input_titulo')
-        .val(data.text)
-        .prop('disabled', true);
+    $('#lbl_titulo').text(data.text);
 
-    // ===============================
-    // AUTORES (select2 múltiple)
-    // ===============================
-    if (data.autores && data.autores.length > 0) {
-
-        let autoresSeleccionados = data.autores.map(a => ({
-            id: a.id,
-            text: a.nombre
-        }));
-
-        // cargar valores manualmente
-        $('#input_autor')
-            .empty()
-            .select2({
-                data: autoresSeleccionados
-            })
-            .val(autoresSeleccionados.map(a => a.id))
-            .trigger('change')
-            .prop('disabled', true);
+    if(data.autores && data.autores.length){
+        let autores = data.autores.map(a => a.nombre).join(', ');
+        $('#lbl_autor').text(autores);
+    }else{
+        $('#lbl_autor').text('');
     }
 
-    // ===============================
-    // EDITORIAL
-    // ===============================
-    if (data.editorial) {
-
-        let editorialOption = new Option(
-            data.editorial.nombre,
-            data.editorial.id,
-            true,
-            true
-        );
-
-        $('#input_editorial')
-            .append(editorialOption)
-            .trigger('change')
-            .prop('disabled', true);
+    if(data.editorial){
+        $('#lbl_editorial').text(data.editorial.nombre);
+    }else{
+        $('#lbl_editorial').text('');
     }
 
-    // ===============================
-    // IMAGEN
-    // ===============================
-    if (data.imagen) {
+    if(data.imagen){
+
         $('#preview_imagen')
-        .attr('src',data.imagen.replace('storage/',''))
+            .attr('src',data.imagen)
             .show();
-    } else {
+
+    }else{
+
         $('#preview_imagen')
             .hide()
             .attr('src','');
+
     }
 
-    $('#input_imagen').addClass('d-none');
 }
-function habilitarModoNuevoLibro(titulo) {
 
-    $('#input_titulo')
-        .val(titulo)
-        .prop('disabled', false);
 
-    $('#input_autor')
-        .val(null)
-        .prop('disabled', false)
-        .trigger('change');
+// ===============================
+// LIMPIAR CAMPOS
+// ===============================
+function limpiarCamposLibro(){
 
-    $('#input_editorial')
-        .val(null)
-        .prop('disabled', false)
-        .trigger('change');
+    libroSeleccionado = null;
+
+    $('#lbl_titulo').text('');
+    $('#lbl_autor').text('');
+    $('#lbl_editorial').text('');
 
     $('#preview_imagen')
         .hide()
         .attr('src','');
 
-    $('#input_imagen')
-        .removeClass('d-none');
 }
 
-function limpiarCamposLibro() {
 
-    // TÍTULO
-    $('#input_titulo')
-        .val('')
-        .prop('disabled', true);
+// ===============================
+// AGREGAR FILA TABLA
+// ===============================
+function agregarFilaTabla(item){
 
-    // =========================
-    // AUTORES (select2 múltiple)
-    // =========================
-    $('#input_autor')
-        .val(null)              // limpiar selección
-        .trigger('change')      // actualizar select2
-        .prop('disabled', true);
+    let fila = `
+        <tr>
 
-    // =========================
-    // EDITORIAL (select2 simple)
-    // =========================
-    $('#input_editorial')
-        .val(null)
-        .trigger('change')
-        .prop('disabled', true);
+        <td>${item.titulo}</td>
 
-    // =========================
-    // IMAGEN
-    // =========================
-    $('#preview_imagen')
-        .hide()
-        .attr('src', '');
+        <td>${item.autor}</td>
 
-    $('#input_imagen')
-        .val('')               // limpiar archivo seleccionado
-        .addClass('d-none');
+        <td>${item.cantidad}</td>
+
+        <td>${item.precio}</td>
+
+        <td>${item.subtotal.toFixed(2)}</td>
+
+        <td>
+        <button class="btn btn-danger btn-sm btnEliminarDetalle">
+        Eliminar
+        </button>
+        </td>
+
+        </tr>
+        `;
+
+    $('#tablaDetalles tbody').append(fila);
+
+}
+
+
+// ===============================
+// CALCULAR TOTAL
+// ===============================
+function calcularTotal(){
+
+    let total = 0;
+
+    detalleCompra.forEach(function(item){
+
+        total += parseFloat(item.subtotal);
+
+    });
+
+    $('input[name="monto_total"]').val(total.toFixed(2));
+
 }
