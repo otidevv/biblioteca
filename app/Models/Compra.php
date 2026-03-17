@@ -8,8 +8,8 @@ class Compra extends Model
 {
     //
     protected $fillable = [
-        'numero_siaf','fecha_compra','proveedor_id',
-        'usuario_id','monto_total','observaciones'
+        'codigo','numero_siaf','fecha_compra','proveedor_id',
+        'usuario_id','monto_total','observaciones','year'
     ];
 
     public function compra_detalles()

@@ -9,8 +9,16 @@ class Editorial extends Model
     //
     protected $table = 'editoriales';
     protected $fillable = [
-        'tipo_documento','nro_documento','nombre','responsable',
-        'telefono','correo','direccion','web','pais','estado'
+        'tipo_documento',
+        'nro_documento',
+        'nombre',
+        'responsable',
+        'telefono',
+        'correo',
+        'direccion',
+        'web',
+        'pais',
+        'estado'
     ];
 
     public function libros()

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->uuid('uuid')->unique(); // ID global entre sistemas
             $table->string('name')->unique();
             $table->string('email')->unique();
-            $table->string('password')->nullable();;
-            $table->enum('tipo_usuario', ['ADMIN', 'BIBLIOTECARIO', 'LECTOR']);
+            $table->string('password')->nullable();
+            $table->string('tipo_usuario')->nullable();
 
             // Seguridad
             $table->enum('estado', ['activo', 'suspendido'])->default('activo');

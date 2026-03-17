@@ -7,120 +7,14 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-    <style>
-        /* 🎨 COLORES */
-        :root {
-            --primary: #d6336c;
-            --secondary: #0d6efd;
-            --bg: #f4f6f9;
-        }
-
-        /* GENERAL */
-        body {
-            background: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        /* TOPBAR */
-        .topbar {
-            background: var(--primary);
-            color: white;
-            padding: 8px 0;
-            font-size: 14px;
-        }
-
-        /* NAVBAR */
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* BANNER */
-        .banner {
-            position: relative;
-        }
-
-        .carousel-item {
-            height: 300px;
-        }
-
-        .carousel-item img {
-            height: 300px;
-            object-fit: cover;
-            filter: brightness(0.6);
-        }
-
-        @media(min-width:768px) {
-            .carousel-item {
-                height: 400px;
-            }
-
-            .carousel-item img {
-                height: 400px;
-            }
-        }
-
-        /* BUSCADOR */
-        .banner-search {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 700px;
-        }
-
-        .search-box {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        /* TARJETAS */
-        .book-card {
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: 0.3s;
-            height: 100%;
-        }
-
-        .book-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .book-cover {
-            height: 220px;
-            object-fit: cover;
-        }
-
-        /* BOTONES */
-        .btn-libro {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-libro:hover {
-            background: #0b5ed7;
-        }
-
-        /* ESTRELLAS */
-        .stars {
-            color: #ffc107;
-            font-size: 14px;
-        }
-
-        .section-title {
-            color: var(--primary);
-            font-weight: 700;
-            margin-top: 30px;
-        }
-    </style>
-
+    <!-- TU CSS -->
+    <link href="{{ asset('css/pagina/index.css') }}" rel="stylesheet" />
 </head>
 
 <body>
@@ -189,20 +83,17 @@
 
         </div>
 
-        <!-- BUSCADOR CENTRADO -->
+        <!-- BUSCADOR -->
         <div class="banner-search">
             <div class="search-box">
-
                 <div class="row g-2">
                     <div class="col-12 col-md-8">
                         <input class="form-control form-control-lg" placeholder="Buscar libro, autor o tema...">
                     </div>
-
                     <div class="col-12 col-md-4">
                         <button class="btn btn-libro w-100 btn-lg">Buscar</button>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -210,16 +101,11 @@
 
     <!-- LIBROS -->
     <div class="container">
-
         <h4 class="section-title">📚 Libros Destacados</h4>
-
         <div class="row g-4" id="contenedorLibros"></div>
-
     </div>
 
     <script>
-
-        /* 📚 LIBROS DE EJEMPLO */
         const libros = [
             "Programación Web", "Base de Datos", "IA", "Redes",
             "Algoritmos", "Ciberseguridad", "Laravel", "Python",
@@ -254,11 +140,9 @@
                 </div>
             `;
         });
-
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
 </html>

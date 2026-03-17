@@ -63,6 +63,16 @@ return [
             ]) : [],
         ],
 
+        'mysql2' => [
+            'driver' => 'mysql',
+            'host' => env('DB_SECOND_HOST'),
+            'port' => env('DB_SECOND_PORT'),
+            'database' => env('DB_SECOND_DATABASE'),
+            'username' => env('DB_SECOND_USERNAME'),
+            'password' => env('DB_SECOND_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+        ],
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

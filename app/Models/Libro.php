@@ -8,7 +8,7 @@ class Libro extends Model
 {
     //
     protected $fillable = [
-        'codigo','codigo_dewey','isbn','titulo','paginas',
+        'codigo_ant','codigo','codigo_dewey','isbn','titulo','paginas',
         'fecha_publicacion','lugar_publicacion','resumen',
         'archivo_indice','imagen','edicion','anio_edicion',
         'idioma','anotaciones','editorial_id','tipo_registro_id','estado'

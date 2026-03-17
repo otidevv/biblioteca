@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('ejemplares', function (Blueprint $table) {
             $table->id();
-            $table->integer('codigo_interno');
-            $table->string('codigo_dewey');
-            $table->string('tipo')->unique();//ejemplar, tomo, volumen
-            $table->string('siaf')->unique();
+            $table->string('codigo_ant')->nullable();
+            $table->integer('adquisicion')->nullable();
+            $table->integer('codigo_interno')->nullable();
+            $table->string('codigo_dewey')->nullable();
+            $table->string('tipo')->nullable();//ejemplar, tomo, volumen
+            $table->string('siaf')->nullable();
             $table->foreignId('libro_id')->constrained();
             $table->foreignId('biblioteca_id')->nullable()->constrained();
             $table->foreignId('compra_detalle_id')->nullable()->constrained('compra_detalles');

@@ -43,6 +43,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+            // Identidad global
     /**
      * Get the attributes that should be cast.
      *

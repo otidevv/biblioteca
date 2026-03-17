@@ -8,7 +8,8 @@ class Ejemplar extends Model
 {
     //
     protected $table = 'ejemplares';
-    protected $fillable = ['siaf','tipo','codigo_dewey','codigo_interno','libro_id','biblioteca_id','estado','compra_detalle_id'];
+protected $fillable = ['codigo_ant','adquisicion','siaf',
+'tipo','codigo_dewey','codigo_interno','libro_id','biblioteca_id','estado','compra_detalle_id'];
 
     public function libro()
     {

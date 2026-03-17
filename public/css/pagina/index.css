@@ -1,0 +1,109 @@
+/* 🎨 COLORES */
+:root {
+    --primary: #d6336c;
+    --secondary: #0d6efd;
+    --bg: #f4f6f9;
+}
+
+/* GENERAL */
+body {
+    background: var(--bg);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* TOPBAR */
+.topbar {
+    background: var(--primary);
+    color: white;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+/* NAVBAR */
+.navbar {
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* BANNER */
+.banner {
+    position: relative;
+}
+
+.carousel-item {
+    height: 300px;
+}
+
+.carousel-item img {
+    height: 300px;
+    object-fit: cover;
+    filter: brightness(0.6);
+}
+
+@media(min-width:768px) {
+    .carousel-item {
+        height: 400px;
+    }
+
+    .carousel-item img {
+        height: 400px;
+    }
+}
+
+/* BUSCADOR */
+.banner-search {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 700px;
+}
+
+.search-box {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* TARJETAS */
+.book-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s;
+    height: 100%;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.book-cover {
+    height: 220px;
+    object-fit: cover;
+}
+
+/* BOTONES */
+.btn-libro {
+    background: var(--secondary);
+    color: white;
+}
+
+.btn-libro:hover {
+    background: #0b5ed7;
+}
+
+/* ESTRELLAS */
+.stars {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+/* TITULOS */
+.section-title {
+    color: var(--primary);
+    font-weight: 700;
+    margin-top: 30px;
+}

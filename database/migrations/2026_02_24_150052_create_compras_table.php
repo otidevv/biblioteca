@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('compras', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->nullable();
             $table->string('numero_siaf')->nullable();
-            $table->date('fecha_compra');
+            $table->string('ayer')->nullable();
+            $table->date('fecha_compra')->nullable();
             $table->foreignId('proveedor_id')->constrained('proveedores');
             $table->foreignId('usuario_id')->constrained('users');
             $table->decimal('monto_total',10,2);
