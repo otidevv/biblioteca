@@ -8,11 +8,11 @@
 <nav class="mb-4 text-sm text-gray-600">
     <ol class="flex items-center space-x-2">
         <li class="font-semibold text-gray-800">
-            Inventario
+            Administración
         </li>
         <li class="text-gray-400">›</li>
         <li class="text-emerald-700 font-semibold">
-            Libros
+            Usuarios
         </li>
     </ol>
 </nav>
@@ -25,10 +25,8 @@
             ➕ Agregar Libro
         </a>
     </div>
-
-    {{-- Select para tipos de usuario --}}
-    <div class="overflow-x-auto">
-        <table id="tabla-libros" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
+    <div class="w-100" style="overflow-x: auto;">
+        <table id="tabla-libros" class="table table-hover table-bordered align-middle datatable w-100">
             <thead class="bg-gray-100">
                 <tr>
                     <th>Codigo Dewey</th>

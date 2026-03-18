@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('correo')->nullable();
             $table->string('direccion')->nullable();
             $table->string('web')->nullable();
-            $table->boolean('estado')->default(true);
+            $table->tinyInteger('estado')->nullable();
             $table->foreignId('pais')->nullable()->constrained("paises");
             $table->timestamps();
         });

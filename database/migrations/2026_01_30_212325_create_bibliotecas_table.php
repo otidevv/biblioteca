@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->string('direccion')->nullable();
             $table->string('descripcion')->nullable();
-            $table->enum('estado', ['activo', 'inactivo'])->default('activo');
+            $table->tinyInteger('estado')->nullable();
             $table->timestamps();
         });
     }

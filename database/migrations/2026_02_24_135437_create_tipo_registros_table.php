@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('abreviatura');
             $table->string('nombre');
             $table->text('descripcion')->nullable();
-            $table->boolean('estado')->default(true);
+            $table->tinyInteger('estado')->nullable();
             $table->timestamps();
         });
     }

@@ -17,10 +17,11 @@ return new class extends Migration
             $table->string('numero_siaf')->nullable();
             $table->string('ayer')->nullable();
             $table->date('fecha_compra')->nullable();
-            $table->foreignId('proveedor_id')->constrained('proveedores');
-            $table->foreignId('usuario_id')->constrained('users');
-            $table->decimal('monto_total',10,2);
+            $table->foreignId('proveedor_id')->nullable()->constrained('proveedores');
+            $table->foreignId('usuario_id')->nullable()->constrained('users');
+            $table->decimal('monto_total',10,2)->nullable();
             $table->text('observaciones')->nullable();
+            $table->tinyInteger('estado')->nullable();
             $table->timestamps();
         });
 

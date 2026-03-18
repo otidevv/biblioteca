@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('libros', function (Blueprint $table) {
             $table->id();
             $table->string('codigo_ant')->nullable();
-            $table->string('codigo')->unique();
+            $table->string('codigo')->nullable()->unique();
             $table->string('codigo_dewey')->nullable();
             $table->string('isbn')->nullable();
             $table->string('titulo');
@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('fecha_publicacion')->nullable();
             $table->string('lugar_publicacion')->nullable();
             $table->text('resumen')->nullable();
+            $table->text('palabras_clave')->nullable();
             $table->string('archivo_indice')->nullable();
             $table->string('imagen')->nullable();
             $table->string('edicion')->nullable();
@@ -33,7 +34,7 @@ return new class extends Migration
             $table->foreignId('editorial_id')->nullable()->constrained("editoriales");
             $table->foreignId('tipo_registro_id')->nullable()->constrained("tipo_registros");
 
-            $table->boolean('estado')->default(true);
+            $table->tinyInteger('estado')->default(1);
             $table->timestamps();
         });
     }

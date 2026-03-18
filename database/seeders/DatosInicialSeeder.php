@@ -203,21 +203,21 @@ class DatosInicialSeeder extends Seeder
                 'nombre' => 'BIBLIOTECA CENTRAL',
                 'direccion' => 'CIUDAD UNIVERSITARIA',
                 'descripcion' => null,
-                'estado' => 'activo',
+                'estado' => 1,
             ],
             [
                 'codigo' => 'BEIS',
                 'nombre' => 'BIBLIOTECA ESPECIALIZADA DE ING DE SISTEMAS',
                 'direccion' => null,
                 'descripcion' => null,
-                'estado' => 'activo',
+                'estado' => 1,
             ],
             [
                 'codigo' => 'BEE',
                 'nombre' => 'BIBLIOTECA ESPECIALIZADA DE ENFERMERIA',
                 'direccion' => null,
                 'descripcion' => null,
-                'estado' => 'activo',
+                'estado' => 1,
             ],
         ];
         foreach ($bibliotecas as $data) {
@@ -246,6 +246,10 @@ class DatosInicialSeeder extends Seeder
             ['nombre' => 'ATENCION A ESTUDIANTES'],
             ['descripcion' => 'ATENCION A ESTUDIANTES']
         );
+        Rol::firstOrCreate(
+            ['nombre' => 'LECTOR'],
+            ['descripcion' => 'LECTOR']
+        );
         /** =========================
          *  PERSONA ADMIN
          *  ========================= */
@@ -273,7 +277,7 @@ class DatosInicialSeeder extends Seeder
                 'name' => 'admin',
                 'password' => Hash::make('12345678'),
                 'tipo_usuario' => 'ADMIN',
-                'estado' => 'activo',
+                'estado' => 1,
                 'origen' => 'local',
                 'persona_id' => $personaAdmin->id,
             ]
@@ -315,6 +319,7 @@ class DatosInicialSeeder extends Seeder
             ['administracion.editoriales', 'Gestión de editoriales'],
             ['administracion.tipo_registros', 'Gestión de tipo_registros'],
             ['administracion.autores', 'Gestión de autores'],
+            ['administracion.libros', 'Gestión de Libros'],
         ], $permisoAdmin->id);
 
         // LECTORES
@@ -359,7 +364,6 @@ class DatosInicialSeeder extends Seeder
             ['inventario.digital', 'Material Digital'],
             ['inventario.notificaciones', 'Notificaciones'],
             ['inventario.compras', 'Gestión de Compras'],
-            ['inventario.libros', 'Gestión de Libros'],
         ], $inventario->id);
 
         /** =========================

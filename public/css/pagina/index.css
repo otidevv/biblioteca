@@ -107,3 +107,12 @@ body {
     font-weight: 700;
     margin-top: 30px;
 }
+/* Reducir tamaño de la paginación */
+.pagination .page-link {
+    padding: 0.25rem 0.5rem;   /* menos espacio interno */
+    font-size: 0.85rem;        /* letra más pequeña */
+}
+
+.pagination .page-item {
+    margin: 0 2px;             /* menos separación entre botones */
+}

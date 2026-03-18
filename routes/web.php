@@ -7,6 +7,7 @@ use App\Http\Controllers\AdministracionController;
 use App\Http\Controllers\LectoresController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\PaginaController;
+use App\Http\Controllers\SincronizarController;
 //controllers de JS en Api
 use App\Http\Controllers\Api\UsuarioController as ApiUsuarioController;
 use App\Http\Controllers\Api\RolController as ApiRolController;
@@ -158,8 +159,9 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 
     });
 });
- 
 // PAGINA
 Route::get('/', [PaginaController::class, 'index']);
+Route::get('/libro', [PaginaController::class, 'libro']);
+Route::get('/sincronizar', [SincronizarController::class, 'sincronizar']);
 
 

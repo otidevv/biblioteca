@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nombres');
             $table->string('apellidos');
             $table->foreignId('pais')->nullable()->constrained("paises");
-            $table->boolean('estado')->default(true);
+            $table->tinyInteger('estado')->nullable();
             $table->timestamps();
         });
     }

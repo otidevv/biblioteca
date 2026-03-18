@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('tipo_lector_id')->constrained('tipo_lectores');
             $table->foreignId('biblioteca_id')->constrained()->cascadeOnDelete();
             $table->string('codigo_lector')->unique();
-            $table->enum('estado', ['activo', 'bloqueado'])->default('activo');
+            $table->tinyInteger('estado')->nullable();
             $table->timestamps();
         });
     }

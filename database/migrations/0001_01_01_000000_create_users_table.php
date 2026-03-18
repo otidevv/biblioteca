@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             // Identidad global
-            $table->uuid('uuid')->unique(); // ID global entre sistemas
+            $table->uuid('uuid')->nullable()->unique(); // ID global entre sistemas
             $table->string('name')->unique();
             $table->string('email')->unique();
             $table->string('password')->nullable();
             $table->string('tipo_usuario')->nullable();
 
             // Seguridad
-            $table->enum('estado', ['activo', 'suspendido'])->default('activo');
+            $table->tinyInteger('estado')->default(1);
             $table->enum('origen', ['local', 'sgd', 'ldap'])->default('local');
             // Auditoría
             $table->foreignId('persona_id')
