@@ -8,6 +8,8 @@ use App\Http\Controllers\LectoresController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\PaginaController;
 use App\Http\Controllers\SincronizarController;
+use App\Http\Controllers\Auth\ProfileController;
+
 //controllers de JS en Api
 use App\Http\Controllers\Api\UsuarioController as ApiUsuarioController;
 use App\Http\Controllers\Api\RolController as ApiRolController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\Api\DeweyController as ApiDeweyController;
 use App\Http\Controllers\Api\CutterController as ApiCutterController;
 use App\Http\Controllers\Api\EjemplarController as ApiEjemplarController;
 use App\Http\Controllers\Api\CompraController as ApiCompraController;
+use App\Http\Controllers\Api\PaginaController as ApiPaginaController;
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -42,14 +45,15 @@ use App\Http\Controllers\Api\CompraController as ApiCompraController;
 require __DIR__.'/auth.php';
 Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 
-    Route::get('/', function () {
-        return view('administracion/index');
-    });    
+    Route::get('/', [AdministracionController::class, 'inicio'])->name('administracion.index');    
+    Route::get('/perfil', [ProfileController::class, 'edit'])->name('perfil.edit');    
+
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}/{id?}', [AdministracionController::class, 'index'])
             ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras|libros|libros_nuevo|ejemplares');
     }); 
+
     // INVENTARIO
     Route::prefix('inventario')->group(function () {
         Route::get('{modulo}', [InventarioController::class, 'index'])
@@ -62,7 +66,10 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             ->where('modulo', 'registro|historial|penalizaciones|importacion');
     });
 
-    Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+    Route::get('/dashboard', function () {
+        return view('administracion.index'); // resources/views/administracion/index.blade.php
+    })->name('dashboard');
+
 
 
 
@@ -159,9 +166,22 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 
     });
 });
-// PAGINA
-Route::get('/', [PaginaController::class, 'index']);
-Route::get('/libro', [PaginaController::class, 'libro']);
+// PAGINA Route::get('/autores', [ApiAutorController::class, 'listarAutores']);
+Route::prefix('pagina')->group(function () {
+    Route::get('/idiomas', [ApiPaginaController::class, 'listarIdiomas']);
+    Route::get('/materias', [ApiPaginaController::class, 'listarMaterias']); 
+    Route::get('/autores', [ApiPaginaController::class, 'listarAutores']); 
+    Route::get('/registros', [ApiPaginaController::class, 'listarRegistros']); 
+}); 
+
+Route::get('/', [PaginaController::class, 'index'])->name('home');
+Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->name('biblioteca.show');
+Route::get('/libro/{id}', [PaginaController::class, 'showLibro'])->name('libro.show');
+
+/*
+Route::get('/', [PaginaController::class, 'index'])->name('pagina.index');
+Route::get('/libro', [PaginaController::class, '_libro']);
+Route::get('/{id}/libro', [PaginaController::class, 'libro'])->name('pagina.libro');
+*/
+
 Route::get('/sincronizar', [SincronizarController::class, 'sincronizar']);
-
-

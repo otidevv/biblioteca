@@ -14,6 +14,10 @@ use App\Models\Idioma;
 use App\Models\Dewey;
 class AdministracionController extends Controller
 {
+    public function inicio()
+    {
+        return view('administracion.index');
+    }
     public function index(string $modulo, $id=null)
     {
         return match ($modulo) {

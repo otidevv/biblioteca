@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Rol;
 use App\Models\User;
 use App\Models\Permiso;
+use \App\Models\Usuario_rol_biblioteca;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -75,6 +76,10 @@ class User extends Authenticatable
             'usuario_rol_bibliotecas',
             'user_id',
             'rol_id'
-        )->withPivot('biblioteca_id', 'activo');
+        )->withPivot('biblioteca_id', 'estado');
+    }
+    public function usuarioRolBibliotecas()
+    {
+        return $this->hasMany(Usuario_rol_biblioteca::class, 'user_id');
     }
 }

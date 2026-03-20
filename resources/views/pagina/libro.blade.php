@@ -1,209 +1,197 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Detalle del Libro - Biblioteca UNAMAD</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <!-- TOPBAR -->
-    <div class="topbar bg-dark text-white py-2">
-        <div class="container d-flex justify-content-between">
-            <div><b>📚 BIBLIOTECA UNAMAD</b></div>
-            <div>UNAMAD | ADMIN</div>
+@extends('layouts.pagina')
+
+@section('css')
+<style>
+    .libro-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .libro-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .libro-img {
+        transition: transform 0.3s ease;
+    }
+
+    .libro-card:hover .libro-img {
+        transform: scale(1.05);
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="container my-5">
+
+    <!-- DETALLE DEL LIBRO -->
+    <div class="row mb-4">
+        <!-- Portada -->
+        <div class="col-md-4 text-center">
+            @if($libro->imagen)
+            <img src="{{ asset($libro->imagen) }}" class="img-fluid rounded shadow-lg mb-3" alt="Portada del libro">
+            @else
+            <img src="{{ asset('images/no-cover.png') }}" class="img-fluid rounded shadow-lg mb-3" alt="Sin portada">
+            @endif
+        </div>
+        <!-- Información -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="fw-bold">{{ $libro->titulo }}</h3>
+                    <p class="text-muted">{{ $libro->descripcion }}</p>
+                    <p><strong>Autor(es):</strong> {{ $libro->autores->pluck('nombres')->join(', ') }}</p>
+                    <p><strong>Materia:</strong> {{ $libro->materias->pluck('nombre')->join(', ') }}</p>
+                    <p><strong>Idioma:</strong> {{ $libro->idioma->nombre ?? 'N/A' }}</p>
+                    <p><strong>Editorial:</strong> {{ $libro->editorial->nombre ?? 'N/A' }}</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">Biblioteca</a>
-            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">☰</button>
-            <div class="collapse navbar-collapse" id="menu">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Catálogo</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Actividades</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Quiénes somos</a></li>
-                </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2" placeholder="Buscar...">
-                    <button class="btn btn-primary">🔍</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    <!-- EJEMPLARES -->
+    <div class="mt-5">
+        <h4>Ejemplares disponibles</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Código interno</th>
+                    <th>Biblioteca</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($libro->ejemplares as $ejemplar)
+                <tr>
+                    <td>
+                        {{ $ejemplar->codigo_dewey
+                        ? $ejemplar->codigo_dewey . ' ' . $ejemplar->tipo . ' ' . $ejemplar->codigo_interno
+                        : $ejemplar->codigo_ant}}
+                    </td>
+                    <td>{{ $ejemplar->biblioteca->nombre ?? 'No asignada' }}</td>
+                    <td>
+                        @if($ejemplar->estado === 1)
+                        <span class="badge bg-success">Disponible</span>
+                        @else
+                        <span class="badge bg-danger">No disponible</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($ejemplar->estado === 1)
+                        @auth
+                        <!-- Botón que abre el modal -->
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#modalReserva{{ $ejemplar->id }}">
+                            Reservar
+                        </button>
 
-    <!-- DETALLE DEL LIBRO -->
-    <div class="container my-5">
-       
-        <div class="row">
-            <!-- Portada -->
-            <div class="col-md-4 text-center">
-                <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f" 
-                     class="img-fluid rounded shadow-lg mb-3" alt="Portada del libro">
-                <span class="badge bg-success">Disponible</span>
-            </div>
-            <!-- Información -->
-            <div class="col-md-8">
-                <h2 class="fw-bold">Cien años de soledad</h2>
-                <p class="text-muted fs-5">Gabriel García Márquez</p>
-                <p><span class="badge bg-info">Editorial Sudamericana</span> 
-                   <span class="badge bg-secondary">1967</span> 
-                   <span class="badge bg-warning">ISBN: 978-84-376-0494-7</span></p>
-                <p><strong>Categoría:</strong> Novela, Realismo mágico</p>
-                <p><strong>Resumen:</strong> Una obra maestra del realismo mágico que narra la historia de la familia Buendía en el mítico pueblo de Macondo.</p>
-
-                <!-- Calificación -->
-                <div class="stars mb-3 fs-4 text-warning">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-half-alt"></i>
-                    <i class="fa-regular fa-star"></i>
-                    <span class="ms-2 text-dark fs-6">(3.5/5)</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- COMENTARIOS -->
-        <div class="mt-5">
-            <h4>💬 Opiniones de lectores</h4>
-            <div class="list-group">
-                <!-- Comentario 1 -->
-                <div class="list-group-item">
-                    <strong>Ana López</strong> <span class="text-muted small">(12/03/2026)</span>
-                    <div class="text-warning">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-half-alt"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <span class="ms-2">(3.5/5)</span>
-                    </div>
-                    <p>Un libro fascinante, lleno de simbolismo y personajes inolvidables.</p>
-                </div>
-                <!-- Comentario 2 -->
-                <div class="list-group-item">
-                    <strong>Carlos Pérez</strong> <span class="text-muted small">(13/03/2026)</span>
-                    <div class="text-warning">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <span class="ms-2">(3/5)</span>
-                    </div>
-                    <p>Al principio cuesta engancharse, pero luego es imposible soltarlo.</p>
-                </div>
-                <!-- Comentario 3 -->
-                <div class="list-group-item">
-                    <strong>María Torres</strong> <span class="text-muted small">(14/03/2026)</span>
-                    <div class="text-warning">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <span class="ms-2">(4/5)</span>
-                    </div>
-                    <p>Una obra que marcó mi vida.</p>
-                </div>
-                <!-- Comentario 4 -->
-                <div class="list-group-item">
-                    <strong>José Ramírez</strong> <span class="text-muted small">(15/03/2026)</span>
-                    <div class="text-warning">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-half-alt"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <span class="ms-2">(2.5/5)</span>
-                    </div>
-                    <p>El realismo mágico en su máxima expresión.</p>
-                </div>
-                <!-- Comentario 5 -->
-                <div class="list-group-item">
-                    <strong>Laura Fernández</strong> <span class="text-muted small">(16/03/2026)</span>
-                    <div class="text-warning">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <span class="ms-2">(5/5)</span>
-                    </div>
-                    <p>Recomendado para quienes aman la literatura latinoamericana.</p>
-                </div>
-            </div>
-
-            <!-- Paginación -->
-            <nav aria-label="Comentarios">
-                <ul class="pagination justify-content-center mt-3">
-                    <li class="page-item disabled"><a class="page-link">Anterior</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
-                </ul>
-            </nav>
-        </div>
-
-
-        <!-- LIBROS SIMILARES -->
-        <div class="mt-5">
-            <h4>📖 Libros similares</h4>
-            <div id="carouselSimilares" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <div class="row g-4">
-                            <div class="col-md-3">
-                                <div class="card h-100 shadow-sm">
-                                    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794" class="card-img-top">
-                                    <div class="card-body">
-                                        <h6 class="card-title">La casa de los espíritus</h6>
-                                        <a href="/1/libro" class="btn btn-sm btn-outline-primary w-100">Ver detalle</a>
+                        <!-- Modal -->
+                        <div class="modal fade" id="modalReserva{{ $ejemplar->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Reserva de ejemplar</h5>
+                                        <button type="button" class="btn-close btn-close-white"
+                                            data-bs-dismiss="modal"></button>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card h-100 shadow-sm">
-                                    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66" class="card-img-top">
-                                    <div class="card-body">
-                                        <h6 class="card-title">Pedro Páramo</h6>
-                                        <a href="/2/libro" class="btn btn-sm btn-outline-primary w-100">Ver detalle</a>
+                                    <div class="modal-body">
+                                        <p><strong>Título del libro:</strong> {{ $libro->titulo }}</p>
+                                        <p><strong>Código ejemplar:</strong>
+                                            {{ $ejemplar->codigo_dewey
+                                            ? $ejemplar->codigo_dewey.' '.$ejemplar->tipo.' '.$ejemplar->codigo_interno
+                                            : $ejemplar->codigo_ant }}
+                                        </p>
+                                        <p><strong>Biblioteca:</strong> {{ $ejemplar->biblioteca->nombre ?? 'No
+                                            asignada' }}</p>
+                                        <p><strong>Estado:</strong> Disponible</p>
+                                        <p><strong>Inicio de reserva:</strong> {{ now()->format('d/m/Y H:i') }}</p>
+                                        <p><strong>Fecha límite:</strong> {{ now()->addDay()->setHour(20)->format('d/m/Y
+                                            H:i') }}</p>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card h-100 shadow-sm">
-                                    <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f" class="card-img-top">
-                                    <div class="card-body">
-                                        <h6 class="card-title">El otoño del patriarca</h6>
-                                        <a href="/3/libro" class="btn btn-sm btn-outline-primary w-100">Ver detalle</a>
+                                    <div class="modal-footer">
+                                        <form method="POST">
+                                            @csrf
+                                            <input type="hidden" name="ejemplar_id" value="{{ $ejemplar->id }}">
+                                            <button type="submit" class="btn btn-success">Confirmar reserva</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancelar</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Podrías añadir más carousel-item si hay más recomendaciones -->
+                        @else
+                        <!-- Si no está logueado -->
+                        <a href="{{ route('login') }}?redirect={{ route('pagina.libro',$libro->id) }}"
+                            class="btn btn-sm btn-outline-primary">
+                            Inicia sesión para reservar
+                        </a>
+                        @endauth
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No hay ejemplares registrados</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- COMENTARIOS -->
+    <div class="mt-5">
+        <h4>Opiniones de lectores</h4>
+        <div class="list-group">
+            @forelse($libro->comentarios as $comentario)
+            <div class="list-group-item">
+                <strong>{{ $comentario->usuario->nombre }}</strong>
+                <span class="text-muted small">({{ $comentario->created_at->format('d/m/Y') }})</span>
+                <div class="text-warning">
+                    {!! str_repeat('<i class="fa fa-star"></i>', $comentario->calificacion) !!}
+                    {!! str_repeat('<i class="fa fa-regular fa-star"></i>', 5 - $comentario->calificacion) !!}
+                    <span class="ms-2">({{ $comentario->calificacion }}/5)</span>
                 </div>
-                <button class="carousel-control-prev" data-bs-target="#carouselSimilares" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" data-bs-target="#carouselSimilares" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
+                <p>{{ $comentario->comentario }}</p>
             </div>
+            @empty
+            <p class="text-muted">No hay comentarios aún.</p>
+            @endforelse
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    @yield('js')
-</body>
-</html>
+    <!-- LIBROS RELACIONADOS -->
+    @if($relacionados->count())
+    <div class="mt-5">
+        <h4>📖 Libros relacionados</h4>
+        <div class="row g-4">
+            @foreach($relacionados as $rel)
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card libro-card h-100">
+                    <img src="{{ '/'.$rel->imagen ?? asset('images/no-cover.png') }}" class="libro-img card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="mb-1">{{ $rel->titulo }}</h6>
+                        <p class="text-muted small mb-2">
+                            {{ $rel->autores->pluck('nombres')->join(', ') }}
+                        </p>
+                        <div class="stars mb-2">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-alt"></i>
+                            <i class="fa-regular fa-star"></i>
+                        </div>
+                        <a href="/{{ $libro->id }}/libro" class="btn btn-sm btn-outline-primary mt-auto w-100">
+                            Ver detalle
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+</div>
+@endsection

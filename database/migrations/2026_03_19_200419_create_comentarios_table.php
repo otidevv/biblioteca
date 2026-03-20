@@ -11,17 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('usuario_rol_bibliotecas', function (Blueprint $table) {
+        Schema::create('comentarios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('rol_id')->constrained('roles')->cascadeOnDelete();
-            $table->foreignId('biblioteca_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('libro_id')->constrained('libros')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->text('comentario');
+            $table->unsignedTinyInteger('calificacion'); // 1–5
             $table->tinyInteger('estado')->nullable();
             $table->timestamps();
-
-            $table->unique(['user_id', 'rol_id', 'biblioteca_id']);
         });
-
     }
 
     /**
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('usuario_rol_bibliotecas');
+        Schema::dropIfExists('comentarios');
     }
 };

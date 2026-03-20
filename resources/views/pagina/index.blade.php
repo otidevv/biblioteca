@@ -3,55 +3,70 @@
 @section('css')
 @endsection
 @section('js')
+<script src="{{ asset('js/pagina/index.js') }}"></script>
+<script>
+document.addEventListener('click', function(e) {
+    let link = e.target.closest('.pagination a');
+    if (link) {
+        e.preventDefault();
+        fetch(link.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+                document.querySelector('#libros-container').innerHTML = html;
+            });
+    }
+});
+</script>
 @endsection
-@section('content')
-            <h4 class="section-title">📚 Libros Destacados</h4>
-            <div class="row g-4" id="contenedorLibros">
-
-                @forelse($libros as $libro)
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                    <div class="card book-card h-100">
-
-                        <img src="{{ $libro->imagen }}" class="book-cover">
-
-                        <div class="card-body d-flex flex-column">
-
-                            <h6 class="mb-1">{{ $libro->titulo }}</h6>
-
-                            <p class="text-muted small mb-2">
-                                @foreach($libro->autores as $autor)
-                                {{ $autor->nombres }} {{ $autor->apellidos }}@if(!$loop->last), @endif
-                                @endforeach
-                            </p>
-
-                            <div class="stars mb-2">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-half-alt"></i>
-                                <i class="fa-regular fa-star"></i>
-                            </div>
-
-                            <a href="/{{ $libro->id }}/libro" class="btn btn-libro mt-auto btn-sm w-100">
-                                Ver detalle
-                            </a>
-
-                        </div>
-
-                    </div>
+@section('content')   
+<div class="row">
+    <!-- Sidebar de filtros -->
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="fw-bold">Filtros de búsqueda</h6>
+                <!-- Búsqueda general -->
+                <div class="mb-3">
+                    <label for="search" class="form-label">Buscar</label>
+                    <input type="text" id="search" class="form-control" placeholder="Título, autor, descripción...">
                 </div>
-                @empty
-                <div class="col-12 text-center">
-                    <p class="text-muted">No hay libros disponibles</p>
+                <!-- Tipo de registro -->
+                <div class="mb-3">
+                    <label for="registro_id" class="form-label">Tipo de registro</label>
+                    <select id="registro_id" class="form-select select2">
+                    </select>
                 </div>
-                @endforelse
-
+                <!-- Idioma -->
+                <div class="mb-3">
+                    <label for="idioma_id" class="form-label">Idioma</label>
+                    <select id="idioma_id" class="form-select select2">
+                    </select>
+                </div>
+                <!-- Autor -->
+                <div class="mb-3">
+                    <label for="autor" class="form-label">Autor</label>
+                    <select id="autor_id" class="form-select select2">
+                    </select>
+                </div>
+                <!-- Materia -->
+                <div class="mb-3">
+                    <label for="materia_id" class="form-label">Materia</label>
+                    <select id="materia_id" class="form-select select2">
+                    </select>
+                </div>
+                <!-- Botones -->
+                <button id="reset" class="btn btn-secondary w-100 mb-2">Restablecer</button>
+                <button id="apply" class="btn btn-primary w-100">Aplicar filtros</button>
             </div>
-            <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center mt-4">
-                <ul class="pagination pagination-sm">
-                    {{ $libros->links() }}
-                </ul>
-            </div>
+        </div>
+    </div>
 
+    <!-- Resultados -->
+    <div class="col-md-9">
+        <h4 class="section-title">📚 Libros Destacados</h4>
+        <div id="libros-container">
+            @include('pagina._libros')
+        </div>
+    </div>
+</div>
 @endsection

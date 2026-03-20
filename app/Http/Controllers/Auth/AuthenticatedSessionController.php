@@ -24,9 +24,28 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-
+       $request->authenticate();
         $request->session()->regenerate();
+
+        $user = $request->user();
+
+        // 1. Si viene un parámetro redirect en la URL, úsalo
+        if ($request->has('redirect')) {
+            return redirect()->to($request->get('redirect'));
+        }
+
+        // 2. Si no hay redirect, revisa roles
+        $roles = $user->usuarioRolBibliotecas()
+                    ->where('estado', 1)
+                    ->pluck('rol_id')
+                    ->toArray();
+
+        if (in_array(5, $roles)) {
+            // Página para lectores
+            return redirect()->route('pagina.index');
+        }
+
+        // Página general para otros roles
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

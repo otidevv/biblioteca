@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Catálogo de Libros - Biblioteca UNAMAD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap -->
@@ -9,17 +10,38 @@
     <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <!-- TU CSS -->
+    <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/select2.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/pagina/index.css') }}" rel="stylesheet" />
     @yield('css')
 </head>
 <body>
     <!-- TOPBAR -->
     <div class="topbar bg-dark text-white py-2">
-        <div class="container d-flex justify-content-between">
+        <div class="container d-flex justify-content-between align-items-center">
             <div><b>📚 BIBLIOTECA UNAMAD</b></div>
-            <div>UNAMAD | ADMIN</div>
+            
+            <div class="d-flex align-items-center gap-3">
+                @auth
+                    <span class="small">👤 {{ Auth::user()->name }}</span>
+                    <a href="{{ url('/perfil') }}" class="btn btn-sm btn-outline-light">
+                        Perfil
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            Cerrar sesión
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">
+                        Iniciar sesión
+                    </a>
+                @endauth
+            </div>
         </div>
     </div>
+
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
@@ -28,10 +50,9 @@
             <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">☰</button>
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="#">Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Actividades</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Quiénes somos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Mis Prestamos</a></li>
                 </ul>
             </div>
         </div>
@@ -69,35 +90,72 @@
             <span class="carousel-control-next-icon"></span>
         </button>
     </div>
-
-    <!-- BUSCADOR FUERA DEL BANNER -->
-    <div class="search-section bg-light py-4">
-        <div class="container">
-            <form class="row g-2">
-                <div class="col-12 col-md-3">
-                    <select class="form-select form-select-lg">
-                        <option value="titulo">Título del libro</option>
-                        <option value="autor">Autor</option>
-                        <option value="editorial">Editorial</option>
-                        <option value="materia">Materia</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-6">
-                    <input class="form-control form-control-lg" placeholder="Escribe tu búsqueda...">
-                </div>
-                <div class="col-12 col-md-3">
-                    <button class="btn btn-primary w-100 btn-lg">Buscar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- CATÁLOGO DE LIBROS -->
     <div class="container my-5">
-        @yield('content')        
+        @yield('content') 
+        @livewireScripts       
     </div>
 
+    <!-- Pie de página -->
+   <footer class="bg-dark text-light pt-5 pb-3 mt-5">
+    <div class="container">
+        <div class="row">
+            <!-- Información institucional -->
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-bold">Universidad Nacional Amazónica de Madre de Dios</h5>
+                <p class="small">
+                    📍 Av. Jorge Chávez s/n, Puerto Maldonado, Madre de Dios, Perú<br>
+                    🎓 Formación académica con excelencia y compromiso social.
+                </p>
+            </div>
+
+            <!-- Contacto -->
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-bold">Contacto</h5>
+                <p class="small mb-1"><i class="fa fa-phone"></i> (082) 123456</p>
+                <p class="small mb-1"><i class="fa fa-envelope"></i> info@unamad.edu.pe</p>
+                <p class="small"><i class="fa fa-clock"></i> Lunes - Viernes: 8:00 am - 6:00 pm</p>
+            </div>
+
+            <!-- Enlaces y redes sociales -->
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-bold">Enlaces útiles</h5>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-light text-decoration-none">Portal Académico</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Biblioteca Virtual</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Admisión</a></li>
+                </ul>
+                <div class="mt-3">
+                    <a href="#" class="text-light me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="#" class="text-light me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#" class="text-light"><i class="fab fa-youtube fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <hr class="border-light">
+        <div class="text-center">
+            <small>© 2026 Universidad Nacional Amazónica de Madre de Dios - Todos los derechos reservados</small>
+        </div>
+    </div>
+</footer>
+
     <!-- Bootstrap JS -->
+    <script src="https://unpkg.com/heroicons@2.0.18/24/outline/index.js" defer></script>
+    <script src="{{ asset('js/jquery-3.6.3.min.js') }}"></script>
+    <script src="{{ asset('lib/tabler/js/tabler.js') }}"></script>
+    <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
+    <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
+    <script src="{{ asset('js/admin.js') }}"></script>
+
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @yield('js')
 </body>

@@ -85,7 +85,7 @@ class UsuarioController extends Controller
                 'telefono'          => $request->telefono,
                 'email_personal'    => $request->correo,
                 'direccion'         => $request->direccion,
-                'activo'            => true,
+                'estado'           =>1,
             ]);
 
             /** =========================
@@ -176,7 +176,7 @@ class UsuarioController extends Controller
                     'user_id'       => $request->id,
                     'rol_id'        => $rolId,
                     'biblioteca_id'=> $request->biblioteca, // o dinámico
-                    'activo'        => true,
+                    'estado'        => 1,
                 ]);
             }
 

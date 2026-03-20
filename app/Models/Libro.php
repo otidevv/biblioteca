@@ -25,13 +25,22 @@ class Libro extends Model
                 ->withTimestamps();
     }
 
+    public function idioma()
+    {
+        return $this->belongsTo(Idioma::class);
+    }
+
     public function ejemplares()
     {
         return $this->hasMany(Ejemplar::class);
     }
+    public function comentarios()
+    {
+        return $this->hasMany(Comentario::class);
+    }
     public function tipo_registro()
     {
-        return $this->belongsTo(Tipo_registro::class,'tipo_registro_id');
+        return $this->belongsTo(Tipo_registro::class);
     }
     public function editorial()
     {

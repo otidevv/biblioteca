@@ -203,24 +203,38 @@ class SincronizarController extends Controller
         DB::connection('mysql2')->table('users')
             ->chunkById(500, function ($rows) {
 
-                $data = [];
-
                 foreach ($rows as $r) {
-                    $data[] = [
-                        'id' => $r->id,
-                        'name' => $r->nombre,
-                        'email' => $r->email,
-                        'password' => $r->password,
-                        'estado' => $r->estado,
-                        'persona_id' => $r->persona_id
-                    ];
-                }
+                    // Insertar o actualizar usuario en la nueva base
+                    DB::table('users')->upsert([
+                        'id'         => $r->id,
+                        'name'       => $r->nombre,
+                        'email'      => $r->email,
+                        'password'   => $r->password,
+                        'estado'     => $r->estado,
+                        'persona_id' => $r->persona_id,
+                    ], ['id']);
 
-                DB::table('users')->upsert($data, ['id']);
+                    // Verificar si ya tiene rol asignado en la nueva base
+                    $existeRol = DB::table('usuario_rol_bibliotecas')
+                        ->where('user_id', $r->id)
+                        ->exists();
+
+                    if (!$existeRol) {
+                        DB::table('usuario_rol_bibliotecas')->insert([
+                            'user_id'       => $r->id,
+                            'rol_id'        => !empty($r->rol_id) ? $r->rol_id : 5, // lector por defecto
+                            'biblioteca_id' => $r->biblioteca_id ?? null,
+                            'estado'        => $r->estado,
+                            'created_at'    => now(),
+                            'updated_at'    => now(),
+                        ]);
+                    }
+                }
             });
     }
 
-    /* =========================
+
+    /* ========================= 
      * LIBROS
      * ========================= */
     protected function libros()
@@ -370,7 +384,11 @@ class SincronizarController extends Controller
                     $data[] = [
                         'codigo_interno' => $r->nro_ejemplar,
                         'codigo_ant' => $r->codigo,
-                        'libro_id' => $r->registro_id
+                        'libro_id' => $r->registro_id,
+                        'biblioteca_id' => $r->biblioteca_id,
+                        'adquisicion' => $r->adquisicion_id,
+                        'tipo' => 'eje.',
+                        'estado' => $r->estado
                     ];
                 }
 

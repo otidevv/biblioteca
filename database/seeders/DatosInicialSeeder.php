@@ -294,7 +294,7 @@ class DatosInicialSeeder extends Seeder
                 'biblioteca_id' => null, // 👈 acceso a TODAS
             ],
             [
-                'activo' => true,
+                'estado' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
