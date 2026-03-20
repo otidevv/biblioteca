@@ -8,6 +8,7 @@ use App\Models\Libro;
 use App\Models\Autor;
 use App\Models\Materia;
 use App\Models\Idioma;
+use App\Models\Biblioteca;
 use App\Models\Tipo_registro;
 class PaginaController extends Controller
 {
@@ -18,7 +19,7 @@ class PaginaController extends Controller
         $bibliotecas = Biblioteca::all();
         $libros = Libro::latest()->take(8)->get();
 
-        return view('home', compact('bibliotecas','libros'));
+        return view('pagina.index', compact('bibliotecas','libros'));
         /*
             $query = Libro::with(['autores','editorial','materias','idioma','tipo_registro'])
                 ->select('id','titulo','imagen');
@@ -72,9 +73,15 @@ class PaginaController extends Controller
     public function showBiblioteca($id)
     {
         $biblioteca = Biblioteca::findOrFail($id);
-        $libros = $biblioteca->libros;
 
-        return view('biblioteca', compact('biblioteca','libros'));
+        $ejemplares = Ejemplar::with('libro')
+            ->where('biblioteca_id', $id)
+            ->get();
+
+        // Agrupar por libro
+        $libros = $ejemplares->groupBy('libro_id');
+
+        return view('pagina.libro', compact('biblioteca','libros'));
     }
 
     public function showLibro($id)

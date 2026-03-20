@@ -14,8 +14,7 @@ class Biblioteca extends Model
         'descripcion',
         'activo'
     ];
-    public function ejemplares()
-    {
+    public function ejemplares(){
         return $this->hasMany(Ejemplar::class);
     }
 }
