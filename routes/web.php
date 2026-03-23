@@ -168,16 +168,21 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 });
 // PAGINA Route::get('/autores', [ApiAutorController::class, 'listarAutores']);
 Route::prefix('pagina')->group(function () {
+    Route::post('/comentario', [ApiPaginaController::class, 'agregarComentario'])->name('comentario');
     Route::get('/idiomas', [ApiPaginaController::class, 'listarIdiomas']);
     Route::get('/materias', [ApiPaginaController::class, 'listarMaterias']); 
     Route::get('/autores', [ApiPaginaController::class, 'listarAutores']); 
     Route::get('/registros', [ApiPaginaController::class, 'listarRegistros']); 
+    Route::get('/catalogo', [ApiPaginaController::class, 'catalogo'])->name('catalogo.libros'); 
 }); 
 
 Route::get('/', [PaginaController::class, 'index'])->name('home');
 Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->name('biblioteca.show');
-Route::get('/libro/{id}', [PaginaController::class, 'showLibro'])->name('libro.show');
-
+Route::get('/{id}/libro', [PaginaController::class, 'showLibro'])->name('libro.show');
+Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
+Route::get('/evento', [PaginaController::class, 'catalogo'])->name('evento');
+Route::get('/prestamos', [PaginaController::class, 'nuevoPrestamo'])->name('prestamos');
+Route::post('/reservar', [ReservacionController::class, 'nuevaReserva'])->name('reservar');
 /*
 Route::get('/', [PaginaController::class, 'index'])->name('pagina.index');
 Route::get('/libro', [PaginaController::class, '_libro']);

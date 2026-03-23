@@ -42,12 +42,12 @@ class AuthenticatedSessionController extends Controller
 
         if (in_array(5, $roles)) {
             // Página para lectores
-            return redirect()->route('pagina.index');
+            return redirect()->route('home');
         }
 
         // Página general para otros roles
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('administracion.index', absolute: false));
     }
 
     /**

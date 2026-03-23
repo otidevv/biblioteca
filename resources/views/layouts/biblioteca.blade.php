@@ -7,7 +7,8 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
 <style>
 :root{
     --verde:#1b8f3a;
@@ -96,7 +97,100 @@ body{background:#f4f6f9}
     transform:translateY(-5px);
     box-shadow:0 10px 20px rgba(0,0,0,0.2);
 }
+.stars i{
+    color:#f4c150 !important; /* 🔥 fuerza el dorado */
+    font-size:14px;
+}
+<style>
+    /* HERO */
+    .hero{
+        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                    url('/img/banner1.png') center/cover;
+        height:260px;
+        border-radius:12px;
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+    }
 
+    /* CARD LIBRO */
+    .book-card{
+        border-radius:12px;
+        overflow:hidden;
+        transition:0.3s;
+        cursor:pointer;
+    }
+    .book-card:hover{
+        transform:translateY(-5px);
+        box-shadow:0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    /* IMAGEN LIBRO */
+    .libro-img{
+        width:100%;
+        height:300px;
+        object-fit:contain;
+        background:#f8f9fa;
+        padding:8px;
+        transition:0.3s;
+    }
+
+    /* HOVER IMAGEN */
+    .book-card:hover .libro-img{
+        transform:scale(1.05);
+    }
+
+    /* BOTÓN */
+    .btn-libro{
+        background:#2d3f5f;
+        color:#fff;
+        border-radius:8px;
+    }
+    .btn-libro:hover{
+        background:#1f2a3a;
+    }
+
+    /* ESTRELLAS */
+    .stars i{
+        color:#f4c150;
+    }
+
+    /* TARJETAS BIBLIOTECAS */
+    .card-hover{
+        transition:0.3s;
+        cursor:pointer;
+    }
+    .card-hover:hover{
+        transform:translateY(-5px);
+        box-shadow:0 10px 20px rgba(0,0,0,0.2);
+    }
+    .rating{
+    display:flex;
+    flex-direction: row-reverse;
+    justify-content:flex-start;
+    }
+
+    .rating input{
+        display:none;
+    }
+
+    .rating label{
+        font-size:25px;
+        color:#ccc;
+        cursor:pointer;
+        transition:0.2s;
+    }
+
+    .rating input:checked ~ label{
+        color:#ffc107;
+    }
+
+    .rating label:hover,
+    .rating label:hover ~ label{
+        color:#ffc107;
+    }
 /* RESPONSIVE */
 @media(max-width:768px){
 
@@ -129,9 +223,9 @@ body{background:#f4f6f9}
     <h5 class="text-warning">📚 Biblioteca</h5>
 
     <a href="{{ route('home') }}">🏠 Inicio</a>
-    <a href="#">📚 Libros</a>
-    <a href="#">📦 Ejemplares</a>
-    <a href="#">🔄 Préstamos</a>
+    <a href="{{ route('catalogo') }}">📚 Catalogo</a>
+    <a href="{{ route('evento') }}">📦 Ejemplares</a>
+    <a href="{{ route('prestamos') }}">🔄 Préstamos</a>
 
 </div>
 
@@ -169,6 +263,11 @@ body{background:#f4f6f9}
 
 </div>
 
+<!-- ALERTAS -->
+<div id="mensaje_container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+<!-- MODALES -->
+@yield('modal')
 <script>
 function toggleSidebar(){
     let sidebar = document.getElementById('sidebar');
@@ -180,6 +279,8 @@ function toggleSidebar(){
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/admin.js') }}"></script>
+@yield('js')
 
 </body>
 </html>

@@ -8,6 +8,7 @@ use App\Models\Libro;
 use App\Models\Autor;
 use App\Models\Materia;
 use App\Models\Idioma;
+use App\Models\Editorial;
 use App\Models\Biblioteca;
 use App\Models\Tipo_registro;
 class PaginaController extends Controller
@@ -69,6 +70,39 @@ class PaginaController extends Controller
             return view('pagina.index', compact('libros'));
         */
     }
+   public function catalogo(Request $request)
+    {
+        $query = Libro::with(['autores','editorial']);
+
+        if ($request->titulo) {
+            $query->where('titulo','like','%'.$request->titulo.'%');
+        }
+
+        if ($request->autor_id) {
+            $query->whereHas('autores', function($q) use ($request){
+                $q->where('autores.id', $request->autor_id);
+            });
+        }
+
+        if ($request->editorial_id) {
+            $query->where('editorial_id',$request->editorial_id);
+        }
+
+        if ($request->materia) {
+            $query->where('materia',$request->materia);
+        }
+
+        $libros = $query->paginate(8)->withQueryString();
+
+        // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
+        if ($request->ajax()) {
+            return view('pagina._libros', compact('libros'))->render();
+        }
+
+
+        return view('pagina.catalogo', compact('libros'));
+    }
+
 
     public function showBiblioteca($id)
     {
@@ -121,7 +155,7 @@ class PaginaController extends Controller
                     });
                 }
             })
-            ->limit(8)
+            ->limit(4)
             ->get();
 
         return view('pagina.libro', compact('libro','libros'));
