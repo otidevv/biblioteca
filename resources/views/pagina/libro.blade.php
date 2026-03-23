@@ -2,112 +2,108 @@
 @section('js')
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
+    document.addEventListener('DOMContentLoaded', function(){
 
-    // ⭐ COMENTARIOS (igual que tienes)
-    let formComentario = document.getElementById('formComentario');
+        //COMENTARIOS
+        let formComentario = document.getElementById('formComentario');
 
-    if(formComentario){
-        formComentario.addEventListener('submit', function(e){
-            e.preventDefault();
+        if(formComentario){
+            formComentario.addEventListener('submit', function(e){
+                e.preventDefault();
 
-            let data = new FormData(formComentario);
+                let data = new FormData(formComentario);
 
-            fetch("{{ route('comentario') }}", {
-                method: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: data
-            })
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('listaComentarios').innerHTML = html;
-                formComentario.reset();
+                fetch("{{ route('comentario') }}", {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    },
+                    body: data
+                })
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('listaComentarios').innerHTML = html;
+                    formComentario.reset();
+                });
             });
-        });
-    }
+        }
 
-    // 📦 SELECT DE EJEMPLAR
-    const select = document.getElementById('ejemplar_select');
-    const ubicacion = document.getElementById('ubicacion');
-    const ejemplar_id = document.getElementById('ejemplar_id');
+        //SELECT BIBLIOTECA → CARGAR EJEMPLARES
+        const bibliotecaSelect = document.getElementById('biblioteca_select');
+        const selectEjemplar = document.getElementById('ejemplar_select');
 
-    if(select){
-        select.addEventListener('change', function(){
-            let option = this.options[this.selectedIndex];
+        if(bibliotecaSelect){
+            bibliotecaSelect.addEventListener('change', function(){
 
-            let id = this.value;
-            let biblioteca = option.getAttribute('data-biblioteca');
+                let id = this.value;
 
-            ejemplar_id.value = id;
-            ubicacion.value = biblioteca;
-        });
-    }
+                selectEjemplar.innerHTML = '<option>Cargando...</option>';
 
-    //  RESERVA
-    const formReserva = document.getElementById('formReserva');
+                fetch('/pagina'+id+'/ejemplares/biblioteca')
+                    .then(res => res.json())
+                    .then(data => {
 
-    if(formReserva){
-        formReserva.addEventListener('submit', function(e){
-            e.preventDefault();
+                        let html = '<option value="">-- Seleccionar ejemplar --</option>';
 
-            let data = new FormData(formReserva);
+                        data.forEach(e => {
+                            html += `<option value="${e.id}">
+                                        ${e.codigo}
+                                    </option>`;
+                        });
 
-            fetch("{{ route('reservar') }}", {
-                method: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: data
-            })
-            .then(res => res.json())
-            .then(res => {
+                        selectEjemplar.innerHTML = html;
 
-                if(res.error){
-                    alert(res.error);
-                    return;
-                }
-
-                alert(res.ok);
-
-                formReserva.reset();
-
-                // cerrar modal
-                let modal = bootstrap.Modal.getInstance(document.getElementById('modalReserva'));
-                modal.hide();
+                    });
 
             });
+        }
 
-        });
-    }    
+        // 📦 CAPTURAR EJEMPLAR
+        const ejemplar_id = document.getElementById('ejemplar_id');
 
-});
-document.getElementById('biblioteca_select').addEventListener('change', function(){
-
-    let id = this.value;
-
-    let selectEjemplar = document.getElementById('ejemplar_select');
-
-    selectEjemplar.innerHTML = '<option>Cargando...</option>';
-
-    fetch('/ejemplares/' + id)
-        .then(res => res.json())
-        .then(data => {
-
-            let html = '<option value="">-- Seleccionar ejemplar --</option>';
-
-            data.forEach(e => {
-                html += `<option value="${e.id}">
-                            ${e.codigo}
-                         </option>`;
+        if(selectEjemplar){
+            selectEjemplar.addEventListener('change', function(){
+                ejemplar_id.value = this.value;
             });
+        }
 
-            selectEjemplar.innerHTML = html;
+        // RESERVA
+        const formReserva = document.getElementById('formReserva');
 
-        });
+        if(formReserva){
+            formReserva.addEventListener('submit', function(e){
+                e.preventDefault();
 
-});
+                let data = new FormData(formReserva);
+
+                fetch("{{ route('reservar') }}", {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    },
+                    body: data
+                })
+                .then(res => res.json())
+                .then(res => {
+
+                    if(res.error){
+                        alert(res.error);
+                        return;
+                    }
+
+                    alert(res.ok);
+
+                    formReserva.reset();
+
+                    let modal = bootstrap.Modal.getInstance(document.getElementById('modalReserva'));
+                    modal.hide();
+
+                });
+
+            });
+        }
+
+    });
 </script>
 @endsection
 @section('content')
@@ -423,8 +419,6 @@ document.getElementById('biblioteca_select').addEventListener('change', function
                 @auth
                 <form id="formReserva">
                     @csrf
-
-                    <input type="hidden" name="libro_id" value="{{ $libro->id }}">
                     <input type="hidden" name="ejemplar_id" id="ejemplar_id">
 
                     <!-- 📍 UBICACIÓN -->

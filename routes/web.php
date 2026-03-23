@@ -174,6 +174,7 @@ Route::prefix('pagina')->group(function () {
     Route::get('/autores', [ApiPaginaController::class, 'listarAutores']); 
     Route::get('/registros', [ApiPaginaController::class, 'listarRegistros']); 
     Route::get('/catalogo', [ApiPaginaController::class, 'catalogo'])->name('catalogo.libros'); 
+    Route::get('{id}/ejemplares/biblioteca', [ApiPaginaController::class, 'ejemplarBiblioteca']); 
 }); 
 
 Route::get('/', [PaginaController::class, 'index'])->name('home');

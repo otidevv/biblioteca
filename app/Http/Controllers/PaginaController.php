@@ -130,7 +130,11 @@ class PaginaController extends Controller
             'comentarios.usuario',
             'ejemplares.biblioteca' // 👈 aquí traes los ejemplares y su biblioteca
         ])->findOrFail($id);
-
+        //OBTENER BIBLIOTECAS QUE TIENEN ESE LIBRO
+        $bibliotecas = Biblioteca::whereHas('ejemplares', function($q) use ($id) {
+            $q->where('libro_id', $id)
+            ->where('estado', 1); // solo disponibles
+        })->get();
         // Palabras clave
         $keywords = collect(explode(' ', $libro->titulo))
             ->merge(explode(' ', $libro->palabras_clave ?? ''))
@@ -158,7 +162,7 @@ class PaginaController extends Controller
             ->limit(4)
             ->get();
 
-        return view('pagina.libro', compact('libro','libros'));
+        return view('pagina.libro', compact('libro','libros','bibliotecas'));
     }
 
 }

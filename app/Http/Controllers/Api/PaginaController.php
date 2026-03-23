@@ -115,5 +115,19 @@ class PaginaController extends Controller
                 'text' => $r->nombre,
             ])
         );
+    } 
+    public function ejemplarBiblioteca(Request $request)
+    {
+ 
+    public function ejemplarBiblioteca(Request $request)
+    {
+       
+    $ejemplares = Ejemplar::where('biblioteca_id', $biblioteca_id)
+        ->where('libro_id', $libro_id)
+        ->where('estado', 1)
+        ->get(['id', 'codigo']);
+
+    return response()->json($ejemplares);
     }
+    
 }
