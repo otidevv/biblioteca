@@ -29,7 +29,7 @@ $(document).ready(function () {
             { data: 'autores',name: 'autores',
                 render: function(data){
                     if(!data) return '';
-                    return data.map(a => a.nombres).join('<br>');
+                    return data+'<br>';
                 }
             },
             { data: 'ejemplares_count', name: 'count_ejemplares' },

@@ -38,87 +38,115 @@ $(document).ready(function () {
         $('.password-group').show();
         $('#modalBiblioteca').modal('show');
     });
+// PREVIEW IMAGEN
+$('#imagen').on('change', function (e) {
+    let file = e.target.files[0];
 
-    // EDITAR
-    $('#tabla-biblioteca').on('click', '.editarBiblioteca', function () {
-        let data = tablaBibliotecas.row($(this).closest('tr')).data();
-        console.log(data);
-        
-        $('input[name="roles[]"]').prop('checked', false);
-        $('#id').val(data.id);
-        $('#codigo').val(data.codigo);
-        $('#nombre').val(data.nombre);
-        $('#direccion').val(data.direccion);
-        $('#descripcion').val(data.descripcion);
-        $('#estado').val(data.estado ?? '');
-        // MARCAR roles del usuario
-            if (data.roles && Array.isArray(data.roles)) {
-                data.roles.forEach(function (rol) {
-                    $('#rol_' + rol.id).prop('checked', true);
+    if (file) {
+        let reader = new FileReader();
+
+        reader.onload = function (e) {
+            $('#previewImagen')
+                .attr('src', e.target.result)
+                .removeClass('d-none');
+        }
+
+        reader.readAsDataURL(file);
+    }
+});
+
+// EDITAR
+$('#tabla-biblioteca').on('click', '.editarBiblioteca', function () {
+
+    let data = tablaBibliotecas.row($(this).closest('tr')).data();
+
+    $('#formBiblioteca')[0].reset();
+    $('#previewImagen').addClass('d-none');
+
+    $('#id').val(data.id);
+    $('#codigo').val(data.codigo);
+    $('#nombre').val(data.nombre);
+    $('#direccion').val(data.direccion);
+    $('#descripcion').val(data.descripcion);
+
+    // Mostrar imagen si existe
+    if (data.imagen) {
+        $('#previewImagen')
+            .attr('src', '/storage/' + data.imagen)
+            .removeClass('d-none');
+    }
+
+    $('#modalBiblioteca').modal('show');
+});
+
+// GUARDAR
+$('#formBiblioteca').on('submit', function (e) {
+
+    e.preventDefault();
+
+    let form = $(this);
+    let formData = new FormData(this);
+
+    let btn = form.find('button[type="submit"]');
+    btn.prop('disabled', true).text('Guardando...');
+
+    $.ajax({
+        url: $('#id').val() === '' 
+            ? '/api/bibliotecas/nuevo' 
+            : '/api/bibliotecas/edit',
+
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+
+        headers: {
+            'X-CSRF-TOKEN': $('input[name="_token"]').val()
+        },
+
+        success: function (response) {
+
+            if (response.success) {
+
+                alerta("Biblioteca guardada correctamente", true);
+
+                form[0].reset();
+                $('#previewImagen').addClass('d-none');
+
+                $('#modalBiblioteca').modal('hide');
+
+                if (window.tablaBibliotecas) {
+                    tablaBibliotecas.ajax.reload();
+                }
+
+            } else {
+                alerta(response.message ?? 'Error', false);
+            }
+        },
+
+        error: function (xhr) {
+
+            $('.is-invalid').removeClass('is-invalid');
+
+            if (xhr.status === 422) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $.each(errors, function (field, messages) {
+                    $('[name="' + field + '"]').addClass('is-invalid');
+                    alerta(messages[0], false);
                 });
+
+            } else {
+                alerta('Error del servidor', false);
             }
+        },
 
-        $('#div_credenciales').hide();
-        $('#modalBiblioteca').modal('show');
+        complete: function () {
+            btn.prop('disabled', false).text('Guardar');
+        }
     });
-    $('#formBiblioteca').on('submit', function (e) {
-        e.preventDefault();
-
-        let form = $(this);
-        let formData = new FormData(this);
-
-        // Botón loading
-        let btn = form.find('button[type="submit"]');
-        btn.prop('disabled', true).text('Guardando...');
-
-        $.ajax({
-            url:$('#id').val()=='' ? '/api/bibliotecas/nuevo' : '/api/bibliotecas/edit',
-            type:'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('input[name="_token"]').val()
-            },
-            success: function (response) {
-                if (response.success) {
-                    alerta("Usuario guardado correctamente", true);
-                    // Reset form
-                    form[0].reset();
-                    // Cerrar modal
-                    $('#modalBiblioteca').modal('hide');
-                    // Recargar tabla (si usas DataTable)
-                    if (window.tablaBibliotecas) {
-                        tablaBibliotecas.ajax.reload();
-                    }
-                } else {
-                    alerta(response.message??'Error al guardar el usuario', false);
-                }
-            },
-            error: function (xhr) {
-                // Limpiar errores previos
-                $('.is-invalid').removeClass('is-invalid');
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    $.each(errors, function (field, messages) {
-                        let input = $('[name="' + field + '"]');
-                        // Campos array (roles[])
-                        if (field.includes('.')) {
-                            input = $('[name="' + field.split('.')[0] + '[]"]');
-                        }
-                        input.addClass('is-invalid');
-                        alerta(messages[0], false);
-                    });
-                } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar el usuario', false);
-                    //toastr.error('Error interno del servidor');
-                }
-            },
-            complete: function () {
-                btn.prop('disabled', false).text('Guardar');
-            }
-        });
-    });
+});
 
 });
 

@@ -95,7 +95,7 @@ class UsuarioController extends Controller
                 'name'       => $request->nombres,
                 'email'      => $request->correo,
                 'password'   => Hash::make($request->password),
-                'estado'     => 'activo',
+                'estado'     => 1,
                 'origen'     => 'local',
                 'persona_id'=> $persona->id,
             ]);

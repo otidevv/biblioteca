@@ -15,7 +15,7 @@ class SincronizarController extends Controller
 
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-            $this->ejecutarPaso('paises', fn() => $this->paises());
+           /* $this->ejecutarPaso('paises', fn() => $this->paises());
             $this->ejecutarPaso('editoriales', fn() => $this->editoriales());
             $this->ejecutarPaso('autores', fn() => $this->autores());
             $this->ejecutarPaso('materias', fn() => $this->materias());
@@ -25,7 +25,8 @@ class SincronizarController extends Controller
             $this->ejecutarPaso('libros', fn() => $this->libros());
             $this->ejecutarPaso('relaciones', fn() => $this->libro_relaciones());
             $this->ejecutarPaso('compras', fn() => $this->compras());
-            $this->ejecutarPaso('ejemplares', fn() => $this->ejemplares());
+            $this->ejecutarPaso('ejemplares', fn() => $this->ejemplares());*/
+            $this->ejecutarPaso('libro_autores', fn() => $this->libro_autores());
 
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -350,6 +351,38 @@ class SincronizarController extends Controller
             }, 'registro_id'); // 🔥 IMPORTANTE
     }
 
+    protected function libro_autores()
+    {
+        // materias
+        DB::connection('mysql2')->table('registro_autores')
+            ->chunkById(500, function ($rows) {
+                $data = [];
+                foreach ($rows as $r) {
+                    $data[] = [
+                        'libro_id' => $r->registro_id,
+                        'autor_id' => $r->autor_id
+                    ];
+                }
+                DB::table('autor_libros')->upsert($data, ['libro_id','autor_id']);
+            }, 'registro_id'); // 🔥 IMPORTANTE
+
+        // autores
+        DB::connection('mysql2')->table('registro_autores')
+            ->chunkById(500, function ($rows) {
+
+                $data = [];
+
+                foreach ($rows as $r) {
+                    $data[] = [
+                        'libro_id' => $r->registro_id,
+                        'autor_id' => $r->autor_id
+                    ];
+                }
+
+                DB::table('autor_libros')->upsert($data, ['libro_id','autor_id']);
+
+            }, 'registro_id'); // 🔥 IMPORTANTE
+    }
     /* =========================
      * COMPRAS + EJEMPLARES
      * ========================= */

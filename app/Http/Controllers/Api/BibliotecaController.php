@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Biblioteca;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 class BibliotecaController extends Controller
 {
     //
@@ -31,27 +32,33 @@ class BibliotecaController extends Controller
     public function nuevo(Request $request)
     {
         $request->validate([
-            // BIBLIOTECA
-            'codigo'            => 'required|string|max:20|unique:bibliotecas,codigo',
-            'nombre'            => 'required|string|max:150',
-            'direccion'         => 'nullable|string|max:255',
-            'descripcion'       => 'nullable|string|max:500',
+            'codigo'        => 'required|string|max:20|unique:bibliotecas,codigo',
+            'nombre'        => 'required|string|max:150',
+            'direccion'     => 'nullable|string|max:255',
+            'descripcion'   => 'nullable|string|max:500',
+            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-        //return $request;    
+
         DB::beginTransaction();
 
         try {
 
-            /** =========================
-             *  BIBLIOTECA
-             *  ========================= */
+            $rutaImagen = null;
+
+            if ($request->hasFile('imagen')) {
+                $rutaImagen = $request->file('imagen')->store('bibliotecas', 'public');
+            }
+
             $biblioteca = Biblioteca::create([
                 'codigo'        => $request->codigo,
                 'nombre'        => $request->nombre,
                 'direccion'     => $request->direccion,
                 'descripcion'   => $request->descripcion,
+                'imagen'        => 'storage/'.$rutaImagen,
             ]);
+
             DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Biblioteca registrada correctamente',
@@ -64,7 +71,7 @@ class BibliotecaController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al registrar biblioteca',
+                'message' => 'Error al registrar',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -72,37 +79,56 @@ class BibliotecaController extends Controller
     public function edit(Request $request)
     {
         $request->validate([
-            // BIBLIOTECA
-            'id'                => 'required|exists:bibliotecas,id',
-            'codigo'            => 'required|string|max:20|unique:bibliotecas,codigo,'.$request->id,
-            'nombre'            => 'required|string|max:150',
-            'direccion'         => 'nullable|string|max:255',
-            'descripcion'       => 'nullable|string|max:500',
+            'id'            => 'required|exists:bibliotecas,id',
+            'codigo'        => 'required|string|max:20|unique:bibliotecas,codigo,' . $request->id,
+            'nombre'        => 'required|string|max:150',
+            'direccion'     => 'nullable|string|max:255',
+            'descripcion'   => 'nullable|string|max:500',
+            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
         DB::beginTransaction();
+
         try {
 
-            /** =========================
-             *  BIBLIOTECA
-             *  ========================= */
-            $biblioteca = Biblioteca::where('id', $request->id)->first();
+            $biblioteca = Biblioteca::find($request->id);
+
+            if ($request->hasFile('imagen')) {
+
+                // eliminar anterior
+                if ($biblioteca->imagen && Storage::disk('public')->exists($biblioteca->imagen)) {
+                    Storage::disk('public')->delete($biblioteca->imagen);
+                }
+
+                $rutaImagen = $request->file('imagen')->store('bibliotecas', 'public');
+
+            } else {
+                $rutaImagen = $biblioteca->imagen;
+            }
+
             $biblioteca->update([
                 'codigo'        => $request->codigo,
                 'nombre'        => $request->nombre,
                 'direccion'     => $request->direccion,
                 'descripcion'   => $request->descripcion,
+                'imagen'        => 'storage/'.$rutaImagen,
             ]);
+
             DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Biblioteca actualizada correctamente',
                 'data' => $biblioteca
-            ], 200);
+            ]);
+
         } catch (\Throwable $e) {
+
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar biblioteca',
+                'message' => 'Error al actualizar',
                 'error'   => $e->getMessage()
             ], 500);
         }

@@ -21,7 +21,7 @@ class Persona extends Model
         'tipo_persona',
         'carrera_id',
         'estado_academico',
-        'activo'
+        'estado'
     ];
 
     protected $casts = [

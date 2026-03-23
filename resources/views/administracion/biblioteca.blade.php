@@ -45,13 +45,15 @@
 
 @endsection
 @section('modal')
-    
 <div class="modal fade" id="modalBiblioteca" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <form id="formBiblioteca">
+        
+        <form id="formBiblioteca" enctype="multipart/form-data">
+            @csrf
             <input type="hidden" id="id" name="id">
 
             <div class="modal-content shadow-sm">
+                
                 <div class="modal-header bg-light">
                     <h5 class="modal-title fw-semibold">Registro de Biblioteca</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -61,6 +63,7 @@
                     <h6 class="text-primary mb-2">Datos biblioteca</h6>
 
                     <div class="row g-3 mb-3">
+
                         <div class="col-md-4">
                             <label class="form-label">Abrev.</label>
                             <input type="text" id="codigo" name="codigo" class="form-control">
@@ -80,6 +83,19 @@
                             <label class="form-label">Descripción</label>
                             <textarea id="descripcion" name="descripcion" class="form-control"></textarea>
                         </div>
+
+                        <!-- IMAGEN -->
+                        <div class="col-md-12">
+                            <label class="form-label">Imagen</label>
+                            <input type="file" id="imagen" name="imagen" class="form-control" accept="image/*">
+                        </div>
+
+                        <div class="col-md-12 text-center">
+                            <img id="previewImagen" src="" 
+                                 class="img-fluid rounded shadow-sm d-none mt-2"
+                                 style="max-height:200px;">
+                        </div>
+
                     </div>
                 </div>
 
@@ -87,6 +103,7 @@
                     <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button class="btn btn-success px-4" type="submit">Guardar</button>
                 </div>
+
             </div>
         </form>
     </div>

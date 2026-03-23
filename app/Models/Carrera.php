@@ -11,7 +11,7 @@ class Carrera extends Model
         'nombre',
         'codigo',
         'descripcion',
-        'activo'
+        'estado',
     ];
 
     public function personas()

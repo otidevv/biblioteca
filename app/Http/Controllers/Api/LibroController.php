@@ -11,61 +11,79 @@ use App\Models\Libro;
 class LibroController extends Controller
 {
     //
-    
     public function listar(Request $request)
     {
-
         $query = Libro::with(['autores','tipo_registro'])
                     ->withCount('ejemplares');
 
-        if ($request->has('search') && !empty($request->search['value'])) {
-            $search = $request->search['value'];
-            $query->where(function($q) use ($search) {
-                $q->where('titulo', 'like', "%{$search}%")
-                ->orWhere('isbn', 'like', "%{$search}%")
-                ->orWhere('codigo', 'like', "%{$search}%");
-            });
-        }
-        return DataTables::of($query)->addColumn('acciones', function($row){
+        return DataTables::of($query)
+
+        // 🔥 FILTRO PERSONALIZADO (SOLUCIÓN)
+        ->filter(function ($query) use ($request) {
+
+            if ($request->has('search') && $request->search['value'] != '') {
+
+                $search = strtolower($request->search['value']);
+
+                $query->where(function ($q) use ($search) {
+
+                    $q->whereRaw('LOWER(libros.titulo) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(libros.isbn) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(libros.codigo) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(libros.codigo_dewey) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(libros.estado) LIKE ?', ["%{$search}%"])
+
+                    // ✅ AUTORES (RELACIÓN)
+                    ->orWhereHas('autores', function ($q2) use ($search) {
+                        $q2->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"]);
+                    })
+
+                    // ✅ TIPO REGISTRO
+                    ->orWhereHas('tipo_registro', function ($q3) use ($search) {
+                        $q3->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"]);
+                    });
+
+                });
+            }
+        })
+
+        // 🔥 COLUMNA AUTORES (VISIBLE EN TABLA)
+        ->addColumn('autores', function($row){
+            return $row->autores->pluck('nombres')->join(', ');
+        })
+
+        ->addColumn('acciones', function($row){
             return '
             <div class="dropdown text-center">
                 <button class="btn btn-sm btn-icon btn-light" type="button" data-bs-toggle="dropdown">
-                    
-                    <!-- Icono 3 puntos -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" 
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        stroke-width="2">
                         <circle cx="12" cy="5" r="1"></circle>
                         <circle cx="12" cy="12" r="1"></circle>
                         <circle cx="12" cy="19" r="1"></circle>
                     </svg>
-
                 </button>
 
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
 
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 verEjemplares" href="/administracion/ejemplares/'.$row->id.'">                   
-                            <i class="fas fa-book text-primary"></i>
-                            <span>Ver ejemplares</span>
+                        <a class="dropdown-item verEjemplares" href="/administracion/ejemplares/'.$row->id.'">
+                            <i class="fas fa-book text-primary"></i> Ver ejemplares
                         </a>
                     </li>
 
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 editarLibro" href="/inventario/libros_nuevo/'.$row->id.'">
-                            <i class="fas fa-edit text-warning"></i>
-                            <span>Editar</span>
+                        <a class="dropdown-item editarLibro" href="/inventario/libros_nuevo/'.$row->id.'">
+                            <i class="fas fa-edit text-warning"></i> Editar
                         </a>
                     </li>
 
                     <li><hr class="dropdown-divider"></li>
+
                     <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2 text-danger eliminarLibro" 
-                                data-id="'.$row->id.'">
-
-                            <i class="fas fa-trash"></i>
-                            <span>Eliminar</span>
-
+                        <button class="dropdown-item text-danger eliminarLibro" data-id="'.$row->id.'">
+                            <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </li>
 
@@ -73,6 +91,7 @@ class LibroController extends Controller
             </div>
             ';
         })
+
         ->rawColumns(['acciones'])
         ->make(true);
     }

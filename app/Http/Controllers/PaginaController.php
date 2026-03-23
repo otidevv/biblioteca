@@ -86,11 +86,6 @@ class PaginaController extends Controller
 
     public function showLibro($id)
     {
-        $libro = Libro::findOrFail($id);
-        return view('libro', compact('libro'));
-    }
-    public function libro($id)
-    {
         // Traer el libro con todas sus relaciones, incluyendo ejemplares y biblioteca
         $libro = Libro::with([
             'autores',
@@ -109,7 +104,7 @@ class PaginaController extends Controller
             ->unique();
 
         // Libros relacionados
-        $relacionados = Libro::with(['autores','editorial','materias','idioma','tipo_registro'])
+        $libros = Libro::with(['autores','editorial','materias','idioma','tipo_registro'])
             ->where('id', '!=', $libro->id)
             ->where(function($q) use ($libro, $keywords) {
                 $q->whereHas('materias', function($mq) use ($libro) {
@@ -129,7 +124,7 @@ class PaginaController extends Controller
             ->limit(8)
             ->get();
 
-        return view('pagina.libro', compact('libro','relacionados'));
+        return view('pagina.libro', compact('libro','libros'));
     }
 
 }

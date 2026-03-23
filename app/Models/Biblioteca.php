@@ -12,7 +12,8 @@ class Biblioteca extends Model
         'nombre',
         'direccion',
         'descripcion',
-        'activo'
+        'estado',
+        'imagen'
     ];
     public function ejemplares(){
         return $this->hasMany(Ejemplar::class);

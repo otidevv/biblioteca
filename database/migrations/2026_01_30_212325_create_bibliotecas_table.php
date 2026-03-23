@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('codigo')->unique();
             $table->string('nombre');
+            $table->string('imagen')->nullable();
             $table->string('direccion')->nullable();
             $table->string('descripcion')->nullable();
-            $table->tinyInteger('estado')->nullable();
+            $table->tinyInteger('estado')->default(1);
             $table->timestamps();
         });
     }

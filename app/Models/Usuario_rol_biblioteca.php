@@ -11,6 +11,6 @@ class Usuario_rol_biblioteca extends Model
         'user_id',
         'rol_id',
         'biblioteca_id',
-        'activo',        
+        'estado',        
     ];       
 }
