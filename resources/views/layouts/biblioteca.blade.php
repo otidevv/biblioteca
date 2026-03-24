@@ -7,7 +7,9 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
+
+
 <link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
 <style>
 :root{
@@ -224,8 +226,11 @@ body{background:#f4f6f9}
 
     <a href="{{ route('home') }}">🏠 Inicio</a>
     <a href="{{ route('catalogo') }}">📚 Catalogo</a>
-    <a href="{{ route('evento') }}">📦 Ejemplares</a>
+    <a href="{{ route('evento') }}">📦 eventos</a>
+    @auth
+    <a href="{{ route('mis.reservas') }}">📦 Mis Reservaciones</a>
     <a href="{{ route('prestamos') }}">🔄 Préstamos</a>
+    @endauth
 
 </div>
 
@@ -278,7 +283,6 @@ function toggleSidebar(){
 }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
 @yield('js')
 

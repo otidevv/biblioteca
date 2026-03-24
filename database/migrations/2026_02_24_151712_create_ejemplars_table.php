@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('libro_id')->constrained();
             $table->foreignId('biblioteca_id')->nullable()->constrained();
             $table->foreignId('compra_detalle_id')->nullable()->constrained('compra_detalles');
-            $table->tinyInteger('estado')->nullable();
+            $table->tinyInteger('estado')->nullable();//0=prestado, 1=disponible,2=reservado
             $table->timestamps();
         });
     }

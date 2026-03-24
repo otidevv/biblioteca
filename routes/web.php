@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\CutterController as ApiCutterController;
 use App\Http\Controllers\Api\EjemplarController as ApiEjemplarController;
 use App\Http\Controllers\Api\CompraController as ApiCompraController;
 use App\Http\Controllers\Api\PaginaController as ApiPaginaController;
+use App\Http\Controllers\Api\ReservacionController as ApiReservacionController;
+
 /*
 |--------------------------------------------------------------------------
 | Rutas públicas
@@ -175,6 +177,8 @@ Route::prefix('pagina')->group(function () {
     Route::get('/registros', [ApiPaginaController::class, 'listarRegistros']); 
     Route::get('/catalogo', [ApiPaginaController::class, 'catalogo'])->name('catalogo.libros'); 
     Route::get('{id}/ejemplares/biblioteca', [ApiPaginaController::class, 'ejemplarBiblioteca']); 
+    Route::post('/reservar', [ApiReservacionController::class, 'nuevaReserva'])->name('reservar');
+    Route::post('/reserva/{id}/cancelar', [ApiReservacionController::class, 'cancelarReserva'])->middleware('auth')->name('reserva.cancelar');
 }); 
 
 Route::get('/', [PaginaController::class, 'index'])->name('home');
@@ -183,7 +187,7 @@ Route::get('/{id}/libro', [PaginaController::class, 'showLibro'])->name('libro.s
 Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
 Route::get('/evento', [PaginaController::class, 'catalogo'])->name('evento');
 Route::get('/prestamos', [PaginaController::class, 'nuevoPrestamo'])->name('prestamos');
-Route::post('/reservar', [ReservacionController::class, 'nuevaReserva'])->name('reservar');
+Route::get('/reservar', [PaginaController::class, 'misReservas'])->name('mis.reservas');
 /*
 Route::get('/', [PaginaController::class, 'index'])->name('pagina.index');
 Route::get('/libro', [PaginaController::class, '_libro']);

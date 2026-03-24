@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+
 use Illuminate\Http\Request;
 use App\Models\Autor;
 use App\Models\Materia;
 use App\Models\Editorial;
 use App\Models\Idioma;
+use App\Models\Ejemplar;
 use App\Models\Tipo_registro;
 use App\Models\Comentario;
 class PaginaController extends Controller
@@ -116,18 +119,26 @@ class PaginaController extends Controller
             ])
         );
     } 
-    public function ejemplarBiblioteca(Request $request)
-    {
- 
-    public function ejemplarBiblioteca(Request $request)
-    {
-       
+public function ejemplarBiblioteca(Request $request, $biblioteca_id)
+{       
+    $libro_id = $request->libro_id;
+
     $ejemplares = Ejemplar::where('biblioteca_id', $biblioteca_id)
         ->where('libro_id', $libro_id)
         ->where('estado', 1)
-        ->get(['id', 'codigo']);
+        ->select(
+            'id',
+            DB::raw("
+                CONCAT(
+                    COALESCE(codigo_dewey, ''),
+                    COALESCE(tipo, ''),
+                    COALESCE(codigo_interno, '')
+                ) as codigo
+            ")
+        )
+        ->get();
 
     return response()->json($ejemplares);
-    }
+}
     
 }

@@ -10,6 +10,7 @@ use App\Models\Materia;
 use App\Models\Idioma;
 use App\Models\Editorial;
 use App\Models\Biblioteca;
+use App\Models\Reservacion;
 use App\Models\Tipo_registro;
 class PaginaController extends Controller
 {
@@ -70,7 +71,7 @@ class PaginaController extends Controller
             return view('pagina.index', compact('libros'));
         */
     }
-   public function catalogo(Request $request)
+    public function catalogo(Request $request)
     {
         $query = Libro::with(['autores','editorial']);
 
@@ -163,6 +164,19 @@ class PaginaController extends Controller
             ->get();
 
         return view('pagina.libro', compact('libro','libros','bibliotecas'));
+    }
+    public function misReservas()
+    {        
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $reservas = Reservacion::with(['ejemplar.libro', 'ejemplar.biblioteca'])
+            ->where('lector_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return view('pagina.mis_reservas', compact('reservas'));
     }
 
 }

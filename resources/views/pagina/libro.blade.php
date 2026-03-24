@@ -2,6 +2,7 @@
 @section('js')
 
 <script>
+    const libroId = "{{ $libro->id }}";
     document.addEventListener('DOMContentLoaded', function(){
 
         //COMENTARIOS
@@ -31,7 +32,7 @@
         //SELECT BIBLIOTECA → CARGAR EJEMPLARES
         const bibliotecaSelect = document.getElementById('biblioteca_select');
         const selectEjemplar = document.getElementById('ejemplar_select');
-
+        const selectPrestamo = document.getElementById('tipo_prestamo');
         if(bibliotecaSelect){
             bibliotecaSelect.addEventListener('change', function(){
 
@@ -39,7 +40,7 @@
 
                 selectEjemplar.innerHTML = '<option>Cargando...</option>';
 
-                fetch('/pagina'+id+'/ejemplares/biblioteca')
+                fetch(`/pagina/${id}/ejemplares/biblioteca?libro_id=${libroId}`)
                     .then(res => res.json())
                     .then(data => {
 
@@ -419,23 +420,23 @@
                 @auth
                 <form id="formReserva">
                     @csrf
+
                     <input type="hidden" name="ejemplar_id" id="ejemplar_id">
 
-                    <!-- 📍 UBICACIÓN -->
+                    <!-- 📚 BIBLIOTECA -->
                     <div class="mb-3">
-                        <div class="mb-3">
-                            <label>Biblioteca</label>
+                        <label>Biblioteca</label>
 
-                            <select id="biblioteca_select" class="form-control" required>
-                                <option value="">-- Seleccionar biblioteca --</option>
+                        <select id="biblioteca_select" class="form-control" required>
+                            <option value="">-- Seleccionar biblioteca --</option>
 
-                                @foreach($bibliotecas as $b)
-                                    <option value="{{ $b->id }}">{{ $b->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                            @foreach($bibliotecas as $b)
+                                <option value="{{ $b->id }}">{{ $b->nombre }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <!--  LISTA DE EJEMPLARES -->
+
+                    <!-- 📦 EJEMPLAR -->
                     <div class="mb-3">
                         <label>Ejemplar</label>
 
@@ -443,12 +444,16 @@
                             <option value="">-- Seleccione una biblioteca primero --</option>
                         </select>
                     </div>
-
-
-                    <!-- ⏳ DURACIÓN -->
                     <div class="mb-3">
-                        <label>Duración (días)</label>
-                        <input type="number" name="duracion" class="form-control" value="7" min="1">
+                        <label>Tipo de préstamo</label>
+                        <select name="tipo_prestamo" id="tipo_prestamo" class="form-control" required>
+                            <option value="1">📖 Préstamo en sala</option>
+                            <option value="2">🏠 Préstamo a casa</option>
+                        </select>
+                    </div>
+                    <!-- ℹ️ INFO -->
+                    <div class="alert alert-info">
+                        ⏳ La reserva será válida hasta mañana a las <strong>20:00</strong>.
                     </div>
 
                     <button class="btn btn-primary w-100">
