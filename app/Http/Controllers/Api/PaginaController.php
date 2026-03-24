@@ -13,6 +13,7 @@ use App\Models\Idioma;
 use App\Models\Ejemplar;
 use App\Models\Tipo_registro;
 use App\Models\Comentario;
+use App\Models\Libro;
 class PaginaController extends Controller
 {
     // metodos para select2 
@@ -139,6 +140,19 @@ public function ejemplarBiblioteca(Request $request, $biblioteca_id)
         ->get();
 
     return response()->json($ejemplares);
+}
+//disponibilidad
+public function disponibilidad($id)
+{
+    $libro = Libro::with('ejemplares.biblioteca')->findOrFail($id);
+
+    return view('pagina._disponibilidad', compact('libro'))->render();
+}
+public function ejemplares($id)
+{
+    $libro = Libro::with('ejemplares.biblioteca')->findOrFail($id);
+
+    return view('pagina._ejemplares', compact('libro'))->render();
 }
     
 }

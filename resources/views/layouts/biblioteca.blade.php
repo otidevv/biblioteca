@@ -5,12 +5,11 @@
 <title>Biblioteca</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-<link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
-
-
-<link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
+    <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
 <style>
 :root{
     --verde:#1b8f3a;
@@ -282,7 +281,10 @@ function toggleSidebar(){
     overlay.classList.toggle('active');
 }
 </script>
-
+<script src="{{ asset('js/jquery-3.6.3.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
+<script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
 <script src="{{ asset('js/admin.js') }}"></script>
 @yield('js')
 

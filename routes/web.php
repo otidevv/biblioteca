@@ -7,6 +7,7 @@ use App\Http\Controllers\AdministracionController;
 use App\Http\Controllers\LectoresController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\PaginaController;
+use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\SincronizarController;
 use App\Http\Controllers\Auth\ProfileController;
 
@@ -60,6 +61,12 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     Route::prefix('inventario')->group(function () {
         Route::get('{modulo}', [InventarioController::class, 'index'])
             ->where('modulo', 'catalogo|compras|reportes|compra_nuevo');
+    });
+
+    // PRESTAMO
+    Route::prefix('prestamos')->group(function () {
+        Route::get('{modulo}', [PrestamoController::class, 'index'])
+            ->where('modulo', 'reservas|prestamos|reportes|compra_nuevo');
     });
 
     // LECTORES
@@ -161,6 +168,11 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/ejemplares/enviar-biblioteca', [ApiEjemplarController::class, 'enviarBiblioteca']);
             Route::post('/compras/guardar', [ApiCompraController::class, 'guardarCompra']);
         });
+        //NUEVOS LIBROS EJEMPLARES  RESERVADOS
+        Route::prefix('prestamos')->group(function () {
+            Route::get('reservas/listar', [ApiReservacionController::class, 'listar']);
+            Route::post('reserva/{id}/entregar', [ApiReservacionController::class, 'entregar']);
+            });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {
             Route::get('/buscar-dni', [ApiConsultaApiController::class, 'consulta_api'])->name('usuarios.buscar.dni');            
@@ -179,7 +191,9 @@ Route::prefix('pagina')->group(function () {
     Route::get('{id}/ejemplares/biblioteca', [ApiPaginaController::class, 'ejemplarBiblioteca']); 
     Route::post('/reservar', [ApiReservacionController::class, 'nuevaReserva'])->name('reservar');
     Route::post('/reserva/{id}/cancelar', [ApiReservacionController::class, 'cancelarReserva'])->middleware('auth')->name('reserva.cancelar');
-}); 
+    Route::get('/libro/{id}/disponibilidad', [ApiPaginaController::class, 'disponibilidad']);
+    Route::get('/libro/{id}/ejemplares', [ApiPaginaController::class, 'ejemplares']);
+    }); 
 
 Route::get('/', [PaginaController::class, 'index'])->name('home');
 Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->name('biblioteca.show');

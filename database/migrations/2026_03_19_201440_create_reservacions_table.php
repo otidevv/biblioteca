@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('duracion'); // días
             $table->date('fecha_reservacion');
             $table->date('fecha_limite');
-            $table->tinyInteger('prestamo')->default(1);//1 sala, 2 casa
+            $table->tinyInteger('prestamo')->default(1);//0 sala, 1 casa
             $table->foreignId('bibliotecario_id')->nullable()->constrained('users')->nullOnDelete();
             $table->tinyInteger('estado')->default(1);// 0 en espera, 1 atendido, 2 cancelado
             $table->timestamps();

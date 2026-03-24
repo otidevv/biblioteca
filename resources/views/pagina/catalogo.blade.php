@@ -4,10 +4,6 @@
 
 @endsection
 @section('content')
-
-<!-- SELECT2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-
 <style>
 .select2-container .select2-selection--single{
     height:38px;
@@ -44,17 +40,17 @@
 
     <!-- AUTOR -->
     <div class="col-md-3">
-        <select name="autor_id" class="form-control select2-autor"></select>
+        <select name="autor_id" id="autor_id" class="form-control select2"></select>
     </div>
 
     <!-- EDITORIAL -->
     <div class="col-md-2">
-       <select name="editorial_id" class="form-control select2-idiomas"></select>
+       <select name="idioma_id" id="idioma_id" class="form-control select2"></select>
     </div>
 
     <!-- MATERIA -->
     <div class="col-md-2">
-        <select name="materia_id" class="form-control select2-materias"></select>
+        <select name="materia_id" id="materia_id" class="form-control select2"></select>
     </div>
 
     <!-- BOTON -->
@@ -78,20 +74,5 @@
     </div>
 
 </div>
-<!-- JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<script>
-$(document).ready(function(){
-
-    $('.select2').select2({
-        width: '100%',
-        placeholder: "Seleccionar",
-        allowClear: true
-    });
-
-});
-</script>
 
 @endsection

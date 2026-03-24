@@ -2,109 +2,126 @@
 @section('js')
 
 <script>
-    const libroId = "{{ $libro->id }}";
-    document.addEventListener('DOMContentLoaded', function(){
+const libroId = "{{ $libro->id }}";
 
-        //COMENTARIOS
-        let formComentario = document.getElementById('formComentario');
+document.addEventListener('DOMContentLoaded', function(){
 
-        if(formComentario){
-            formComentario.addEventListener('submit', function(e){
-                e.preventDefault();
+    // =========================
+    // COMENTARIOS
+    // =========================
+    let formComentario = document.getElementById('formComentario');
 
-                let data = new FormData(formComentario);
+    if(formComentario){
+        formComentario.addEventListener('submit', function(e){
+            e.preventDefault();
 
-                fetch("{{ route('comentario') }}", {
-                    method: "POST",
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: data
-                })
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('listaComentarios').innerHTML = html;
-                    formComentario.reset();
-                });
+            let data = new FormData(formComentario);
+
+            fetch("{{ route('comentario') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: data
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('listaComentarios').innerHTML = html;
+                formComentario.reset();
             });
-        }
+        });
+    }
 
-        //SELECT BIBLIOTECA → CARGAR EJEMPLARES
-        const bibliotecaSelect = document.getElementById('biblioteca_select');
-        const selectEjemplar = document.getElementById('ejemplar_select');
-        const selectPrestamo = document.getElementById('tipo_prestamo');
-        if(bibliotecaSelect){
-            bibliotecaSelect.addEventListener('change', function(){
+    // =========================
+    // SELECT BIBLIOTECA
+    // =========================
+    const bibliotecaSelect = document.getElementById('biblioteca_select');
+    const selectEjemplar = document.getElementById('ejemplar_select');
 
-                let id = this.value;
+    if(bibliotecaSelect){
+        bibliotecaSelect.addEventListener('change', function(){
+            cargarEjemplares(this.value);
+        });
+    }
 
-                selectEjemplar.innerHTML = '<option>Cargando...</option>';
-
-                fetch(`/pagina/${id}/ejemplares/biblioteca?libro_id=${libroId}`)
-                    .then(res => res.json())
-                    .then(data => {
-
-                        let html = '<option value="">-- Seleccionar ejemplar --</option>';
-
-                        data.forEach(e => {
-                            html += `<option value="${e.id}">
-                                        ${e.codigo}
-                                    </option>`;
-                        });
-
-                        selectEjemplar.innerHTML = html;
-
-                    });
-
+    // =========================
+    // RESERVA
+    // =========================
+    const formReserva = document.getElementById('formReserva');
+    if(formReserva){
+        formReserva.addEventListener('submit', function(e){
+            e.preventDefault();
+            let data = new FormData(formReserva);
+            fetch("{{ route('reservar') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: data
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.error){
+                    alerta(res.error,false);
+                    return;
+                }
+                alerta(res.ok, true);
+                // cerrar modal
+                let modal = bootstrap.Modal.getInstance(document.getElementById('modalReserva'));
+                modal.hide();
+                // limpiar form
+                formReserva.reset();
+                //ACTUALIZAR DATOS
+                if(bibliotecaSelect.value){
+                    cargarEjemplares(bibliotecaSelect.value);
+                }
+                refrescarDisponibilidad();
+                refrescarEjemplares();
             });
-        }
+        });
+    }
 
-        // 📦 CAPTURAR EJEMPLAR
-        const ejemplar_id = document.getElementById('ejemplar_id');
+});
 
-        if(selectEjemplar){
-            selectEjemplar.addEventListener('change', function(){
-                ejemplar_id.value = this.value;
+// =========================
+// CARGAR EJEMPLARES
+// =========================
+function cargarEjemplares(bibliotecaId){
+
+    fetch(`/pagina/${bibliotecaId}/ejemplares/biblioteca?libro_id=${libroId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let html = '<option value="">-- Seleccionar ejemplar --</option>';
+
+            data.forEach(e => {
+                html += `<option value="${e.id}">
+                            ${e.codigo}
+                         </option>`;
             });
-        }
 
-        // RESERVA
-        const formReserva = document.getElementById('formReserva');
+            document.getElementById('ejemplar_select').innerHTML = html;
+        });
+}
 
-        if(formReserva){
-            formReserva.addEventListener('submit', function(e){
-                e.preventDefault();
+// =========================
+// REFRESCAR DISPONIBILIDAD
+// =========================
+function refrescarDisponibilidad(){
+    fetch(`/pagina/libro/${libroId}/disponibilidad`)
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('tablaDisponibilidad').innerHTML = html;
+        });
 
-                let data = new FormData(formReserva);
-
-                fetch("{{ route('reservar') }}", {
-                    method: "POST",
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: data
-                })
-                .then(res => res.json())
-                .then(res => {
-
-                    if(res.error){
-                        alert(res.error);
-                        return;
-                    }
-
-                    alert(res.ok);
-
-                    formReserva.reset();
-
-                    let modal = bootstrap.Modal.getInstance(document.getElementById('modalReserva'));
-                    modal.hide();
-
-                });
-
-            });
-        }
-
-    });
+}
+function refrescarEjemplares(){
+    fetch(`/pagina/libro/${libroId}/ejemplares`)
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('listaEjemplares').innerHTML = html;
+        });
+}
 </script>
 @endsection
 @section('content')
@@ -208,7 +225,7 @@
 
         <h5>📊 Disponibilidad por biblioteca</h5>
 
-        <div class="table-responsive">
+        <div class="table-responsive" id="tablaDisponibilidad">
             <table class="table table-hover">
 
                 <thead class="table-light">
@@ -253,17 +270,12 @@
 <!-- EJEMPLARES -->
 <h4 class="mt-5">📦 Ejemplares</h4>
 
-<div class="row g-3">
-
+<div class="row g-3" id="listaEjemplares">
     @foreach($libro->ejemplares as $e)
     <div class="col-6 col-md-3">
-
         <div class="card card-hover p-3 text-center h-100">
-
             <h6 class="fw-bold">{{ $e->codigo }}</h6>
-
             <small class="text-muted">{{ $e->biblioteca->nombre }}</small>
-
             <div class="mt-2">
                 @if($e->estado == '1')
                 <span class="badge bg-success">Disponible</span>
@@ -271,12 +283,9 @@
                 <span class="badge bg-danger">Prestado</span>
                 @endif
             </div>
-
         </div>
-
     </div>
     @endforeach
-
 </div>
 
 <!-- LIBROS RELACIONADOS -->

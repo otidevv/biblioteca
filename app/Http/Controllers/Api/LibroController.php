@@ -18,7 +18,7 @@ class LibroController extends Controller
 
         return DataTables::of($query)
 
-        // 🔥 FILTRO PERSONALIZADO (SOLUCIÓN)
+        //  FILTRO PERSONALIZADO (SOLUCIÓN)
         ->filter(function ($query) use ($request) {
 
             if ($request->has('search') && $request->search['value'] != '') {
@@ -33,12 +33,12 @@ class LibroController extends Controller
                     ->orWhereRaw('LOWER(libros.codigo_dewey) LIKE ?', ["%{$search}%"])
                     ->orWhereRaw('LOWER(libros.estado) LIKE ?', ["%{$search}%"])
 
-                    // ✅ AUTORES (RELACIÓN)
+                    //  AUTORES (RELACIÓN)
                     ->orWhereHas('autores', function ($q2) use ($search) {
                         $q2->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"]);
                     })
 
-                    // ✅ TIPO REGISTRO
+                    //  TIPO REGISTRO
                     ->orWhereHas('tipo_registro', function ($q3) use ($search) {
                         $q3->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"]);
                     });
@@ -47,7 +47,7 @@ class LibroController extends Controller
             }
         })
 
-        // 🔥 COLUMNA AUTORES (VISIBLE EN TABLA)
+        //  COLUMNA AUTORES (VISIBLE EN TABLA)
         ->addColumn('autores', function($row){
             return $row->autores->pluck('nombres')->join(', ');
         })
