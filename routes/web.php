@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\EjemplarController as ApiEjemplarController;
 use App\Http\Controllers\Api\CompraController as ApiCompraController;
 use App\Http\Controllers\Api\PaginaController as ApiPaginaController;
 use App\Http\Controllers\Api\ReservacionController as ApiReservacionController;
+use App\Http\Controllers\Api\PrestamoController as ApiPrestamoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,7 +67,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // PRESTAMO
     Route::prefix('prestamos')->group(function () {
         Route::get('{modulo}', [PrestamoController::class, 'index'])
-            ->where('modulo', 'reservas|prestamos|reportes|compra_nuevo');
+            ->where('modulo', 'reservas|registro|reportes|compra_nuevo');
     });
 
     // LECTORES
@@ -172,6 +173,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         Route::prefix('prestamos')->group(function () {
             Route::get('reservas/listar', [ApiReservacionController::class, 'listar']);
             Route::post('reserva/{id}/entregar', [ApiReservacionController::class, 'entregar']);
+            Route::get('prestamos/listar', [ApiPrestamoController::class, 'listar']);
             });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

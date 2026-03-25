@@ -32,7 +32,7 @@ class ReservacionController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        $query = Reservacion::with(['ejemplar.libro', 'lector'])
+        $query = Reservacion::with(['ejemplar.libro', 'lector'])->where('estado',0)
             ->when($permiso && $permiso->biblioteca_id, function($q) use ($permiso) {
                 $q->whereHas('ejemplar', function($sub) use ($permiso) {
                     $sub->where('biblioteca_id', $permiso->biblioteca_id);
@@ -52,10 +52,20 @@ class ReservacionController extends Controller
             return $row->created_at->format('d/m/Y');
         })
         ->addColumn('fecha_limite', function($row) {
-            // Cronómetro en reversa: calcula la diferencia en segundos
+
             $now = \Carbon\Carbon::now();
-            $diff = $now->diffInSeconds($row->fecha_limite, false); // false para negativo
-            if($diff <= 0) return 'Vencido';
+
+            // 🔥 Fecha límite: día siguiente a las 8:00 PM
+            $fechaLimite = \Carbon\Carbon::parse($row->fecha_reservacion)
+                                ->addDay()
+                                ->setTime(20, 0, 0); // 20 = 8 PM
+
+            $diff = $now->diffInSeconds($fechaLimite, false);
+
+            if ($diff <= 0) {
+                return '<span class="text-danger fw-bold">Vencido</span>';
+            }
+
             return '<span class="countdown" data-seconds="'.$diff.'"></span>';
         })
         ->addColumn('libro', function($row) {
@@ -151,7 +161,6 @@ class ReservacionController extends Controller
         // 🔄 Cambiar estado del ejemplar
         $ejemplar->estado = 0; // reservado
         $ejemplar->save();
-
         return response()->json([
             'ok' => 'Reserva válida hasta mañana a las 20:00'
         ]);
@@ -215,7 +224,7 @@ class ReservacionController extends Controller
         $prestamo->estado_prestamo=0;//0 PRESTADO,1 DEVUELTO,2 TARDANZA, 3 DETERIORO
         $prestamo->user_id=$user->id;
         $prestamo->save();
-
+        
         $ejemplar=Ejemplar::find($reserva->ejemplar_id);
         $ejemplar->estado=0;//0 prestado, 1 disponible
         $ejemplar->save();

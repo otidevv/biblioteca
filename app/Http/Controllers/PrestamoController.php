@@ -12,6 +12,7 @@ class PrestamoController extends Controller
         return match ($modulo) {
 
             // 👉 USUARIOS
+            'registro' => $this->registro(),
             'reservas' => $this->reservas(),
             default => abort(404),
         };
@@ -20,5 +21,9 @@ class PrestamoController extends Controller
     protected function reservas()
     {
         return view('prestamos.reserva');
+    }
+    protected function registro()
+    {
+        return view('prestamos.prestamos');
     }
 }

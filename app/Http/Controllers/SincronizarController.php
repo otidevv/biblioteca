@@ -15,7 +15,7 @@ class SincronizarController extends Controller
 
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-           /* $this->ejecutarPaso('paises', fn() => $this->paises());
+            $this->ejecutarPaso('paises', fn() => $this->paises());
             $this->ejecutarPaso('editoriales', fn() => $this->editoriales());
             $this->ejecutarPaso('autores', fn() => $this->autores());
             $this->ejecutarPaso('materias', fn() => $this->materias());
@@ -25,7 +25,7 @@ class SincronizarController extends Controller
             $this->ejecutarPaso('libros', fn() => $this->libros());
             $this->ejecutarPaso('relaciones', fn() => $this->libro_relaciones());
             $this->ejecutarPaso('compras', fn() => $this->compras());
-            $this->ejecutarPaso('ejemplares', fn() => $this->ejemplares());*/
+            $this->ejecutarPaso('ejemplares', fn() => $this->ejemplares());
             $this->ejecutarPaso('libro_autores', fn() => $this->libro_autores());
 
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
