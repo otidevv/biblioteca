@@ -48,25 +48,53 @@ $(document).ready(function () {
     // 🔹 Inicializar modal
     modal = new bootstrap.Modal(document.getElementById('modalPrestamo'));
 
-    // 🔥 Abrir modal (compatible con DataTables)
-    $(document).on('click', '.devolverPrestamo', function () {
-        let id = $(this).data('id');
+    //Abrir modal (compatible con DataTables)
+    $(document).on('click', '.devolverPrestamo', function(){
 
-        $('#prestamo_id').val(id);
-        $('#dias').val(1);
-        $('#observaciones').val('');
+      let tr = $(this).closest('tr');
 
-        modal.show();
+    if (tr.hasClass('child')) {
+        tr = tr.prev();
+    }
+
+    let data = tabla.row(tr).data();
+
+    $('#prestamo_id').val(data.id);
+    $('#libro_nombre').text(data.libro);
+    $('#ejemplar_codigo').text(data.ejemplar);
+
+    let ahora = new Date();
+    let fechaLimite = new Date(data.fecha_limite_raw);
+
+    let diffTime = ahora - fechaLimite;
+    let diasRetraso = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diasRetraso > 0) {
+
+        // 🔴 mostrar alerta
+        $('#alertaRetraso').removeClass('d-none');
+
+        // texto dinámico
+        $('#diasTexto').text(diasRetraso);
+
+        // autocompletar campo
+        $('#dias_retraso').val(diasRetraso);
+
+    } else {
+
+        $('#alertaRetraso').addClass('d-none');
+        $('#dias_retraso').val(0);
+    }
+
+    let modal = new bootstrap.Modal(document.getElementById('modalPrestamo'));
+    modal.show();
     });
 
-    // 🔥 Enviar formulario (SIN recargar página)
+    //Enviar formulario (SIN recargar página)
     $('#formEntrega').on('submit', function(e){
         e.preventDefault();
 
         let id = $('#prestamo_id').val();
-        let dias = $('#dias').val();
-        let observaciones = $('#observaciones').val();
-        let estado = $('#estado_prestamo').val();
 
         fetch(`/api/prestamos/${id}/devolver`, {
             method: 'POST',
@@ -75,34 +103,26 @@ $(document).ready(function () {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                dias: dias,
-                observaciones: observaciones,
-                estado:estado
+                estado_libro: $('#estado_libro').val(),
+                dias_retraso: $('#dias_retraso').val(),
+                observaciones: $('#observaciones').val()
             })
         })
         .then(res => res.json())
         .then(data => {
-            if (data.success) {
 
-                alerta(data.success, true);
+            if (data.ok) {
 
-                modal.hide();
+                alerta(data.ok, true);
 
-                // limpiar formulario
+                bootstrap.Modal.getInstance(document.getElementById('modalPrestamo')).hide();
+
                 $('#formEntrega')[0].reset();
 
-                // 🔥 recargar SOLO la tabla
                 tabla.ajax.reload(null, false);
-
-            } else {
-                alerta(data.error || 'Ocurrió un error', false);
             }
-        })
-        .catch(() => {
-            alerta('Error en la petición', false);
         });
     });
-
 });
 function iniciarCountdown() {
 

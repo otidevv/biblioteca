@@ -41,42 +41,98 @@
 @endsection
 @section('modal')
 <div class="modal fade" id="modalPrestamo" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form id="formPrestamo">
-        <div class="modal-header">
-          <h5 class="modal-title">Registrar devolucion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+
+      <form id="formEntrega">
+
+        <!-- HEADER -->
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-book-reader me-2"></i> Registrar devolución
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
 
+        <!-- BODY -->
         <div class="modal-body">
+
           <input type="hidden" id="prestamo_id">
 
-          <div class="mb-3">
-            <label>Estado</label>
-            <select name="estado_libro" id="estado_libro">
-              <option value="1">BUEN ESTADO</option>
-              <option value="2">DETERIORO</option>
-              <option value="4">PERDIDA</option>
-            </select>
-            <input type="number" id="dias" class="form-control" min="1" required>
-          </div>
-          <div class="mb-3">
-            <label>Días de retraso</label>
-            <input type="number" id="dias" class="form-control" min="1" required>
+          <!-- INFO LIBRO -->
+          <div class="p-3 mb-3 rounded bg-light border">
+            
+            <div class="mb-2">
+              <small class="text-muted">Libro</small><br>
+              <strong id="libro_nombre" class="text-primary"></strong>
+            </div>
+
+            <div>
+              <small class="text-muted">Ejemplar</small><br>
+              <span id="ejemplar_codigo" class="badge bg-secondary" style="color:white"></span>
+            </div>
+
           </div>
 
-          <div class="mb-3">
-            <label>Observaciones</label>
-            <textarea id="observaciones" class="form-control"></textarea>
+          <!-- ALERTA DINÁMICA -->
+          <div id="alertaRetraso" class="alert alert-danger d-none">
+            <i class="fas fa-exclamation-triangle"></i>
+            Este préstamo está fuera de plazo
           </div>
+
+          <!-- FORMULARIO -->
+          <div class="row">
+
+            <!-- ESTADO -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="fas fa-info-circle"></i> Estado del libro
+              </label>
+              <select id="estado_libro" class="form-select">
+                <option value="1">✅ Buen estado</option>
+                <option value="2">⚠️ Deterioro</option>
+                <option value="3">❌ Pérdida</option>
+              </select>
+            </div>
+
+            <!-- DIAS -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="fas fa-clock"></i> Días de retraso
+              </label>
+              <input type="number" id="dias_retraso" class="form-control" min="0" value="0">
+            </div>
+
+          </div>
+
+          <!-- OBSERVACIONES -->
+          <div class="mb-3">
+            <label class="form-label">
+              <i class="fas fa-comment-dots"></i> Observaciones
+            </label>
+            <textarea id="observaciones" class="form-control" rows="3"
+              placeholder="Detalle adicional..."></textarea>
+          </div>
+
         </div>
 
+        <!-- FOOTER -->
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Guardar</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Guardar
+          </button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
         </div>
+
       </form>
+      <div id="alertaRetraso" class="alert alert-danger d-none">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Atención:</strong>
+          Este préstamo tiene <span id="diasTexto"></span> día(s) de retraso.
+          <br>Se aplicará penalización correspondiente.
+      </div>
     </div>
   </div>
 </div>

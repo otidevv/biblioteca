@@ -44,6 +44,12 @@ class PrestamoController extends Controller
         ->addColumn('fecha_prestamo', function($row) {
             return $row->fecha_prestamo;
         })
+        ->addColumn('fecha_limite_raw', function($row) {
+            $fechaBase = Carbon::parse($row->fecha_reservacion)
+                            ->addDays($row->duracion);
+            $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
+            return $fechaLimite->toDateTimeString(); // 🔥 formato JS compatible
+        })
         ->addColumn('fecha_limite', function($row) {
 
             $now = Carbon::now();
@@ -178,35 +184,44 @@ class PrestamoController extends Controller
             'ok' => '📚 Préstamo registrado correctamente'
         ]);
     }
+   
     public function devolver(Request $request, $id)
     {
-        // 🔐 validar usuario
         if (!auth()->check()) {
             return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
-        // ✅ validación
-        $request->validate([
-            'prestamo_id' => 'required',
+        $prestamo = Prestamo::with('ejemplar')->find($id);
+
+        if (!$prestamo) {
+            return response()->json(['error' => 'No se encontró préstamo']);
+        }
+
+        $now = Carbon::now();
+
+        // 🔥 calcular fecha límite
+        $fechaLimite = Carbon::parse($prestamo->fecha_reservacion)
+            ->addDays($prestamo->duracion)
+            ->setTime(20, 0, 0);
+
+        //validar si está fuera de plazo
+        $estadoPrestamo = ($now->greaterThan($fechaLimite)) ? 2 : 1;
+
+        //  actualizar préstamo
+        $prestamo->update([
+            'fecha_devolucion' => $now,
+            'comentario_devolucion' => $request->observaciones,
+            'estado_prestamo' => $estadoPrestamo,
+            'estado_libro' => $request->estado_libro
         ]);
-        $prestamo=Prestamo::find($id);
-        if(!$prestamo)
-            return response()->json([
-                'error' => 'No se encontro prestamo'
-            ]);
 
-        $prestamo->fecha_devolucion=Carbon::now(); // calcula fecha de devolución
-        $prestamo->comentario_devolucion=$request->comentario;
-        $prestamo->estado_prestamo=$request->comentario;
-        $prestamo->estado_libro=$request->estado_libro;
-
-        // 🔄 actualizar ejemplar
-        $ejemplar->update([
-            'estado' => '0'
+        // actualizar ejemplar
+        $prestamo->ejemplar->update([
+            'estado' => 0 // disponible
         ]);
 
         return response()->json([
-            'ok' => '📚 Préstamo registrado correctamente'
+            'ok' => '📚 Devolución registrada correctamente'
         ]);
     }
 }
