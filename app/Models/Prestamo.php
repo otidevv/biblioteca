@@ -25,4 +25,5 @@ class Prestamo extends Model
     public function lector() { return $this->belongsTo(User::class,'lector_id'); }
     public function bibliotecario() { return $this->belongsTo(User::class,'user_id'); }
     public function detalles() { return $this->hasMany(DetallePrestamo::class); }
+    public function ejemplar() { return $this->belongsTo(Ejemplar::class);}
 }

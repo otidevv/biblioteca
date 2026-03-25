@@ -41,25 +41,43 @@ class PrestamoController extends Controller
             ->orderBy('created_at', 'desc');
 
         return DataTables::eloquent($query)
-        ->addColumn('fecha', function($row) {
-            return $row->created_at->format('d/m/Y');
+        ->addColumn('fecha_prestamo', function($row) {
+            return $row->fecha_prestamo;
         })
         ->addColumn('fecha_limite', function($row) {
 
-            $now = \Carbon\Carbon::now();
+            $now = Carbon::now();
 
-            // 🔥 Fecha límite: día siguiente a las 8:00 PM
-            $fechaLimite = \Carbon\Carbon::parse($row->fecha_reservacion)
-                                ->addDay()
-                                ->setTime(20, 0, 0); // 20 = 8 PM
+            // Fecha base + días
+            $fechaBase = Carbon::parse($row->fecha_reservacion)
+                            ->addDays($row->duracion);
 
-            $diff = $now->diffInSeconds($fechaLimite, false);
+            // Fecha límite a las 20:00
+            $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
 
-            if ($diff <= 0) {
-                return '<span class="text-danger fw-bold">Vencido</span>';
+            // 🔥 SOLO comparar por FECHA (sin hora)
+            $hoy = $now->toDateString();
+            $fechaFin = $fechaBase->toDateString();
+
+            // 🔴 Si ya pasó el día
+            if ($hoy > $fechaFin) {
+                return '
+                <div>
+                    <span class="badge bg-danger">Fuera de plazo</span><br>
+                    <small class="text-muted">'.$fechaLimite->format('d/m/Y 20:00').'</small>
+                </div>';
             }
 
-            return '<span class="countdown" data-seconds="'.$diff.'"></span>';
+            // 🟡 Si es el mismo día o falta días → mostrar contador
+            $diff = $now->diffInSeconds($fechaLimite, false);
+
+            $clase = $diff < 86400 ? 'text-danger fw-bold' : 'text-success';
+
+            return '
+            <div>
+                <small class="text-muted">'.$fechaLimite->format('d/m/Y 20:00').'</small><br>
+                <span class="countdown '.$clase.'" data-seconds="'.$diff.'"></span>
+            </div>';
         })
         ->addColumn('libro', function($row) {
             return $row->ejemplar->libro->titulo ?? '';
@@ -72,29 +90,30 @@ class PrestamoController extends Controller
         })
         ->addColumn('estado', function($row) {
             switch($row->estado) {
-                case 1: return 'INICIADO';
-                case 2: return 'FINALIZADO';
+                case 1: return '<span style="color:white" class="badge bg-primary">INICIADO</span>';
+                case 2: return '<span style="color:white" class="badge bg-success">FINALIZADO</span>';
+                default: return '<span style="color:white" class="badge bg-secondary">--</span>';
             }
         })
         ->addColumn('estado_prestamo', function($row) {
-            switch($row->estado) {
-                case 0: return 'PRESTADO';
-                case 1: return 'DEVUELTO';
-                case 2: return 'TARDANZA';
-                case 3: return 'DETERIORO';
+            switch($row->estado_prestamo) {
+                case 0: return '<span style="color:white" class="badge bg-warning">PRESTADO</span>';
+                case 1: return '<span style="color:white" class="badge bg-success">DEVUELTO</span>';
+                case 2: return '<span style="color:white" class="badge bg-danger">TARDANZA</span>';
+                case 3: return '<span style="color:white" class="badge bg-dark">DETERIORO</span>';
             }
         })
         ->addColumn('prestamo_lugar', function($row) {
             return $row->prestamo == 1 ? 'A casa' : 'En sala';
         })
         ->addColumn('acciones', function($row){
-            return $row->estado === 0 ? 
-                '<button class="btn btn-sm btn-success entregarLibro" data-id="'.$row->id.'">
+            return $row->estado === 1 ? 
+                '<button class="btn btn-sm btn-success devolverPrestamo" data-id="'.$row->id.'">
                     <i class="fas fa-check"></i> Devoler
                 </button>' 
                 : '';
         })
-        ->rawColumns(['acciones','fecha_limite'])
+        ->rawColumns(['acciones','fecha_limite','estado','estado_prestamo'])
         ->toJson();
     }
     public function nuevoPrestamo(Request $request)
@@ -149,6 +168,37 @@ class PrestamoController extends Controller
             'observaciones' => null,
             'estado' => 'prestado'
         ]);
+
+        // 🔄 actualizar ejemplar
+        $ejemplar->update([
+            'estado' => '0'
+        ]);
+
+        return response()->json([
+            'ok' => '📚 Préstamo registrado correctamente'
+        ]);
+    }
+    public function devolver(Request $request, $id)
+    {
+        // 🔐 validar usuario
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
+        }
+
+        // ✅ validación
+        $request->validate([
+            'prestamo_id' => 'required',
+        ]);
+        $prestamo=Prestamo::find($id);
+        if(!$prestamo)
+            return response()->json([
+                'error' => 'No se encontro prestamo'
+            ]);
+
+        $prestamo->fecha_devolucion=Carbon::now(); // calcula fecha de devolución
+        $prestamo->comentario_devolucion=$request->comentario;
+        $prestamo->estado_prestamo=$request->comentario;
+        $prestamo->estado_libro=$request->estado_libro;
 
         // 🔄 actualizar ejemplar
         $ejemplar->update([

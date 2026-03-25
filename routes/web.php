@@ -174,6 +174,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('reservas/listar', [ApiReservacionController::class, 'listar']);
             Route::post('reserva/{id}/entregar', [ApiReservacionController::class, 'entregar']);
             Route::get('prestamos/listar', [ApiPrestamoController::class, 'listar']);
+            Route::post('{id}/devolver', [ApiPrestamoController::class, 'devolver']);
             });
         //CONSULTA DE DNI EN API EXTERNA
         Route::prefix('externo')->group(function () {

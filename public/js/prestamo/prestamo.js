@@ -2,13 +2,13 @@ let tabla;
 let modal;
 
 $(document).ready(function () {
-
-    // 🔹 Inicializar DataTable
-    tabla = $('#tabla-reservas').DataTable({        
+    tabla = $('#tabla-prestamos').DataTable({        
         processing: true,
         serverSide: true,
         pageLength: 50,
         order: [],
+        scrollX: true,      // 👈 scroll horizontal
+
         ajax: {
             url: "/api/prestamos/prestamos/listar",
             type: "GET",
@@ -18,14 +18,15 @@ $(document).ready(function () {
             },
             error: default_error_handler        
         },
+
         columns: [
-            { data: 'fecha', name: 'fecha' },
+            { data: 'fecha_prestamo', name: 'fecha_prestamo' },
             { data: 'fecha_limite', name: 'fecha_limite' },
             { data: 'libro', name: 'libro' },
             { data: 'ejemplar', name: 'ejemplar' },
             { data: 'lector', name: 'lector' },
+            { data: 'estado_prestamo', name: 'estado_prestamo' }, 
             { data: 'estado', name: 'estado' },
-            { data: 'prestamo', name: 'prestamo' },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -33,44 +34,25 @@ $(document).ready(function () {
                 searchable: false 
             }
         ],        
+
         dom: default_datatable_dom,
         language: default_datatable_language,
         initComplete: default_datatable_buttons
     });
 
     // 🔹 Countdown
-    $('#tabla-reservas').on('draw.dt', function () {
-        $('.countdown').each(function() {
-            let el = $(this);
-            let seconds = parseInt(el.data('seconds'));
-
-            if (seconds <= 0) { 
-                el.text('Vencido'); 
-                return; 
-            }
-
-            let interval = setInterval(function() {
-                let d = Math.floor(seconds / 86400);
-                let h = Math.floor((seconds % 86400) / 3600);
-                let m = Math.floor((seconds % 3600) / 60);
-                let s = seconds % 60;
-
-                el.text(`${d}d ${h}h ${m}m ${s}s`);
-                seconds--;
-
-                if (seconds < 0) clearInterval(interval);
-            }, 1000);
-        });
+    $('#tabla-prestamos').on('draw.dt', function () {
+        iniciarCountdown();
     });
 
     // 🔹 Inicializar modal
-    modal = new bootstrap.Modal(document.getElementById('modalEntrega'));
+    modal = new bootstrap.Modal(document.getElementById('modalPrestamo'));
 
     // 🔥 Abrir modal (compatible con DataTables)
-    $(document).on('click', '.entregarReserva', function () {
+    $(document).on('click', '.devolverPrestamo', function () {
         let id = $(this).data('id');
 
-        $('#reserva_id').val(id);
+        $('#prestamo_id').val(id);
         $('#dias').val(1);
         $('#observaciones').val('');
 
@@ -81,11 +63,12 @@ $(document).ready(function () {
     $('#formEntrega').on('submit', function(e){
         e.preventDefault();
 
-        let id = $('#reserva_id').val();
+        let id = $('#prestamo_id').val();
         let dias = $('#dias').val();
         let observaciones = $('#observaciones').val();
+        let estado = $('#estado_prestamo').val();
 
-        fetch(`/api/prestamos/reserva/${id}/entregar`, {
+        fetch(`/api/prestamos/${id}/devolver`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
@@ -93,7 +76,8 @@ $(document).ready(function () {
             },
             body: JSON.stringify({
                 dias: dias,
-                observaciones: observaciones
+                observaciones: observaciones,
+                estado:estado
             })
         })
         .then(res => res.json())
@@ -120,3 +104,41 @@ $(document).ready(function () {
     });
 
 });
+function iniciarCountdown() {
+
+    $('.countdown').each(function() {
+
+        let el = $(this);
+
+        // evitar duplicar intervalos
+        if (el.data('iniciado')) return;
+
+        let seconds = parseInt(el.data('seconds'));
+
+        if (isNaN(seconds) || seconds <= 0) {
+            el.text('Vencido');
+            return;
+        }
+
+        el.data('iniciado', true);
+
+        let interval = setInterval(function() {
+
+            let d = Math.floor(seconds / 86400);
+            let h = Math.floor((seconds % 86400) / 3600);
+            let m = Math.floor((seconds % 3600) / 60);
+            let s = seconds % 60;
+
+            el.text(`${d}d ${h}h ${m}m ${s}s`);
+
+            seconds--;
+
+            if (seconds < 0) {
+                el.text('Vencido');
+                clearInterval(interval);
+            }
+
+        }, 1000);
+
+    });
+}

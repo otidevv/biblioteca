@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
+use Validator;
 
 use App\Models\Autor;
 use App\Models\Materia;
@@ -53,10 +54,10 @@ class ReservacionController extends Controller
         })
         ->addColumn('fecha_limite', function($row) {
 
-            $now = \Carbon\Carbon::now();
+            $now = Carbon::now();
 
             // 🔥 Fecha límite: día siguiente a las 8:00 PM
-            $fechaLimite = \Carbon\Carbon::parse($row->fecha_reservacion)
+            $fechaLimite = Carbon::parse($row->fecha_reservacion)
                                 ->addDay()
                                 ->setTime(20, 0, 0); // 20 = 8 PM
 
@@ -209,6 +210,7 @@ class ReservacionController extends Controller
             return response()->json(['error' => 'No se puede entregar esta reserva'], 400);
         }
         $reserva->estado = 1; // opcional, si quieres marcarlo como "entregado"
+        $reserva->bibliotecario_id = $user->id; // opcional, si quieres marcarlo como "entregado"
         $reserva->save();
         $prestamo=new Prestamo;
         
@@ -217,7 +219,6 @@ class ReservacionController extends Controller
         $prestamo->duracion=$request->dias;
         $prestamo->fecha_prestamo= now();
         $prestamo->fecha_limite=now()->addDays($dias);
-        $prestamo->fecha_devolucion=now()->addDays($dias); // calcula fecha de devolución
         $prestamo->observaciones_prestamo=$request->observaciones;
         $prestamo->ejemplar_id=$reserva->ejemplar_id;//ejemplar id
         $prestamo->estado=1;//1 INCIIADO, 2 FINALIZADO
