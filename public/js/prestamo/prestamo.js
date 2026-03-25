@@ -50,44 +50,36 @@ $(document).ready(function () {
 
     //Abrir modal (compatible con DataTables)
     $(document).on('click', '.devolverPrestamo', function(){
-
-      let tr = $(this).closest('tr');
-
-    if (tr.hasClass('child')) {
-        tr = tr.prev();
-    }
-
-    let data = tabla.row(tr).data();
-
-    $('#prestamo_id').val(data.id);
-    $('#libro_nombre').text(data.libro);
-    $('#ejemplar_codigo').text(data.ejemplar);
-
-    let ahora = new Date();
-    let fechaLimite = new Date(data.fecha_limite_raw);
-
-    let diffTime = ahora - fechaLimite;
-    let diasRetraso = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diasRetraso > 0) {
-
-        // 🔴 mostrar alerta
-        $('#alertaRetraso').removeClass('d-none');
-
-        // texto dinámico
-        $('#diasTexto').text(diasRetraso);
-
-        // autocompletar campo
-        $('#dias_retraso').val(diasRetraso);
-
-    } else {
-
-        $('#alertaRetraso').addClass('d-none');
-        $('#dias_retraso').val(0);
-    }
-
-    let modal = new bootstrap.Modal(document.getElementById('modalPrestamo'));
-    modal.show();
+        let tr = $(this).closest('tr');
+        if (tr.hasClass('child')) {
+            tr = tr.prev();
+        }
+        let data = tabla.row(tr).data();
+        $('#prestamo_id').val(data.id);
+        $('#libro_nombre').text(data.libro);
+        $('#ejemplar_codigo').text(data.ejemplar);
+        let ahora = new Date();
+        let fechaLimite = new Date(data.fecha_limite_raw);
+        console.log(fechaLimite);
+        let diffTime = ahora - fechaLimite;
+        let diasRetraso = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        console.log(diasRetraso);
+        if (diasRetraso > 0) {
+            let mensaje = diasRetraso === 1 
+                ? '⚠ Tiene 1 día de retraso. Se aplicará penalización.'
+                : `⚠ Tiene ${diasRetraso} días de retraso. Se aplicará penalización.`;
+            $('#mensajeRetraso')
+                .removeClass('d-none')
+                .text(mensaje);
+            $('#dias_retraso').val(diasRetraso);
+        } else {
+            $('#mensajeRetraso')
+                .addClass('d-none')
+                .text('');
+            $('#dias_retraso').val(0);
+        }
+        let modal = new bootstrap.Modal(document.getElementById('modalPrestamo'));
+        modal.show();
     });
 
     //Enviar formulario (SIN recargar página)

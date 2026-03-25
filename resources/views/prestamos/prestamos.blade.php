@@ -70,6 +70,7 @@
             <div>
               <small class="text-muted">Ejemplar</small><br>
               <span id="ejemplar_codigo" class="badge bg-secondary" style="color:white"></span>
+              <div id="mensajeRetraso" class="text-danger small mt-1 d-none"></div>
             </div>
 
           </div>
@@ -127,12 +128,6 @@
         </div>
 
       </form>
-      <div id="alertaRetraso" class="alert alert-danger d-none">
-          <i class="fas fa-exclamation-triangle"></i>
-          <strong>Atención:</strong>
-          Este préstamo tiene <span id="diasTexto"></span> día(s) de retraso.
-          <br>Se aplicará penalización correspondiente.
-      </div>
     </div>
   </div>
 </div>
