@@ -160,7 +160,7 @@ class ReservacionController extends Controller
         ]);
 
         // 🔄 Cambiar estado del ejemplar
-        $ejemplar->estado = 0; // reservado
+        $ejemplar->estado = 2; // reservado
         $ejemplar->save();
         return response()->json([
             'ok' => 'Reserva válida hasta mañana a las 20:00'

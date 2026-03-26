@@ -27,8 +27,8 @@
                     <th>Libro</th>
                     <th>Ejemplar</th>
                     <th>Lector</th>
-                    <th>Estado</th>
                     <th>Prestamo</th>
+                    <th>Estado</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>

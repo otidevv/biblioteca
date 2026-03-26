@@ -10,8 +10,10 @@
         <div class="mt-2">
             @if($e->estado == '1')
                 <span class="badge bg-success">Disponible</span>
-            @else
+            @elseif($e->estado=0)
                 <span class="badge bg-danger">Prestado</span>
+            @else
+                <span class="badge bg-danger">Reservado</span>
             @endif
         </div>
 

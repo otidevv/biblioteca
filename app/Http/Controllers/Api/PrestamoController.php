@@ -45,45 +45,16 @@ class PrestamoController extends Controller
             return $row->fecha_prestamo;
         })
         ->addColumn('fecha_limite_raw', function($row) {
-            $fechaBase = Carbon::parse($row->fecha_reservacion)
+            $fechaBase = Carbon::parse($row->fecha_prestamo)
                             ->addDays($row->duracion);
             $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
             return $fechaLimite->toDateTimeString(); // 🔥 formato JS compatible
         })
         ->addColumn('fecha_limite', function($row) {
-
-            $now = Carbon::now();
-
-            // Fecha base + días
-            $fechaBase = Carbon::parse($row->fecha_reservacion)
+            $fechaBase = Carbon::parse($row->fecha_prestamo)
                             ->addDays($row->duracion);
-
-            // Fecha límite a las 20:00
             $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
-
-            // 🔥 SOLO comparar por FECHA (sin hora)
-            $hoy = $now->toDateString();
-            $fechaFin = $fechaBase->toDateString();
-
-            // 🔴 Si ya pasó el día
-            if ($hoy > $fechaFin) {
-                return '
-                <div>
-                    <span class="badge bg-danger">Fuera de plazo</span><br>
-                    <small class="text-muted">'.$fechaLimite->format('d/m/Y 20:00').'</small>
-                </div>';
-            }
-
-            // 🟡 Si es el mismo día o falta días → mostrar contador
-            $diff = $now->diffInSeconds($fechaLimite, false);
-
-            $clase = $diff < 86400 ? 'text-danger fw-bold' : 'text-success';
-
-            return '
-            <div>
-                <small class="text-muted">'.$fechaLimite->format('d/m/Y 20:00').'</small><br>
-                <span class="countdown '.$clase.'" data-seconds="'.$diff.'"></span>
-            </div>';
+            return '<small class="text-muted">'.$fechaLimite->format('d/m/Y H:i').'</small>';
         })
         ->addColumn('libro', function($row) {
             return $row->ejemplar->libro->titulo ?? '';
@@ -95,12 +66,45 @@ class PrestamoController extends Controller
             return $row->lector->name ?? '';
         })
         ->addColumn('estado', function($row) {
-            switch($row->estado) {
-                case 1: return '<span style="color:white" class="badge bg-primary">INICIADO</span>';
-                case 2: return '<span style="color:white" class="badge bg-success">FINALIZADO</span>';
-                default: return '<span style="color:white" class="badge bg-secondary">--</span>';
-            }
-        })
+
+    $now = Carbon::now();
+
+    // 📅 Fecha base + duración
+    $fechaBase = Carbon::parse($row->fecha_prestamo)
+                    ->addDays($row->duracion);
+
+    // ⏰ Límite 20:00
+    $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
+
+    // ⏳ Diferencia en segundos
+    $diff = $now->diffInSeconds($fechaLimite, false);
+
+    // 🔴 FUERA DE PLAZO
+    if ($now->greaterThan($fechaLimite)&& $row->estado==1) {
+        return '
+        <div>
+            <span class="badge bg-danger">FUERA DE PLAZO</span><br>
+        </div>';
+    }
+
+    // 🟡 EN CURSO CON CONTADOR
+    if ($row->estado == 1) {
+
+        $clase = $diff < 86400 ? 'text-danger fw-bold' : 'text-success';
+
+        return '
+        <div>
+            <span class="countdown '.$clase.'" data-seconds="'.$diff.'"></span>
+        </div>';
+    }
+
+    // 🟢 FINALIZADO
+    if ($row->estado == 2) {
+        return '<span class="badge bg-success">FINALIZADO</span>';
+    }
+
+    return '<span class="badge bg-secondary">--</span>';
+})
         ->addColumn('estado_prestamo', function($row) {
             switch($row->estado_prestamo) {
                 case 0: return '<span style="color:white" class="badge bg-warning">PRESTADO</span>';
@@ -200,7 +204,7 @@ class PrestamoController extends Controller
         $now = Carbon::now();
 
         // 🔥 calcular fecha límite
-        $fechaLimite = Carbon::parse($prestamo->fecha_reservacion)
+        $fechaLimite = Carbon::parse($prestamo->fecha_prestamo)
             ->addDays($prestamo->duracion)
             ->setTime(20, 0, 0);
 
@@ -211,13 +215,14 @@ class PrestamoController extends Controller
         $prestamo->update([
             'fecha_devolucion' => $now,
             'comentario_devolucion' => $request->observaciones,
+            'estado' => 2,
             'estado_prestamo' => $estadoPrestamo,
             'estado_libro' => $request->estado_libro
         ]);
 
         // actualizar ejemplar
         $prestamo->ejemplar->update([
-            'estado' => 0 // disponible
+            'estado' => 1 // disponible
         ]);
 
         return response()->json([
