@@ -74,7 +74,7 @@ class LibroController extends Controller
                     </li>
 
                     <li>
-                        <a class="dropdown-item editarLibro" href="/inventario/libros_nuevo/'.$row->id.'">
+                        <a class="dropdown-item editarLibro" href="/administracion/libros_editar/'.$row->id.'">
                             <i class="fas fa-edit text-warning"></i> Editar
                         </a>
                     </li>

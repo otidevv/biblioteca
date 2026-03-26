@@ -4,9 +4,145 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
+use App\Models\Libro;
+use App\Models\Dewey;
+ 
 class SincronizarController extends Controller
 {
+    function limpiarTexto($texto) {
+        $texto = strtolower($texto);
+        $texto = preg_replace('/[^a-z0-9\s]/', '', $texto); // elimina caracteres especiales
+        return $texto;
+    }
+
+    public function clasificarLibrosMasivos()
+    {
+        ini_set('max_execution_time', 600);
+
+        // STOPWORDS básicas (puedes ampliarlas)
+        $stopwords = ['de','la','el','y','en','los','las','un','una','por','para','con','del','al'];
+
+        // Normalizador reutilizable
+        $normalizar = function($texto) use ($stopwords) {
+            $texto = strtolower($texto);
+            $texto = preg_replace('/[^a-z0-9\s]/', '', $texto);
+
+            $palabras = array_filter(explode(' ', $texto), function($p) use ($stopwords) {
+                return !in_array($p, $stopwords) && strlen($p) > 2;
+            });
+
+            return array_values(array_unique($palabras));
+        };
+
+        // Cargar Dewey optimizado
+        $deweys = Dewey::all()->map(function($d) use ($normalizar) {
+            $keywords = explode(',', strtolower($d->keywords));
+            $d->keywords = $normalizar(implode(' ', $keywords));
+            return $d;
+        });
+
+        Libro::chunk(500, function($libros) use ($deweys, $normalizar) {
+
+            $updates = [];
+
+            foreach ($libros as $libro) {
+
+                $palabrasLibro = $normalizar($libro->titulo);
+
+                if (empty($palabrasLibro)) continue;
+
+                $mejorCoincidencia = null;
+                $mejorScore = 0;
+
+                foreach ($deweys as $d) {
+
+                    if (empty($d->keywords)) continue;
+
+                    $coincidencias = array_intersect($palabrasLibro, $d->keywords);
+                    $numCoincidencias = count($coincidencias);
+
+                    if ($numCoincidencias === 0) continue;
+
+                    // 🎯 SCORE PROFESIONAL (tipo TF simple)
+                    $precision = $numCoincidencias / count($d->keywords);
+                    $recall    = $numCoincidencias / count($palabrasLibro);
+
+                    // F1 Score balanceado
+                    $score = (2 * $precision * $recall) / max(($precision + $recall), 0.0001);
+
+                    // Bonus por nivel (ajusta peso)
+                    $score += ($d->nivel * 0.05);
+
+                    if ($score > $mejorScore) {
+                        $mejorScore = $score;
+                        $mejorCoincidencia = $d;
+                    }
+                }
+
+                // 🔒 Umbral mínimo (evita clasificaciones malas)
+                if ($mejorCoincidencia && $mejorScore >= 0.2) {
+                    $updates[] = [
+                        'id' => $libro->id,
+                        'codigo_dewey' => $mejorCoincidencia->codigo
+                    ];
+                }
+            }
+
+            // ⚡ UPDATE MASIVO (MUCHO más eficiente)
+            if (!empty($updates)) {
+
+                $ids = collect($updates)->pluck('id')->toArray();
+
+                $cases = "";
+                foreach ($updates as $u) {
+                    $cases .= "WHEN {$u['id']} THEN '{$u['codigo_dewey']}' ";
+                }
+
+                DB::update("
+                    UPDATE libros
+                    SET codigo_dewey = CASE id
+                        $cases
+                    END
+                    WHERE id IN (" . implode(',', $ids) . ")
+                ");
+            }
+        });
+
+        return "Clasificación masiva optimizada completada ✅";
+    }
+
+
+
+   public function obtenerDeweyPorTitulo(Request $request)
+    {
+        
+    }
+    private function mapearDewey($categorias)
+    {
+        $map = [
+            'Computers' => '004',
+            'Programming' => '005',
+            'Science' => '500',
+            'Mathematics' => '510',
+            'History' => '900',
+            'Literature' => '800',
+            'Education' => '370',
+            'Law' => '340',
+        ];
+
+        foreach ($categorias as $cat) {
+            foreach ($map as $key => $dewey) {
+                if (stripos($cat, $key) !== false) {
+                    return $dewey;
+                }
+            }
+        }
+
+        return '000'; // desconocido
+    }
+
     public function sincronizar()
     {
         DB::beginTransaction();

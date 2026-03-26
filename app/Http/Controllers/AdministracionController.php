@@ -36,6 +36,7 @@ class AdministracionController extends Controller
             'compras' => $this->compras(),
             'libros' => $this->libros(),
             'libros_nuevo' => $this->libros_nuevo(),
+            'libros_editar' => $this->libros_editar($id),
             'ejemplares'=>$this->ejemplares($id),
             default => abort(404),
         };
@@ -97,6 +98,15 @@ class AdministracionController extends Controller
         $idiomas = Idioma::latest()->get();
         $deweys = Dewey::latest()->get();
         return view('administracion.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys'));
+    }
+    protected function libros_editar($id)
+    {
+        $tipo_registros = Tipo_registro::latest()->get();
+        $libro=Libro::find($id);
+        $paises = Pais::latest()->get();
+        $idiomas = Idioma::latest()->get();
+        $deweys = Dewey::latest()->get();
+        return view('administracion.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys','libro'));
     }
     protected function compras()    
     {

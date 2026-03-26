@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('observaciones_prestamo')->nullable();
             $table->text('observaciones_devolucion')->nullable();
             $table->tinyInteger('estado_prestamo')->default(0);//0 PRESTADO,1 DEVUELTO,2 TARDANZA, 3 DETERIORO
-            $table->tinyInteger('estado_libro')->default(0);//1 BUENO,3 DETERIORO, 4 PERDIDO
+            $table->tinyInteger('estado_libro')->default(1);//1 BUENO,3 DETERIORO, 4 PERDIDO
             $table->tinyInteger('estado')->default(1);//1 INCIIADO, 2 FINALIZADO
             $table->foreignId('ejemplar_id')->constrained('ejemplares')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // bibliotecario

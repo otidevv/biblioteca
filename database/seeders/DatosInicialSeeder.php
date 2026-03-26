@@ -190,6 +190,7 @@ class DatosInicialSeeder extends Seeder
                     'codigo' => $item['codigo'],
                     'nombre' => $item['nombre'],
                     'nivel' => $item['nivel'],
+                    'keywords' => $item['keywords'],
                     'dewey_id' => $parent_id
                 ]);
             }

@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('deweys', function (Blueprint $table) {
             $table->id();
+            $table->text('keywords')->nullable();
             $table->string('codigo');
-            $table->string('nombre')->unique();
+            $table->string('nombre');
             $table->string('nivel');
             $table->foreignId('dewey_id')->nullable()->constrained('deweys')->cascadeOnDelete();
             $table->timestamps();

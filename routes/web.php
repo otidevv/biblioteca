@@ -55,7 +55,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     // ADMINISTRACIÓN
     Route::prefix('administracion')->group(function () {
         Route::get('{modulo}/{id?}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras|libros|libros_nuevo|ejemplares');
+            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras|libros|libros_editar|libros_nuevo|ejemplares');
     }); 
 
     // INVENTARIO
@@ -212,3 +212,4 @@ Route::get('/{id}/libro', [PaginaController::class, 'libro'])->name('pagina.libr
 */
 
 Route::get('/sincronizar', [SincronizarController::class, 'sincronizar']);
+Route::get('/obtenerDeweyPorTitulo', [SincronizarController::class, 'clasificarLibrosMasivos']);

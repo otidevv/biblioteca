@@ -8,6 +8,13 @@
     <script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
     <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
     <script src="{{ asset('/js/administracion/libro_nuevo.js') }}"></script>
+    <script>
+        let libro = @json($libro ?? null);
+        let codigoDewey = @json($libro->codigo_dewey ?? null);
+        let textoDewey = @json(($libro->codigo_dewey ?? '') . ' - ' . ($libro->dewey->nombre ?? ''));
+
+        console.log(libro);
+    </script>
 @endsection
 @section('content')
 <nav class="mb-4 text-sm text-gray-600">
@@ -36,14 +43,17 @@
 
                         <div class="col-md-2 form-group form-required">
                             <label>ISBN</label>
-                            <input type="text" name="isbn" class="form-control">
+                            <input type="text" name="isbn" class="form-control" value="{{isset($libro) && $libro->isbn? $libro->isbn:''}}">
                         </div>
                         <div class="col-md-4 form-group form-required">
                             <label>Tipo Registro</label>
                             <select name="tipo_registro_id" class="form-select">
                             <option value="">Seleccione...</option>
                             @foreach ($tipo_registros as $tr)
-                            <option value="{{ $tr->id }}">{{ $tr->nombre }}</option>
+                                <option value="{{ $tr->id }}"
+                                    {{ isset($libro) && $libro->tipo_registro_id == $tr->id ? 'selected' : '' }}>
+                                    {{ $tr->nombre }}
+                                </option>
                             @endforeach
                             </select>
                         </div>

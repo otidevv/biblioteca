@@ -19,7 +19,7 @@ $(document).ready(function () {
 
     });
     // Inicializamos Select2 con búsqueda manual
-    $('#codigo_dewey').select2({
+   $('#codigo_dewey').select2({
         placeholder: 'Seleccione código Dewey',
         allowClear: true,
         ajax: {
@@ -27,17 +27,53 @@ $(document).ready(function () {
             dataType: 'json',
             delay: 250,
             data: function(params) {
-                let titulo = $('input[name="titulo"]').val().trim(); // Toma el título si existe
+                let titulo = $('input[name="titulo"]').val().trim();
                 return { q: params.term || titulo }; 
             },
             processResults: function(data) {
                 return {
-                    results: data.map(item => ({ id: item.id, text: item.codigo + ' - ' + item.nombre }))
+                    results: data.map(item => ({
+                        id: item.codigo,
+                        text: item.codigo + ' - ' + item.nombre
+                    }))
                 };
             },
             cache: true
         }
     });
+
+    // =============================
+    // 🔥 CASO 1: EDICIÓN
+    // =============================
+    if (codigoDewey) {
+
+        $.ajax({
+            url: '/api/inventario/dewey/buscar',
+            data: { q: codigoDewey },
+            success: function(data) {
+
+                if (data.length > 0) {
+                    let item = data[0];
+
+                    let option = new Option(
+                        item.codigo + ' - ' + item.nombre,
+                        item.codigo,
+                        true,
+                        true
+                    );
+
+                    $('#codigo_dewey').append(option).trigger('change');
+                }
+            }
+        });
+
+    } 
+
+    // 🔥 Seleccionar valor en edición
+    if (codigoDewey) {
+        let option = new Option(textoDewey, codigoDewey, true, true);
+        $('#codigo_dewey').append(option).trigger('change');
+    }/*
     // Evento para buscar Dewey según el título
     $('input[name="titulo"]').on('blur', function() {
         let titulo = $(this).val().trim();
@@ -65,7 +101,7 @@ $(document).ready(function () {
                 }
             });
         }
-    });
+    });*/
     // ================= EDITORIAL =================
     $('#editorial_id').select2({
         placeholder: "Buscar editorial",
