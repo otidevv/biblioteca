@@ -105,18 +105,42 @@ class PaginaController extends Controller
     }
 
 
-    public function showBiblioteca($id)
+    public function showBiblioteca(Request $request,$id)
     {
         $biblioteca = Biblioteca::findOrFail($id);
+        
+        $query = Libro::with(['autores','editorial','ejemplares'])
+            ->whereHas('ejemplares', function($q) use ($id) {
+                $q->where('biblioteca_id', $id);
+            });
 
-        $ejemplares = Ejemplar::with('libro')
-            ->where('biblioteca_id', $id)
-            ->get();
+        if ($request->titulo) {
+            $query->where('titulo','like','%'.$request->titulo.'%');
+        }
 
-        // Agrupar por libro
-        $libros = $ejemplares->groupBy('libro_id');
+        if ($request->autor_id) {
+            $query->whereHas('autores', function($q) use ($request){
+                $q->where('autores.id', $request->autor_id);
+            });
+        }
 
-        return view('pagina.libro', compact('biblioteca','libros'));
+        if ($request->editorial_id) {
+            $query->where('editorial_id',$request->editorial_id);
+        }
+
+        if ($request->materia) {
+            $query->where('materia',$request->materia);
+        }
+
+        $libros = $query->paginate(8)->withQueryString();
+
+        // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
+        if ($request->ajax()) {
+            return view('pagina._libros', compact('libros'))->render();
+        }
+
+
+        return view('pagina.catalogo', compact('libros','biblioteca'));
     }
 
     public function showLibro($id)

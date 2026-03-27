@@ -36,7 +36,7 @@ class BibliotecaController extends Controller
             'nombre'        => 'required|string|max:150',
             'direccion'     => 'nullable|string|max:255',
             'descripcion'   => 'nullable|string|max:500',
-            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'imagen'        => 'nullable',
         ]);
 
         DB::beginTransaction();

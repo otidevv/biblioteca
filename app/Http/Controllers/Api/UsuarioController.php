@@ -139,20 +139,28 @@ class UsuarioController extends Controller
     }
     public function edit(Request $request)
     {
+        $user = User::findOrFail($request->id);
+        $persona = Persona::findOrFail($user->persona_id);
+
         $request->validate([
             // PERSONA
             'id'               => 'required|exists:users,id',
-            'dni'               => 'required|string|max:15|',
+            'dni'              => [
+                'required',
+                'string',
+                'max:15',
+                Rule::unique('personas', 'dni')->ignore($persona->id),
+            ],
             'nombres'           => 'required|string|max:150',
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
             'telefono'          => 'nullable|string|max:20',
-            'biblioteca'        => 'nullable|string|max:20',
+            'biblioteca'        => 'nullable|integer|exists:bibliotecas,id',
+            'roles'             => 'required|array|min:1',
+            'roles.*'           => 'exists:roles,id',
         ]);
-        //return $request;   
-        $user=User::find($request->id);           
-        $persona=Persona::find($user->persona_id); 
+
         DB::beginTransaction();
         try {
 
@@ -299,6 +307,79 @@ class UsuarioController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar el lector: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function editLector(Request $request)
+    {
+        $user = User::findOrFail($request->id);
+        $persona = Persona::findOrFail($user->persona_id);
+
+        $request->validate([
+            'id'                => 'required|exists:users,id',
+            'dni'               => [
+                'required',
+                'string',
+                'max:15',
+                Rule::unique('personas', 'dni')->ignore($persona->id),
+            ],
+            'tipo_persona'      => 'required|in:ESTUDIANTE,DOCENTE,ADMINISTRATIVO,EXTERNO',
+            'nombres'           => 'required|string|max:150',
+            'apellido_paterno'  => 'required|string|max:150',
+            'apellido_materno'  => 'nullable|string|max:150',
+            'sexo'              => 'nullable|in:M,F,O',
+            'telefono'          => 'nullable|string|max:20',
+            'email_personal'    => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'direccion'         => 'nullable|string|max:255',
+            'codigo_institucional' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('personas', 'codigo_institucional')->ignore($persona->id),
+            ],
+            'carrera_id'        => 'nullable|integer|exists:carreras,id',
+            'estado_academico'  => 'nullable|string|max:255',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $persona->update([
+                'dni' => $request->dni,
+                'tipo_persona' => $request->tipo_persona,
+                'nombres' => $request->nombres,
+                'apellido_paterno' => $request->apellido_paterno,
+                'apellido_materno' => $request->apellido_materno,
+                'sexo' => $request->sexo,
+                'telefono' => $request->telefono,
+                'email_personal' => $request->email_personal,
+                'direccion' => $request->direccion,
+                'codigo_institucional' => $request->codigo_institucional,
+                'carrera_id' => $request->filled('carrera_id') && $request->carrera_id != 0 ? $request->carrera_id : null,
+                'estado_academico' => $request->filled('estado_academico') && $request->estado_academico != 0 ? $request->estado_academico : null,
+            ]);
+
+            $user->update([
+                'name' => $request->nombres,
+                'email' => $request->email_personal,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lector actualizado correctamente'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el lector: ' . $e->getMessage()
             ], 500);
         }
     }

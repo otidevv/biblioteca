@@ -1,7 +1,16 @@
 [
 
 {"codigo":"000","nombre":"Generalidades","dewy_id":null,"nivel":1,"keywords":"general, conocimiento, referencia, información"},
-  
+  {"codigo":"001","nombre":"Conocimiento","dewy_id":"000","nivel":2,"keywords":"conocimiento, saber, aprendizaje, investigación"},
+  {"codigo":"002","nombre":"El libro","dewy_id":"000","nivel":2,"keywords":"libros, edición, publicación, impresión"},
+  {"codigo":"003","nombre":"Sistemas","dewy_id":"000","nivel":2,"keywords":"sistemas, teorías, estructuras, modelos"},
+  {"codigo":"004","nombre":"Informática","dewy_id":"000","nivel":2,"keywords":"computación, informática, software, hardware"},
+  {"codigo":"005","nombre":"Programación","dewy_id":"004","nivel":3,"keywords":"programación, código, algoritmos, desarrollo"},
+  {"codigo":"006","nombre":"Tecnologías especiales","dewy_id":"004","nivel":3,"keywords":"inteligencia artificial, robótica, sistemas expertos"},
+  {"codigo":"007","nombre":"Actividad y entretenimiento","dewy_id":"000","nivel":2,"keywords":"medios, entretenimiento, cine, fotografía"},
+  {"codigo":"008","nombre":"Literatura general","dewy_id":"000","nivel":2,"keywords":"literatura, colecciones, escritos, textos"},
+  {"codigo":"009","nombre":"Historia y geografía general","dewy_id":"000","nivel":2,"keywords":"historia general, geografía, estudios generales"},
+
   {"codigo":"010","nombre":"Bibliografía","dewy_id":"000","nivel":2,"keywords":"bibliografía, libros, referencias, publicaciones"},
   {"codigo":"011","nombre":"Bibliografías","dewy_id":"010","nivel":3,"keywords":"bibliografía, compilación, lista, obras"},
   {"codigo":"012","nombre":"Bibliografías de individuos","dewy_id":"010","nivel":3,"keywords":"bibliografía, autores, personas, obras individuales"},

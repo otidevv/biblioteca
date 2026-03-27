@@ -15,7 +15,6 @@ use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Api\UsuarioController as ApiUsuarioController;
 use App\Http\Controllers\Api\RolController as ApiRolController;
 use App\Http\Controllers\Api\BibliotecaController as ApiBibliotecaController;
-use App\Http\Controllers\Api\LectorController as ApiLectorController;
 use App\Http\Controllers\Api\ConsultaApiController as ApiConsultaApiController;
 use App\Http\Controllers\Api\ProveedorController as ApiProveedorController;
 use App\Http\Controllers\Api\EditorialController as ApiEditorialController;
@@ -49,7 +48,7 @@ use App\Http\Controllers\Api\PrestamoController as ApiPrestamoController;
 require __DIR__.'/auth.php';
 Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 
-    Route::get('/', [AdministracionController::class, 'inicio'])->name('administracion.index');    
+    Route::get('/inicio', [AdministracionController::class, 'inicio'])->name('administracion.index');
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('perfil.edit');    
 
     // ADMINISTRACIÓN
@@ -119,13 +118,6 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/listar', [ApiEditorialController::class, 'listar']);
             Route::post('/nuevo', [ApiEditorialController::class, 'nuevo']);
             Route::post('/edit', [ApiEditorialController::class, 'edit']);
-        });
-        Route::prefix('lectores')->group(function () {
-            Route::get('/listar', [ApiLectorController::class, 'listar']);
-            Route::post('/nuevo', [ApiLectorController::class, 'nuevo']);
-            Route::post('/edit', [ApiLectorController::class, 'edit']);
-            Route::put('/{id}', [ApiLectorController::class, 'update']);
-            Route::delete('/{id}', [ApiLectorController::class, 'destroy']);
         });
         Route::prefix('tipo_registros')->group(function () {
             Route::get('/listar', [ApiTipoRegistroController::class, 'listar']);
@@ -204,7 +196,10 @@ Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->nam
 Route::get('/{id}/libro', [PaginaController::class, 'showLibro'])->name('libro.show');
 Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
 Route::get('/evento', [PaginaController::class, 'catalogo'])->name('evento');
-Route::get('/prestamos', [PaginaController::class, 'nuevoPrestamo'])->name('prestamos');
+Route::middleware('auth')
+    ->get('/prestamos', [PrestamoController::class, 'index'])
+    ->defaults('modulo', 'registro')
+    ->name('prestamos');
 Route::get('/reservar', [PaginaController::class, 'misReservas'])->name('mis.reservas');
 /*
 Route::get('/', [PaginaController::class, 'index'])->name('pagina.index');

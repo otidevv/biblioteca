@@ -299,7 +299,7 @@ function refrescarEjemplares(){
         <div class="card book-card h-100">
 
             <!-- IMAGEN -->
-           <img src="{{ $libro->imagen ? '/'.$libro->imagen : '/img/libro.png' }}">
+           <img src="{{ $libro->imagen ? '/'.$libro->imagen : '/img/libro.png' }}" class="libro-img">
 
             <div class="card-body d-flex flex-column">
 
