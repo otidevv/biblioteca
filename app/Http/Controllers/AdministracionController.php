@@ -102,7 +102,7 @@ class AdministracionController extends Controller
     protected function libros_editar($id)
     {
         $tipo_registros = Tipo_registro::latest()->get();
-        $libro=Libro::find($id);
+        $libro = Libro::with(['autores','tipo_registro','materias','editorial'])->find($id);
         $paises = Pais::latest()->get();
         $idiomas = Idioma::latest()->get();
         $deweys = Dewey::latest()->get();

@@ -127,16 +127,15 @@ class AutorController extends Controller
     // metodos para select2 en nuevo libro
     public function listarAutores(Request $request)
     {
-        $query = Autor::query();
+        $query = Autor::query()->limit(10);;
 
         if ($request->has('q')) {
             $search = $request->q;
             $query->where(function($q) use ($search) {
                 $q->where('nombres', 'LIKE', "%$search%")
                 ->orWhere('apellidos', 'LIKE', "%$search%");
-            });
+            })->limit(10);
         }
-
         $autores = $query->get(['id', 'nombres', 'apellidos'])->map(function($autor) {
             return [
                 'id' => $autor->id,

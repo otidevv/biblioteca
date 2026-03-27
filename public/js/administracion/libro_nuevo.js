@@ -45,35 +45,24 @@ $(document).ready(function () {
     // =============================
     // 🔥 CASO 1: EDICIÓN
     // =============================
+   
     if (codigoDewey) {
-
-        $.ajax({
+            $.ajax({
             url: '/api/inventario/dewey/buscar',
-            data: { q: codigoDewey },
+            data: { codigoDewey: codigoDewey },
             success: function(data) {
-
-                if (data.length > 0) {
+                $('#codigo_dewey').empty().trigger('change');
+                if (Array.isArray(data) && data.length > 0) {
                     let item = data[0];
-
-                    let option = new Option(
-                        item.codigo + ' - ' + item.nombre,
-                        item.codigo,
-                        true,
-                        true
-                    );
-
-                    $('#codigo_dewey').append(option).trigger('change');
+                    console.log(item.codigo);                    
+                    let texto = item.text;
+                    // 🔥 IMPORTANTE: usar codigo como value (igual que Select2)
+                    let newOption = new Option(texto, item.codigo, true, true);
+                    $('#codigo_dewey').append(newOption).trigger('change');
                 }
             }
         });
-
-    } 
-
-    // 🔥 Seleccionar valor en edición
-    if (codigoDewey) {
-        let option = new Option(textoDewey, codigoDewey, true, true);
-        $('#codigo_dewey').append(option).trigger('change');
-    }/*
+    }
     // Evento para buscar Dewey según el título
     $('input[name="titulo"]').on('blur', function() {
         let titulo = $(this).val().trim();
@@ -81,7 +70,7 @@ $(document).ready(function () {
             $.ajax({
                 url: '/api/inventario/dewey/buscar',
                 type: 'GET',
-                data: { q: titulo },
+                data: { titulo: titulo },
                 success: function(response){
                     // Limpiamos el select
                     $('#codigo_dewey').empty().trigger('change');
@@ -101,7 +90,7 @@ $(document).ready(function () {
                 }
             });
         }
-    });*/
+    });
     // ================= EDITORIAL =================
     $('#editorial_id').select2({
         placeholder: "Buscar editorial",
@@ -120,6 +109,16 @@ $(document).ready(function () {
             }
         }
     });
+    //=====================actualoizar editoriales===============//
+    if (libro.editorial) {
+        editorial=libro.editorial;
+
+        let texto = editorial.nombre;
+
+        let newOption = new Option(texto, editorial.id, true, true);
+
+        $('#editorial_id').append(newOption).trigger('change');
+    }
 
     // ================= AUTORES =================
     $('#autor_id').select2({
@@ -140,6 +139,39 @@ $(document).ready(function () {
             })
         }
     });
+    //=======================actualozar autores==================//
+    if (autores && autores.length > 0) {
+
+        $('#autor_id').empty().trigger('change');
+
+        // 🔥 eliminar duplicados
+        let autoresUnicos = [];
+        let ids = new Set();
+
+        autores.forEach(a => {
+            if (!ids.has(a.id)) {
+                ids.add(a.id);
+                autoresUnicos.push(a);
+            }
+        });
+
+        // 🔥 agregar y seleccionar todos
+        let valores = [];
+
+        autoresUnicos.forEach(item => {
+
+            let texto = item.nombres.trim() + ' ' + item.apellidos.trim();
+
+            let option = new Option(texto, item.id, true, true);
+
+            $('#autor_id').append(option);
+
+            valores.push(item.id); // guardar ids
+        });
+
+        // 🔥 seleccionar todos
+        $('#autor_id').val(valores).trigger('change');
+    }
 
     // ================= MATERIAS =================
     $('#materias').select2({
@@ -159,6 +191,20 @@ $(document).ready(function () {
             })
         }
     });
+    //==================actualiza materias=================/
+    if (libro.materias && libro.materias.length > 0) {
+        materias=libro.materias;
+        $('#materias').empty().trigger('change');
+        let valores = [];
+        materias.forEach(item => {
+            let texto = item.nombre;
+            let option = new Option(texto, item.id, true, true);
+            $('#materias').append(option);
+            valores.push(item.id);
+        });
+        // 🔥 seleccionar todas
+        $('#materias').val(valores).trigger('change');
+    }
     
     $('#formEditorial').on('submit', function (e) {
         e.preventDefault();
@@ -345,7 +391,7 @@ $(document).ready(function () {
 
     $.ajax({
 
-        url: "/api/inventario/libros/guardar",
+        url:libro? '/api/inventario/libros/actualizar':'/api/inventario/libros/guardar',
         type: "POST",
         data: formData,
         processData: false,

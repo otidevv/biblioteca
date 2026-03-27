@@ -13,6 +13,21 @@ class DeweyController extends Controller
     {
         $q = $request->get('q');
 
+        if ($request->get('codigoDewey')) {
+
+            $q = $request->get('codigoDewey');
+            $deweys = Dewey::where('codigo',$q)
+                ->get();
+            return response()->json(
+                $deweys->map(function ($d) {
+                    return [
+                        'id' => $d->id,
+                        'text' => $d->codigo . ' - ' . $d->nombre // 🔥 IMPORTANTE para Select2
+                    ];
+                })
+            );
+
+        } 
         $deweys = Dewey::where('nombre', 'like', "%{$q}%")
                         ->limit(10)
                         ->get();

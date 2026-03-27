@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use App\Models\Dewey;
+use App\Models\Dewey_aprendizaje;
 use App\Models\Libro;
 class LibroController extends Controller
 {
@@ -160,6 +161,8 @@ class LibroController extends Controller
             $libro->fecha_publicacion = $request->fecha_publicacion;
             $libro->lugar_publicacion = $request->lugar_publicacion;
             $libro->resumen = $request->resumen;
+            $libro->palabras_clave = $request->palabras_clave;
+            $libro->anotaciones = $request->anotaciones;
             $libro->anotaciones = $request->anotaciones;
 
             // subir imagen
@@ -206,9 +209,8 @@ class LibroController extends Controller
             ],500);
         }
     }
-    public function edith(Request $request)
+    public function actualizar(Request $request)
     {
-
         $request->validate([
             'id' => 'required',
             'titulo' => 'required',
@@ -226,6 +228,10 @@ class LibroController extends Controller
             ],404);
         }
 
+        // 🔥 guardar valor anterior
+        $codigoAnterior = $libro->codigo_dewey;
+
+        // ================= ACTUALIZAR =================
         $libro->isbn = $request->isbn;
         $libro->tipo_registro_id = $request->tipo_registro_id;
         $libro->codigo_dewey = $request->codigo_dewey;
@@ -238,12 +244,12 @@ class LibroController extends Controller
         $libro->paginas = $request->paginas;
         $libro->fecha_publicacion = $request->fecha_publicacion;
         $libro->lugar_publicacion = $request->lugar_publicacion;
+        $libro->palabras_clave = $request->palabras_clave;
         $libro->resumen = $request->resumen;
         $libro->anotaciones = $request->anotaciones;
 
-        // subir imagen
+        // ================= IMAGEN =================
         if($request->hasFile('imagen')){
-
             if($libro->imagen){
                 Storage::delete('public/libros/'.$libro->imagen);
             }
@@ -255,9 +261,8 @@ class LibroController extends Controller
             $libro->imagen = $nombre;
         }
 
-        // subir pdf
+        // ================= PDF =================
         if($request->hasFile('archivo_indice')){
-
             if($libro->archivo_indice){
                 Storage::delete('public/indices/'.$libro->archivo_indice);
             }
@@ -271,16 +276,42 @@ class LibroController extends Controller
 
         $libro->save();
 
-        // sincronizar autores
+        // ================= RELACIONES =================
         $libro->autores()->sync($request->autor_id ?? []);
-
-        // sincronizar materias
         $libro->materias()->sync($request->materias ?? []);
+
+        // ================= 🔥 APRENDIZAJE =================
+        $this->guardarAprendizaje(
+            $request->titulo,
+            $request->codigo_dewey,
+            $codigoAnterior
+        );
 
         return response()->json([
             'success'=>true,
             'message'=>'Libro actualizado correctamente'
         ]);
+    }
+     public static function guardarAprendizaje($texto, $codigo)
+    {
+        if (!$texto || !$codigo) return;
 
+        $texto = trim(mb_strtolower($texto));
+
+        $apr = Dewey_aprendizaje::where('palabra', $texto)
+            ->where('codigo_dewey', $codigo)
+            ->first();
+
+        if ($apr) {
+            // 🔥 ya existe → aumenta peso
+            $apr->increment('peso');
+        } else {
+            // 🔥 nuevo aprendizaje
+            Dewey_aprendizaje::create([
+                'palabra' => $texto,
+                'codigo_dewey' => $codigo,
+                'peso' => 1
+            ]);
+        }
     }
 }

@@ -163,6 +163,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/codigo_cutter', [ApiCutterController::class, 'codigoCutter']);
             Route::get('/libros/check_codigo', [ApiCutterController::class, 'checkCodigo']);
             Route::post('/libros/guardar', [ApiLibroController::class, 'nuevo']);
+            Route::post('/libros/actualizar', [ApiLibroController::class, 'actualizar']);
             Route::get('/libros/listar', [ApiLibroController::class, 'listar']);
             Route::post('/ejemplares/guardar', [ApiEjemplarController::class, 'guardar']);
             Route::post('/ejemplares/actualizar', [ApiEjemplarController::class, 'actualizar']);

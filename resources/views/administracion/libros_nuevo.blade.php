@@ -12,6 +12,7 @@
         let libro = @json($libro ?? null);
         let codigoDewey = @json($libro->codigo_dewey ?? null);
         let textoDewey = @json(($libro->codigo_dewey ?? '') . ' - ' . ($libro->dewey->nombre ?? ''));
+        let autores = @json($libro->autores ?? '');
 
         console.log(libro);
     </script>
@@ -34,54 +35,30 @@
         <div class="bg-white p-6 rounded-xl shadow-lg">
             <div  id="div_form_libro">
                 <form id="formLibro" enctype="multipart/form-data">
-
                     <!-- ================= IDENTIFICACIÓN ================= -->
                     <h4>Codigo:</h4>
-                    <h5 class="border-bottom pb-2 mb-3">Identificación</h5>
-
-                    <div class="row g-3 mb-3">               
-
-                        <div class="col-md-2 form-group form-required">
-                            <label>ISBN</label>
-                            <input type="text" name="isbn" class="form-control" value="{{isset($libro) && $libro->isbn? $libro->isbn:''}}">
-                        </div>
-                        <div class="col-md-4 form-group form-required">
-                            <label>Tipo Registro</label>
-                            <select name="tipo_registro_id" class="form-select">
-                            <option value="">Seleccione...</option>
-                            @foreach ($tipo_registros as $tr)
-                                <option value="{{ $tr->id }}"
-                                    {{ isset($libro) && $libro->tipo_registro_id == $tr->id ? 'selected' : '' }}>
-                                    {{ $tr->nombre }}
-                                </option>
-                            @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4 form-group form-required">
-                            <label>Código Dewey</label>
-                            <select id="codigo_dewey" name="codigo_dewey" class="form-select select2">
-                                <option value="">Seleccione...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2 form-group form-required">
-                            <label>Código</label>
-                            <input type="text" name="codigo" class="form-control" required>
-                        </div>
-                    </div>
-
-
-                    <!-- ================= INFORMACIÓN BIBLIOGRÁFICA ================= -->
+                   <!-- ================= INFORMACIÓN BIBLIOGRÁFICA ================= -->
 
                     <h5 class="border-bottom pb-2 mt-4 mb-3">Información Bibliográfica</h5>
-
+                    <input type="hidden" name="id" id="id" value="{{ optional($libro)->id }}">
                     <div class="row g-3">
 
                         <div class="col-md-12 form-group form-required">
                             <label>Título</label>
-                            <input type="text" name="titulo" class="form-control" required>
+                            <input type="text" name="titulo" class="form-control" value="{{isset($libro) && $libro->titulo? $libro->titulo:''}}" required>
                         </div>
-
-                        <div class="col-md-4 form-group form-required">
+                        <div class="col-md-6 form-group form-required">
+                            <label>Autores</label>
+                            <div class="d-flex">
+                                <select id="autor_id" name="autor_id[]" class="form-select select2 flex-grow-1" multiple>
+                                <option value="">Seleccione autor(es)</option>
+                                </select>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAutor">
+                                +
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 form-group form-required">
                             <label>Editorial</label>
 
                             <div class="d-flex">
@@ -96,59 +73,77 @@
 
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label>Edición</label>
-                            <input type="text" name="edicion" class="form-control">
+                            <input type="text" name="edicion" class="form-control" value="{{isset($libro) && $libro->edicion? $libro->edicion:''}}">
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label>Año edición</label>
-                            <input type="number" name="anio_edicion" class="form-control">
+                            <input type="number" name="anio_edicion" class="form-control" value="{{isset($libro) && $libro->anio_edicion? $libro->anio_edicion:''}}">
                         </div>
-
-
                         <div class="col-md-3 form-group form-required">
                             <label>Idioma</label>
                             <select name="idioma" class="form-select select2">
                                 <option value="">Seleccione...</option>
                                 @foreach ($idiomas as $tr)
-                                    <option value="{{ $tr->id }}">{{ $tr->nombre }}</option>
+                                    <option value="{{ $tr->id }}" {{isset($libro) && $tr->id==$libro->idioma? $libro->anio_edicion:''}}>{{ $tr->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-3 form-group form-required">
                             <label>Páginas</label>
-                            <input type="number" name="paginas" class="form-control">
-                        </div>
-
-                        <div class="col-md-3 form-group form-required">
-                            <label>Fecha publicación</label>
-                            <input type="date" name="fecha_publicacion" class="form-control">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label>Lugar publicación</label>
-                            <input type="text" name="lugar_publicacion" class="form-control">
-                        </div>
-                    </div>
-                    <!-- ================= RELACIONES ================= -->
-                    <h5 class="border-bottom pb-2 mt-4 mb-3">Relaciones</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6 form-group form-required">
-                            <label>Autores</label>
-                            <div class="d-flex">
-                                <select id="autor_id" name="autor_id[]" class="form-select select2 flex-grow-1" multiple>
-                                <option value="">Seleccione autor(es)</option>
-                                </select>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAutor">
-                                +
-                                </button>
-                            </div>
+                            <input type="number" name="paginas" class="form-control" value="{{isset($libro) && $libro->paginas? $libro->paginas:''}}">
                         </div>
                         <div class="col-md-6">
                             <label>Materias</label>
                             <select name="materias[]" id="materias" class="form-select select2" multiple></select>
                         </div>
+
+                        <div class="col-md-3 form-group form-required">
+                            <label>Fecha publicación</label>
+                            <input type="date" name="fecha_publicacion" class="form-control" value="{{isset($libro) && $libro->fecha_publicacion? $libro->fecha_publicacion:''}}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Lugar publicación</label>
+                            <input type="text" name="lugar_publicacion" class="form-control" value="{{isset($libro) && $libro->lugar_publicacion? $libro->lugar_publicacion:''}}">
+                        </div>
+                    </div>
+                     <h5 class="border-bottom pb-2 mb-3">Identificación</h5>
+
+                    <div class="row g-3 mb-3">               
+
+                        <div class="col-md-4 form-group form-required">
+                            <label>Tipo Registro</label>
+                            <select name="tipo_registro_id" class="form-select">
+                            <option value="">Seleccione...</option>
+                            @foreach ($tipo_registros as $tr)
+                                <option value="{{ $tr->id }}"
+                                    {{ isset($libro) && $libro->tipo_registro_id == $tr->id ? 'selected' : '' }}>
+                                    {{ $tr->nombre }}
+                                </option>
+                            @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2 form-group form-required">
+                            <label>ISBN</label>
+                            <input type="text" name="isbn" class="form-control" value="{{isset($libro) && $libro->isbn? $libro->isbn:''}}">
+                        </div>
+                        <div class="col-md-4 form-group form-required">
+                            <label>Código Dewey</label>
+                            <select id="codigo_dewey" name="codigo_dewey" class="form-select select2">
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 form-group form-required">
+                            <label>Código</label>
+                            <input type="text" name="codigo" class="form-control"  value="{{isset($libro) && $libro->codigo? $libro->codigo:''}}" required>
+                        </div>
+                    </div>
+                    <!-- ================= RELACIONES ================= -->
+                    <h5 class="border-bottom pb-2 mt-4 mb-3">Relaciones</h5>
+                    <div class="row g-3">
                     </div>
 
 
@@ -160,12 +155,16 @@
 
                         <div class="col-md-12">
                             <label>Resumen</label>
-                            <textarea name="resumen" rows="3" class="form-control"></textarea>
+                            <textarea name="resumen" rows="3" class="form-control" >{{isset($libro) && $libro->resumen? $libro->resumen:''}}</textarea>
                         </div>
 
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label>Anotaciones</label>
-                            <textarea name="anotaciones" rows="3" class="form-control"></textarea>
+                            <textarea name="anotaciones" rows="3" class="form-control">{{isset($libro) && $libro->anotaciones? $libro->anotaciones:''}}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Palabras clave</label>
+                            <textarea name="palabras_clave" rows="3" class="form-control">{{isset($libro) && $libro->palabras_clave? $libro->palabras_clave:''}}</textarea>
                         </div>
 
                     </div>
@@ -184,7 +183,7 @@
                             <input type="file" name="imagen" class="form-control">
                             <div class="mt-2">
                                 <img id="previewImagen" 
-                                    src="https://via.placeholder.com/150x200?text=Sin+imagen"
+                                    src="{{isset($libro) && $libro->imagen? '/'.$libro->imagen:''}}"
                                     style="max-height:200px; border:1px solid #ddd; padding:5px;">
                             </div>
                         </div>
