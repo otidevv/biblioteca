@@ -40,52 +40,62 @@
     <form method="GET" action="{{ route('catalogo') }}" id="catalogoFiltrosForm">
         <div class="catalog-filter-header">
             <div>
-                <span class="catalog-filter-kicker">Busqueda avanzada</span>
-                <h2 class="catalog-filter-title">Busqueda avanzada</h2>
+                <span class="catalog-filter-kicker">
+                    <i class="bi bi-sliders2"></i>
+                    Filtrar catalogo
+                </span>
+                <h2 class="catalog-filter-title">Encuentra el libro que necesitas</h2>
                 <p class="catalog-filter-subtitle">
-                    Combina titulo, autor, idioma y materia para afinar el resultado del catalogo segun lo que necesitas encontrar.
+                    Busca por titulo y afina el resultado con autor, idioma o materia.
                 </p>
-            </div>
-            <div class="catalog-filter-actions">
-                <button class="btn btn-search" type="submit">
-                    <i class="bi bi-search me-1"></i>
-                    Aplicar filtros
-                </button>
-                <a href="{{ route('catalogo') }}" class="btn btn-clear">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                    Limpiar
-                </a>
             </div>
         </div>
 
         <div class="catalog-filter-grid">
             <div class="catalog-filter-primary">
-                <label for="titulo">Busqueda principal</label>
+                <label for="titulo">Titulo o palabra clave</label>
                 <div class="catalog-filter-input-shell">
                     <i class="bi bi-search catalog-filter-input-icon"></i>
                     <input type="text"
                            id="titulo"
                            name="titulo"
                            class="form-control"
-                           placeholder="Buscar por titulo del libro"
+                           placeholder="Escribe el titulo del libro o una palabra relacionada"
                            value="{{ request('titulo') }}">
                 </div>
             </div>
 
-            <div class="catalog-filter-secondary">
-                <div class="catalog-filter-box">
-                    <label for="autor_id">Autor</label>
-                    <select name="autor_id" id="autor_id" class="form-control select2" aria-label="Filtrar por autor"></select>
+            <div class="catalog-filter-refine">
+                <div class="catalog-filter-section-label">
+                    <span>Refinar resultados</span>
                 </div>
 
-                <div class="catalog-filter-box">
-                    <label for="idioma_id">Idioma</label>
-                    <select name="idioma_id" id="idioma_id" class="form-control select2" aria-label="Filtrar por idioma"></select>
-                </div>
+                <div class="catalog-filter-secondary">
+                    <div class="catalog-filter-box">
+                        <label for="autor_id">Autor</label>
+                        <select name="autor_id" id="autor_id" class="form-control select2" aria-label="Filtrar por autor"></select>
+                    </div>
 
-                <div class="catalog-filter-box">
-                    <label for="materia_id">Materia</label>
-                    <select name="materia_id" id="materia_id" class="form-control select2" aria-label="Filtrar por materia"></select>
+                    <div class="catalog-filter-box">
+                        <label for="idioma_id">Idioma</label>
+                        <select name="idioma_id" id="idioma_id" class="form-control select2" aria-label="Filtrar por idioma"></select>
+                    </div>
+
+                    <div class="catalog-filter-box">
+                        <label for="materia_id">Materia</label>
+                        <select name="materia_id" id="materia_id" class="form-control select2" aria-label="Filtrar por materia"></select>
+                    </div>
+
+                    <div class="catalog-filter-actions">
+                        <button class="btn btn-search" type="submit">
+                            <i class="bi bi-search me-1"></i>
+                            Aplicar
+                        </button>
+                        <a href="{{ route('catalogo') }}" class="btn btn-clear">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Limpiar
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,5 +118,3 @@
     @include('pagina._libros')
 </section>
 @endsection
-
-

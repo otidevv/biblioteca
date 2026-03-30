@@ -85,6 +85,15 @@ window.libroPage = {
                         {{ $autoresLibro !== '' ? $autoresLibro : 'Autor no disponible' }}
                     </div>
 
+                    <div class="book-main-rating">
+                        <span class="book-main-rating-label">Calificacion</span>
+                        <x-rating-stars
+                            :rating="$libro->rating_promedio"
+                            :count="$libro->comentarios_count"
+                            size="1rem"
+                            class="book-main-rating-stars" />
+                    </div>
+
                     <div class="book-chip-row">
                         <span class="book-chip">
                             <i class="bi bi-building"></i>
@@ -477,4 +486,3 @@ window.libroPage = {
     </div>
 </div>
 @endsection
-
