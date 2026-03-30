@@ -1,66 +1,117 @@
 @extends('layouts.admin')
 
+@section('page-title', 'Resumen del sistema')
+
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-
-    <!-- Hero Section -->
-    <div class="text-center mb-12">
-        <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            ¡Bienvenido a <span class="text-emerald-600">Biblioteca UNAMAD</span>!
-        </h1>
-        <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Gestiona libros, usuarios y préstamos de manera eficiente. Explora nuestro catálogo, registra lectores y administra tu biblioteca con facilidad.
+<div class="admin-dashboard">
+    <section class="admin-dashboard__hero">
+        <div class="admin-dashboard__eyebrow">Biblioteca UNAMAD</div>
+        <h2 class="admin-dashboard__headline">Administra catálogos, lectores y circulación desde un panel más claro y rápido.</h2>
+        <p class="admin-dashboard__copy">
+            Centraliza la operación diaria de la biblioteca, revisa el estado general del sistema y entra rápido a los módulos que más usas.
         </p>
-        <div class="mt-6">
-            <a href="#" class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg">
-                Explorar Catálogo
-            </a>
-        </div>
-    </div>
 
-    <!-- Estadísticas Rápidas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div class="bg-white p-6 rounded-xl shadow-lg text-center">
-            <h3 class="text-2xl font-bold text-emerald-600">{{ $totalLibros ?? 150 }}</h3>
-            <p class="text-gray-600">Libros en Catálogo</p>
+        <div class="admin-dashboard__actions">
+            <a href="{{ url('/administracion/libros') }}" class="admin-cta admin-cta--primary">Gestionar libros</a>
+            <a href="{{ url('/prestamos/registro') }}" class="admin-cta admin-cta--secondary">Ir a préstamos</a>
         </div>
-        <div class="bg-white p-6 rounded-xl shadow-lg text-center">
-            <h3 class="text-2xl font-bold text-cyan-600">{{ $totalUsuarios ?? 50 }}</h3>
-            <p class="text-gray-600">Usuarios Registrados</p>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-lg text-center">
-            <h3 class="text-2xl font-bold text-blue-600">{{ $prestamosActivos ?? 20 }}</h3>
-            <p class="text-gray-600">Préstamos Activos</p>
-        </div>
-    </div>
+    </section>
 
-    <!-- Módulos Principales -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <a href="#" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <div class="text-4xl mb-4">📘</div>
-            <h3 class="text-xl font-semibold text-gray-800">Catálogo</h3>
-            <p class="text-gray-600">Gestiona libros y material bibliográfico.</p>
-        </a>
-        <a href="#" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <div class="text-4xl mb-4">🔄</div>
-            <h3 class="text-xl font-semibold text-gray-800">Préstamos</h3>
-            <p class="text-gray-600">Registra y administra préstamos.</p>
-        </a>
-        <a href="#" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <div class="text-4xl mb-4">👥</div>
-            <h3 class="text-xl font-semibold text-gray-800">Lectores</h3>
-            <p class="text-gray-600">Gestiona usuarios y lectores.</p>
-        </a>
-        <a href="#" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <div class="text-4xl mb-4">📊</div>
-            <h3 class="text-xl font-semibold text-gray-800">Reportes</h3>
-            <p class="text-gray-600">Visualiza estadísticas y reportes.</p>
-        </a>
-    </div>
+    <section class="admin-dashboard__stats">
+        <article class="admin-stat">
+            <div class="admin-stat__label">Catálogo</div>
+            <div class="admin-stat__value">{{ number_format($totalLibros ?? 0) }}</div>
+            <div class="admin-stat__hint">Registros bibliográficos disponibles en el sistema.</div>
+        </article>
 
-    <!-- Footer -->
-    <footer class="mt-12 text-center text-gray-500">
-        <p>&copy; 2024 Biblioteca UNAMAD. Desarrollado con Laravel.</p>
-    </footer>
+        <article class="admin-stat">
+            <div class="admin-stat__label">Usuarios</div>
+            <div class="admin-stat__value">{{ number_format($totalUsuarios ?? 0) }}</div>
+            <div class="admin-stat__hint">Cuentas activas para administración y atención a lectores.</div>
+        </article>
+
+        <article class="admin-stat">
+            <div class="admin-stat__label">Préstamos activos</div>
+            <div class="admin-stat__value">{{ number_format($prestamosActivos ?? 0) }}</div>
+            <div class="admin-stat__hint">Material actualmente en circulación o pendiente de devolución.</div>
+        </article>
+
+        <article class="admin-stat">
+            <div class="admin-stat__label">Bibliotecas</div>
+            <div class="admin-stat__value">{{ number_format($totalBibliotecas ?? 0) }}</div>
+            <div class="admin-stat__hint">Sedes y puntos de atención disponibles en la red.</div>
+        </article>
+    </section>
+
+    <section class="admin-dashboard__grid">
+        <article class="admin-card">
+            <div class="admin-card__header">
+                <div>
+                    <div class="admin-card__eyebrow">Accesos rápidos</div>
+                    <h3 class="admin-card__title">Módulos principales</h3>
+                </div>
+            </div>
+
+            <div class="admin-quick-links">
+                <a href="{{ url('/administracion/libros') }}" class="admin-quick-link">
+                    <div class="admin-quick-link__icon">L</div>
+                    <div class="admin-quick-link__title">Libros</div>
+                    <div class="admin-quick-link__copy">Consulta, edita y organiza el catálogo bibliográfico.</div>
+                </a>
+
+                <a href="{{ url('/administracion/libros_nuevo') }}" class="admin-quick-link">
+                    <div class="admin-quick-link__icon">+</div>
+                    <div class="admin-quick-link__title">Nuevo libro</div>
+                    <div class="admin-quick-link__copy">Registra material nuevo y completa sus datos técnicos.</div>
+                </a>
+
+                <a href="{{ url('/lectores/registro') }}" class="admin-quick-link">
+                    <div class="admin-quick-link__icon">U</div>
+                    <div class="admin-quick-link__title">Lectores</div>
+                    <div class="admin-quick-link__copy">Gestiona lectores, historiales y seguimiento de usuarios.</div>
+                </a>
+
+                <a href="{{ url('/prestamos/reservas') }}" class="admin-quick-link">
+                    <div class="admin-quick-link__icon">P</div>
+                    <div class="admin-quick-link__title">Reservas y préstamos</div>
+                    <div class="admin-quick-link__copy">Atiende la circulación diaria y el estado del material.</div>
+                </a>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <div class="admin-card__header">
+                <div>
+                    <div class="admin-card__eyebrow">Actividad reciente</div>
+                    <h3 class="admin-card__title">Últimos libros registrados</h3>
+                </div>
+            </div>
+
+            @if(($librosRecientes ?? collect())->isNotEmpty())
+                <div class="admin-feed">
+                    @foreach($librosRecientes as $libro)
+                        <div class="admin-feed__item">
+                            <div class="admin-feed__badge">{{ strtoupper(substr($libro->titulo, 0, 1)) }}</div>
+                            <div>
+                                <div class="admin-feed__title">{{ $libro->titulo }}</div>
+                                <div class="admin-feed__meta">
+                                    {{ $libro->autores->pluck('nombres')->join(', ') ?: 'Sin autor registrado' }}
+                                    @if($libro->editorial)
+                                        · {{ $libro->editorial->nombre }}
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="admin-empty">Aún no hay libros recientes para mostrar en este panel.</div>
+            @endif
+        </article>
+    </section>
+
+    <div class="admin-footer-note">
+        Panel institucional de gestión bibliotecaria UNAMAD.
+    </div>
 </div>
 @endsection

@@ -9,6 +9,7 @@ use App\Models\Reservacion;
 use App\Models\Usuario_rol_biblioteca;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class ReservacionController extends Controller
@@ -42,7 +43,7 @@ class ReservacionController extends Controller
 
         return DataTables::eloquent($query)
             ->addColumn('fecha', function ($row) {
-                return $row->created_at->format('d/m/Y');
+                return '<span class="reservation-table__date">' . $row->created_at->format('d/m/Y') . '</span>';
             })
             ->addColumn('fecha_limite', function ($row) {
                 $now = Carbon::now();
@@ -53,32 +54,40 @@ class ReservacionController extends Controller
                 $diff = $now->diffInSeconds($fechaLimite, false);
 
                 if ($diff <= 0) {
-                    return '<span class="text-danger fw-bold">Vencido</span>';
+                    return '<span class="reservation-pill reservation-pill--danger">VENCIDO</span>';
                 }
 
-                return '<span class="countdown" data-seconds="'.$diff.'"></span>';
+                return '<span class="countdown reservation-countdown" data-seconds="'.$diff.'"></span>';
             })
             ->addColumn('libro', function ($row) {
-                return $row->ejemplar->libro->titulo ?? '';
+                $titulo = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
+
+                return '<div class="reservation-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>';
             })
             ->addColumn('ejemplar', function ($row) {
-                return $row->ejemplar->codigo_dewey
+                $codigo = $row->ejemplar->codigo_dewey
                     ? $row->ejemplar->codigo_dewey.$row->ejemplar->tipo.$row->ejemplar->codigo_interno
                     : $row->ejemplar->codigo_ant;
+
+                return '<span class="reservation-table__code">' . e($codigo ?: '-') . '</span>';
             })
             ->addColumn('lector', function ($row) {
-                return $row->lector->name ?? '';
+                $lector = $row->lector->name ?? 'Lector no disponible';
+
+                return '<div class="reservation-table__reader" title="' . e($lector) . '">' . e($lector) . '</div>';
             })
             ->addColumn('estado', function ($row) {
-                return match ($row->estado) {
-                    0 => 'En espera',
-                    1 => 'Atendido',
-                    2 => 'Cancelado',
-                    default => 'Desconocido',
+                return match ((int) $row->estado) {
+                    0 => '<span class="reservation-pill reservation-pill--warning">EN ESPERA</span>',
+                    1 => '<span class="reservation-pill reservation-pill--success">ATENDIDO</span>',
+                    2 => '<span class="reservation-pill reservation-pill--neutral">CANCELADO</span>',
+                    default => '<span class="reservation-pill reservation-pill--neutral">DESCONOCIDO</span>',
                 };
             })
             ->addColumn('prestamo', function ($row) {
-                return $row->prestamo == 1 ? 'A casa' : 'En sala';
+                return (int) $row->prestamo === 1
+                    ? '<span class="reservation-pill reservation-pill--info">A CASA</span>'
+                    : '<span class="reservation-pill reservation-pill--info">EN SALA</span>';
             })
             ->addColumn('acciones', function ($row) {
                 return $row->estado === 0
@@ -87,7 +96,7 @@ class ReservacionController extends Controller
                     </button>'
                     : '';
             })
-            ->rawColumns(['acciones', 'fecha_limite'])
+            ->rawColumns(['acciones', 'fecha', 'fecha_limite', 'libro', 'ejemplar', 'lector', 'estado', 'prestamo'])
             ->toJson();
     }
 
@@ -104,83 +113,102 @@ class ReservacionController extends Controller
             'tipo_prestamo' => 'required|integer|in:0,1',
         ]);
 
-        $ejemplar = Ejemplar::with('libro')->find($request->ejemplar_id);
+        $resultado = DB::transaction(function () use ($request) {
+            $ejemplar = Ejemplar::with('libro')
+                ->lockForUpdate()
+                ->find($request->ejemplar_id);
 
-        if (! $ejemplar) {
-            return response()->json([
-                'error' => 'Ejemplar no encontrado',
-            ], 404);
-        }
+            if (! $ejemplar) {
+                return [
+                    'status' => 404,
+                    'payload' => ['error' => 'Ejemplar no encontrado'],
+                ];
+            }
 
-        $existe = Reservacion::where('lector_id', auth()->id())
-            ->where('estado', 0)
-            ->whereHas('ejemplar', function ($q) use ($ejemplar) {
-                $q->where('libro_id', $ejemplar->libro_id);
-            })
-            ->exists();
+            $existe = Reservacion::where('lector_id', auth()->id())
+                ->where('estado', 0)
+                ->whereHas('ejemplar', function ($q) use ($ejemplar) {
+                    $q->where('libro_id', $ejemplar->libro_id);
+                })
+                ->lockForUpdate()
+                ->exists();
 
-        if ($existe) {
-            return response()->json([
-                'error' => 'Ya tienes una reserva pendiente de este libro',
-            ], 422);
-        }
+            if ($existe) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'Ya tienes una reserva pendiente de este libro'],
+                ];
+            }
 
-        if ($ejemplar->estado != 1) {
-            return response()->json([
-                'error' => 'El ejemplar ya fue reservado o prestado',
-            ], 422);
-        }
+            if ((int) $ejemplar->estado !== 1) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'El ejemplar ya fue reservado o prestado'],
+                ];
+            }
 
-        $fechaReserva = now();
-        $fechaLimite = Carbon::tomorrow()->setTime(20, 0, 0);
+            $fechaReserva = now();
+            $fechaLimite = Carbon::tomorrow()->setTime(20, 0, 0);
 
-        Reservacion::create([
-            'ejemplar_id' => $ejemplar->id,
-            'lector_id' => auth()->id(),
-            'fecha_reservacion' => $fechaReserva,
-            'fecha_limite' => $fechaLimite,
-            'duracion' => 1,
-            'prestamo' => $request->tipo_prestamo,
-            'bibliotecario_id' => null,
-            'estado' => 0,
-        ]);
+            Reservacion::create([
+                'ejemplar_id' => $ejemplar->id,
+                'lector_id' => auth()->id(),
+                'fecha_reservacion' => $fechaReserva,
+                'fecha_limite' => $fechaLimite,
+                'duracion' => 1,
+                'prestamo' => $request->tipo_prestamo,
+                'bibliotecario_id' => null,
+                'estado' => 0,
+            ]);
 
-        $ejemplar->estado = 2;
-        $ejemplar->save();
+            $ejemplar->estado = 2;
+            $ejemplar->save();
 
-        return response()->json([
-            'ok' => 'Reserva valida hasta manana a las 20:00',
-        ]);
+            return [
+                'status' => 200,
+                'payload' => ['ok' => 'Reserva valida hasta manana a las 20:00'],
+            ];
+        });
+
+        return response()->json($resultado['payload'], $resultado['status']);
     }
 
     public function cancelarReserva($id)
     {
-        $reserva = Reservacion::where('id', $id)
-            ->where('lector_id', auth()->id())
-            ->first();
+        $resultado = DB::transaction(function () use ($id) {
+            $reserva = Reservacion::where('id', $id)
+                ->where('lector_id', auth()->id())
+                ->lockForUpdate()
+                ->first();
 
-        if (! $reserva) {
-            return response()->json([
-                'error' => 'Reserva no encontrada',
-            ], 404);
-        }
+            if (! $reserva) {
+                return [
+                    'status' => 404,
+                    'payload' => ['error' => 'Reserva no encontrada'],
+                ];
+            }
 
-        if ($reserva->estado != 0) {
-            return response()->json([
-                'error' => 'Solo puedes cancelar reservas en espera',
-            ], 422);
-        }
+            if ((int) $reserva->estado !== 0) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'Solo puedes cancelar reservas en espera'],
+                ];
+            }
 
-        $reserva->estado = 2;
-        $reserva->save();
+            $reserva->estado = 2;
+            $reserva->save();
 
-        $ejemplar = $reserva->ejemplar;
-        $ejemplar->estado = 1;
-        $ejemplar->save();
+            $ejemplar = Ejemplar::lockForUpdate()->find($reserva->ejemplar_id);
+            $ejemplar->estado = 1;
+            $ejemplar->save();
 
-        return response()->json([
-            'ok' => 'Reserva cancelada correctamente',
-        ]);
+            return [
+                'status' => 200,
+                'payload' => ['ok' => 'Reserva cancelada correctamente'],
+            ];
+        });
+
+        return response()->json($resultado['payload'], $resultado['status']);
     }
 
     public function entregar(Request $request, $id)
@@ -196,33 +224,44 @@ class ReservacionController extends Controller
 
         $user = auth()->user();
         $dias = (int) $request->dias;
-        $reserva = Reservacion::findOrFail($id);
 
-        if ($reserva->estado != 0) {
-            return response()->json(['error' => 'No se puede entregar esta reserva'], 400);
-        }
+        $resultado = DB::transaction(function () use ($id, $user, $dias, $request) {
+            $reserva = Reservacion::lockForUpdate()->findOrFail($id);
 
-        $reserva->estado = 1;
-        $reserva->bibliotecario_id = $user->id;
-        $reserva->save();
+            if ((int) $reserva->estado !== 0) {
+                return [
+                    'status' => 400,
+                    'payload' => ['error' => 'No se puede entregar esta reserva'],
+                ];
+            }
 
-        $prestamo = new Prestamo;
-        $prestamo->lector_id = $reserva->lector_id;
-        $prestamo->prestamo_lugar = $reserva->prestamo;
-        $prestamo->duracion = $dias;
-        $prestamo->fecha_prestamo = now();
-        $prestamo->fecha_limite = now()->addDays($dias);
-        $prestamo->observaciones_prestamo = $request->observaciones;
-        $prestamo->ejemplar_id = $reserva->ejemplar_id;
-        $prestamo->estado = 1;
-        $prestamo->estado_prestamo = 0;
-        $prestamo->user_id = $user->id;
-        $prestamo->save();
+            $reserva->estado = 1;
+            $reserva->bibliotecario_id = $user->id;
+            $reserva->save();
 
-        $ejemplar = Ejemplar::find($reserva->ejemplar_id);
-        $ejemplar->estado = 0;
-        $ejemplar->save();
+            $prestamo = new Prestamo;
+            $prestamo->lector_id = $reserva->lector_id;
+            $prestamo->prestamo_lugar = $reserva->prestamo;
+            $prestamo->duracion = $dias;
+            $prestamo->fecha_prestamo = now();
+            $prestamo->fecha_limite = now()->addDays($dias);
+            $prestamo->observaciones_prestamo = $request->observaciones;
+            $prestamo->ejemplar_id = $reserva->ejemplar_id;
+            $prestamo->estado = 1;
+            $prestamo->estado_prestamo = 0;
+            $prestamo->user_id = $user->id;
+            $prestamo->save();
 
-        return response()->json(['success' => 'Reserva entregada correctamente']);
+            $ejemplar = Ejemplar::lockForUpdate()->find($reserva->ejemplar_id);
+            $ejemplar->estado = 0;
+            $ejemplar->save();
+
+            return [
+                'status' => 200,
+                'payload' => ['success' => 'Reserva entregada correctamente'],
+            ];
+        });
+
+        return response()->json($resultado['payload'], $resultado['status']);
     }
 }

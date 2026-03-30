@@ -42,14 +42,19 @@ $(document).ready(function () {
         ],        
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+            decorateTableActionButtons('#tabla-roles');
+        },
+        drawCallback: function () {
+            decorateTableActionButtons('#tabla-roles');
+        }
     });
 
     // NUEVO
     $('#btnNuevo').on('click', function () {
         $('#formRoles')[0].reset();
         $('#id').val('');
-        $('.password-group').show();
         $('#modalRoles').modal('show');
     });
 
@@ -64,8 +69,7 @@ $(document).ready(function () {
     // PERMISOS
     $('#tabla-roles').on('click', '.permisosRol', function () {
         let data = tabla.row($(this).closest('tr')).data();
-        console.log(data);
-        $('#id').val(data.id);        
+        $('#rol_id').val(data.id);
         cargarPermisosRol(data.permisos);
         $('#modalPermisos').modal('show');
     });
@@ -91,7 +95,7 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
-                    alerta("Usuario guardado correctamente", true);
+                    alerta("Rol guardado correctamente", true);
                     // Reset form
                     form[0].reset();
                     // Cerrar modal
@@ -99,7 +103,7 @@ $(document).ready(function () {
                     // Recargar tabla (si usas DataTable)
                     tabla.ajax.reload();
                 } else {
-                    alerta(response.message??'Error al guardar el usuario', false);
+                    alerta(response.message??'Error al guardar el rol', false);
                 }
             },
             error: function (xhr) {
@@ -117,7 +121,7 @@ $(document).ready(function () {
                         alerta(messages[0], false);
                     });
                 } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar el usuario', false);
+                    alerta(xhr.responseJSON.message??'Error al guardar el rol', false);
                     //toastr.error('Error interno del servidor');
                 }
             },
@@ -143,7 +147,7 @@ $(document).ready(function () {
             url: '/api/roles/permisos/guardar',
             type: 'POST',
             data: {
-                rol_id: $('#id').val(),
+                rol_id: $('#rol_id').val(),
                 permisos: permisos
             },
             headers: {

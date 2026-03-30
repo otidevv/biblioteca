@@ -1,0 +1,121 @@
+.recordtype-modal {
+    border: 0;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.recordtype-modal__header {
+    background:
+        radial-gradient(circle at top right, rgba(168, 85, 247, 0.16), transparent 34%),
+        linear-gradient(135deg, #fdfbff 0%, #f5efff 100%);
+}
+
+.recordtype-modal__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(147, 51, 234, 0.1);
+    color: #7e22ce;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.recordtype-modal__copy,
+.recordtype-modal__section-copy,
+.recordtype-modal__intro p {
+    color: #475569;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.recordtype-modal__body {
+    background: linear-gradient(180deg, #fefcff 0%, #faf7ff 100%);
+}
+
+.recordtype-modal__intro {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    margin-bottom: 18px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
+}
+
+.recordtype-modal__intro-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(217, 70, 239, 0.18) 100%);
+    color: #7e22ce;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.recordtype-modal__intro strong,
+.recordtype-modal__section-title {
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.recordtype-modal__section {
+    background: linear-gradient(180deg, #ffffff 0%, #fcfaff 100%);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
+}
+
+.recordtype-modal__section-title {
+    margin-bottom: 6px;
+    color: #7e22ce;
+    font-size: 14px;
+}
+
+.recordtype-modal__footer {
+    background: rgba(248, 250, 252, 0.96);
+}
+
+.admin-dark .recordtype-modal__copy,
+.admin-dark .recordtype-modal__section-copy,
+.admin-dark .recordtype-modal__intro p {
+    color: #94a3b8;
+}
+
+.admin-dark .recordtype-modal__intro,
+.admin-dark .recordtype-modal__section {
+    background: rgba(15, 23, 42, 0.78);
+    border-color: rgba(148, 163, 184, 0.12);
+    box-shadow: 0 12px 24px rgba(2, 6, 23, 0.18);
+}
+
+.admin-dark .recordtype-modal__eyebrow {
+    background: rgba(168, 85, 247, 0.14);
+    color: #d8b4fe;
+}
+
+.admin-dark .recordtype-modal__intro strong,
+.admin-dark .recordtype-modal__section-title {
+    color: #e2e8f0;
+}
+
+@media (max-width: 767.98px) {
+    .recordtype-modal__intro {
+        grid-template-columns: 1fr;
+    }
+
+    .recordtype-modal__intro-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        font-size: 20px;
+    }
+}

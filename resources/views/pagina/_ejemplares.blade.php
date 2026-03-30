@@ -1,23 +1,29 @@
-@foreach($libro->ejemplares as $e)
-<div class="col-6 col-md-3">
+@forelse(($ejemplares ?? collect()) as $e)
+    <div>
+        <div class="book-copy-card">
+            <div class="book-copy-card-inner">
+                <span class="book-copy-icon">
+                    <i class="bi bi-journal-text"></i>
+                </span>
 
-    <div class="card card-hover p-3 text-center h-100">
+                <div class="book-copy-code">{{ $e->codigo }}</div>
 
-        <h6 class="fw-bold">{{ $e->codigo }}</h6>
+                <div class="book-copy-library">{{ $e->biblioteca?->nombre }}</div>
 
-        <small class="text-muted">{{ $e->biblioteca->nombre }}</small>
-
-        <div class="mt-2">
-            @if($e->estado == '1')
-                <span class="badge bg-success">Disponible</span>
-            @elseif($e->estado=0)
-                <span class="badge bg-danger">Prestado</span>
-            @else
-                <span class="badge bg-danger">Reservado</span>
-            @endif
+                <div class="book-copy-status">
+                    @if($e->estado == '1')
+                        <span class="badge rounded-pill text-bg-success">Disponible</span>
+                    @elseif($e->estado == '0')
+                        <span class="badge rounded-pill text-bg-danger">Prestado</span>
+                    @else
+                        <span class="badge rounded-pill text-bg-warning text-dark">Reservado</span>
+                    @endif
+                </div>
+            </div>
         </div>
-
     </div>
-
-</div>
-@endforeach
+@empty
+    <div class="book-empty-state">
+        No hay ejemplares con biblioteca asignada para este libro.
+    </div>
+@endforelse

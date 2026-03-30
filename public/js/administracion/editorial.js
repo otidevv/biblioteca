@@ -50,7 +50,13 @@ $(document).ready(function () {
         ],        
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+            decorateTableActionButtons('#tabla-editorial');
+        },
+        drawCallback: function () {
+            decorateTableActionButtons('#tabla-editorial');
+        }
     });
 
     // NUEVO
@@ -138,5 +144,4 @@ $(document).ready(function () {
     });
 
 });
-
 

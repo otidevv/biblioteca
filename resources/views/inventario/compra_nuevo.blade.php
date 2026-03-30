@@ -1,200 +1,208 @@
 @extends('layouts.admin')
+
+@section('page-title', 'Nueva compra')
+
 @section('css')
     <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/select2.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/inventario/compra_nuevo.css') }}?v={{ filemtime(public_path('css/inventario/compra_nuevo.css')) }}" rel="stylesheet" />
 @endsection
+
 @section('js')
-    <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('/lib/select2/js/select2.js') }}"></script>
     <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
-    <script src="{{ asset('/js/inventario/compra_nueva.js') }}"></script>
+    <script src="{{ asset('/js/inventario/compra_nueva.js') }}?v={{ filemtime(public_path('js/inventario/compra_nueva.js')) }}"></script>
 @endsection
+
 @section('content')
-    <nav class="mb-4 text-sm text-gray-600">
-        <ol class="flex items-center space-x-2">
-            <li class="font-semibold text-gray-800">
-                Administración
-            </li>
-            <li class="text-gray-400">›</li>
-            <li class="text-emerald-700 font-semibold">
-                Compras
-            </li>
-        </ol>
-    </nav>
+<div class="admin-section purchase-create">
+    <div class="admin-breadcrumb">
+        <span>Inventario</span>
+        <span>/</span>
+        <a href="{{ url('inventario/compras') }}" class="admin-breadcrumb__current">Compras</a>
+        <span>/</span>
+        <span class="admin-breadcrumb__current">Nueva compra</span>
+    </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-lg">
-        <div class="overflow-x-auto">
-            <form class="space-y-6">
+    <section class="admin-panel">
+        <div class="admin-panel__header">
+            <div>
+                <h2 class="admin-panel__title">Registrar compra</h2>
+                <p class="admin-panel__copy">Registra una adquisicion, agrega libros al detalle y genera sus ejemplares desde una sola pantalla.</p>
+            </div>
+            <div class="admin-actions">
+                <a href="{{ url('inventario/compras') }}" class="admin-btn admin-btn--ghost">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver a compras
+                </a>
+            </div>
+        </div>
 
-                {{-- ================= DATOS DE LA COMPRA ================= --}}
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form id="formCompra" class="purchase-create__form">
+            @csrf
 
-                    {{-- Número SIAF --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Número SIAF</label>
-                        <input type="text" name="numero_siaf"
-                            class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+            <div class="admin-modal-section purchase-create__section">
+                <h6 class="purchase-create__section-title">Datos generales</h6>
+                <div class="row g-3">
+                    <div class="col-md-3 form-group form-required">
+                        <label class="form-label">Numero SIAF</label>
+                        <input type="text" id="numero_siaf" name="numero_siaf" class="form-control" placeholder="Ej. 2026-00452">
                     </div>
-
-                    {{-- Fecha --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Fecha de compra</label>
-                        <input type="date" name="fecha_compra" class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                    <div class="col-md-3 form-group form-required">
+                        <label class="form-label">Fecha de compra</label>
+                        <input type="date" id="fecha_compra" name="fecha_compra" class="form-control" value="{{ now()->format('Y-m-d') }}">
                     </div>
-
-                    {{-- Proveedor --}}
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700">Proveedor</label>
-                        <select name="proveedor_id" class="form-select select2">
+                    <div class="col-md-6 form-group form-required">
+                        <label class="form-label">Proveedor</label>
+                        <select id="proveedor_id" name="proveedor_id" class="form-select select2">
                             <option value="">Seleccione un proveedor</option>
                             @foreach ($proveedores as $proveedor)
                                 <option value="{{ $proveedor->id }}">
-                                    {{ $proveedor->razon_social . ($proveedor->responsable ? ' : '.$proveedor->responsable : '') }}
+                                    {{ $proveedor->razon_social . ($proveedor->responsable ? ' - ' . $proveedor->responsable : '') }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-                </div>
-
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{-- Monto total --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Monto total</label>
-                        <input type="number" step="0.01" name="monto_total"
-                            class="w-full mt-1 border-gray-300 rounded-lg bg-gray-100" readonly>
+                    <div class="col-md-4 form-group">
+                        <label class="form-label">Monto total</label>
+                        <input type="number" step="0.01" id="monto_total" name="monto_total" class="form-control" readonly value="0.00">
                     </div>
-
-                    {{-- Observaciones --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Observaciones</label>
-                        <textarea name="observaciones" rows="2"
-                            class="w-full mt-1 border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="Notas adicionales de la compra"></textarea>
+                    <div class="col-md-8 form-group">
+                        <label class="form-label">Observaciones</label>
+                        <textarea id="observaciones" name="observaciones" rows="2" class="form-control" placeholder="Notas adicionales de la compra"></textarea>
                     </div>
                 </div>
+            </div>
 
-                {{-- ================= DETALLE DE LIBROS ================= --}}
-                <div class="border-t pt-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-lg font-bold text-gray-800">Detalle de Libros</h2>
-                        <button type="button" id="btnNuevoLibro"
-                            class="px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                            ➕ Agregar Libro
-                        </button>
+            <div class="admin-modal-section purchase-create__section">
+                <div class="purchase-create__detail-header">
+                    <div>
+                        <h6 class="purchase-create__section-title mb-1">Detalle de libros</h6>
+                        <p class="purchase-create__detail-copy mb-0">Agrega cada libro con cantidad y precio unitario. El sistema calculara el total y generara los ejemplares.</p>
                     </div>
+                    <button type="button" id="btnNuevoLibro" class="admin-btn admin-btn--primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Agregar libro
+                    </button>
+                </div>
 
-                    <table class="min-w-full border border-gray-300 rounded-lg" id="tablaDetalles">
-                        <thead class="bg-gray-100 text-sm text-gray-700">
+                <div class="admin-table-shell table-responsive purchase-create__table-shell">
+                    <table class="table table-hover table-bordered align-middle mb-0" id="tablaDetalles">
+                        <thead>
                             <tr>
-                                <th class="px-3 py-2 border">Título</th>
-                                <th class="px-3 py-2 border">Autor</th>
-                                <th class="px-3 py-2 border">Cantidad</th>
-                                <th class="px-3 py-2 border">Precio</th>
-                                <th class="px-3 py-2 border">Subtotal</th>
-                                <th class="px-3 py-2 border">Acción</th>
+                                <th>Titulo</th>
+                                <th>Autor</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
+                                <th class="text-center">Accion</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- Filas agregadas por JS --}}
+                            <tr class="purchase-create__empty-row">
+                                <td colspan="6" class="text-center text-muted py-4">Todavia no has agregado libros a esta compra.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                {{-- ================= BOTONES ================= --}}
-                <div class="flex justify-end gap-3 pt-4">
-                    <a href="#"
-                        class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
-                        Cancelar
-                    </a>
+            <div class="purchase-create__footer">
+                <a href="{{ url('inventario/compras') }}" class="admin-btn admin-btn--ghost">Cancelar</a>
+                <button type="submit" id="btnGuardarCompra" class="admin-btn admin-btn--primary">
+                    <i class="bi bi-save2"></i>
+                    Guardar compra
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+@endsection
 
-                    <button type="submit" id="btnGuardarCompra" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                        Guardar Compra
-                    </button>
+@section('modal')
+<div class="modal fade" id="modalLibro" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <form id="formLibro" class="modal-content shadow-sm purchase-book-modal">
+            <div class="modal-header purchase-book-modal__header">
+                <div>
+                    <span class="purchase-book-modal__eyebrow">
+                        <i class="bi bi-journal-plus"></i>
+                        Detalle de compra
+                    </span>
+                    <h5 class="modal-title fw-semibold mb-1">Agregar libro a la compra</h5>
+                    <p class="purchase-book-modal__copy mb-0">Selecciona un libro existente, revisa sus datos y define cantidad y precio unitario.</p>
                 </div>
-            </form>
-        </div>
-    </div>
- @endsection
- @section('modal')
-    {{-- ================= MODAL AGREGAR LIBRO ================= --}}
-    
-    <div class="modal fade" id="modalLibro" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div id="div_form">
-                <form id="formLibro">
-                    <input type="hidden" id="id" name="id">
-                    <div class="modal-content shadow-sm">
-                        <div class="modal-header bg-light">
-                            <h5 class="modal-title fw-semibold">Agregar libro</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                    <div class="modal-body">
-                            <div class="row">
-                                <!-- ===================== -->
-                                <!-- DETALLE COMPRA -->
-                                <!-- ===================== -->
-                                <div class="col-md-6">
-                                    <h6 class="text-primary">Datos detalle</h6>
-                                    <div class="col-md-12 form-group form-required validar-div">
-                                        <label class="form-label">Título</label>
-                                        <select id="libros" class="form-select"></select>
-                                    </div>
-                                    <div class="col-md-6 form-group form-required validar-div">
-                                        <label class="form-label">Cantidad</label>
-                                        <input type="number" id="modal_cantidad" value="1" min="1" class="form-control">
-                                    </div>
-                                    <div class="col-md-6 form-group form-required validar-div">
-                                        <label class="form-label">Precio</label>
-                                        <input type="number" step="0.01" id="modal_precio" class="form-control">
-                                    </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body purchase-book-modal__body">
+                <div class="purchase-book-modal__intro">
+                    <div class="purchase-book-modal__intro-icon">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                    <div>
+                        <strong>Vista rapida del registro</strong>
+                        <p class="mb-0">El detalle usa libros ya registrados. Si el libro aun no existe, primero debes registrarlo desde el catalogo.</p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="admin-modal-section purchase-book-modal__section">
+                            <h6 class="purchase-book-modal__section-title">Detalle de compra</h6>
+                            <div class="row g-3">
+                                <div class="col-12 form-group form-required">
+                                    <label class="form-label">Libro</label>
+                                    <select id="libros" class="form-select"></select>
                                 </div>
-                                <!-- ===================== -->
-                                <!-- DATOS DEL LIBRO -->
-                                <!-- ===================== -->
-                                <div class="col-md-6">
-                                    <h6 class="text-primary mb-2">DATOS DEL LIBRO</h6>
-                                    <div class="row g-2">
-                                        <div class="col-md-12 text-center">
-                                            <img id="preview_imagen" class="img-fluid rounded shadow mb-2" style="max-height:150px; display:none;">
-                                            <div id="btnRegistrarLibro" style="display:none;">
-                                                <a id="linkRegistrarLibro" class="btn btn-warning btn-sm">
-                                                    Registrar libro
-                                                </a>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <label class="form-label">Título</label>
-                                            <div id="lbl_titulo" class="form-control bg-light"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Autor</label>
-                                            <div id="lbl_autor" class="form-control bg-light"></div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Editorial</label>
-                                            <div id="lbl_editorial" class="form-control bg-light"></div>
-                                        </div>
-
-                                    </div>
-
+                                <div class="col-md-6 form-group form-required">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" id="modal_cantidad" value="1" min="1" class="form-control">
                                 </div>
-
+                                <div class="col-md-6 form-group form-required">
+                                    <label class="form-label">Precio unitario</label>
+                                    <input type="number" step="0.01" id="modal_precio" class="form-control" placeholder="0.00">
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="modal-footer bg-light">
-                            <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button class="btn btn-success px-4" type="submit">
-                                Agregar
-                            </button>
+                    <div class="col-lg-7">
+                        <div class="admin-modal-section purchase-book-modal__section purchase-book-modal__preview">
+                            <h6 class="purchase-book-modal__section-title">Informacion del libro</h6>
+                            <div class="purchase-book-modal__preview-grid">
+                                <div class="purchase-book-modal__cover">
+                                    <img id="preview_imagen" class="purchase-book-modal__image" alt="Portada del libro">
+                                    <div id="preview_empty" class="purchase-book-modal__image-empty">
+                                        <i class="bi bi-image"></i>
+                                        <span>Sin portada disponible</span>
+                                    </div>
+                                </div>
+                                <div class="purchase-book-modal__meta">
+                                    <div class="purchase-book-modal__field">
+                                        <label>Titulo</label>
+                                        <div id="lbl_titulo" class="form-control bg-light"></div>
+                                    </div>
+                                    <div class="purchase-book-modal__field">
+                                        <label>Autor</label>
+                                        <div id="lbl_autor" class="form-control bg-light"></div>
+                                    </div>
+                                    <div class="purchase-book-modal__field">
+                                        <label>Editorial</label>
+                                        <div id="lbl_editorial" class="form-control bg-light"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </form>
-
+                </div>
             </div>
-        </div>
+
+            <div class="modal-footer purchase-book-modal__footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-success px-4" type="submit">Agregar al detalle</button>
+            </div>
+        </form>
     </div>
+</div>
 @endsection

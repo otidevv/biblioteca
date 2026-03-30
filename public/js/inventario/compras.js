@@ -1,188 +1,183 @@
-let tabla;
+let tablaCompras;
+
 $(document).ready(function () {
-    tabla = $('#tabla-compras').DataTable({        
+    tablaCompras = $('#tabla-compras').DataTable({
         processing: true,
         serverSide: true,
-        pageLength: 50,
+        pageLength: 25,
         order: [],
         ajax: {
-            url:  "/api/inventario/compras/listar",
-            type: "GET",
+            url: '/api/inventario/compras/listar',
+            type: 'GET',
             xhrFields: { withCredentials: true },
-            data: function (d) {
-                // si necesitas enviar parámetros extra
-            },
-            error: default_error_handler        
+            error: default_error_handler
         },
         columns: [
-            { data: 'numero_siaf', name: 'numero_siaf'},
-            { data: 'proveedor.', name: 'proveedor.',                
-                render: function (data, type, row) {
-                    if (data.responsable) {
-                        return `<strong>${data.responsable}</strong><br><small class="text-muted">${data.razon_social ?? ''}</small>`;
-                    } else {
-                        return `<strong>${data.razon_social}</strong>`;
+            { data: 'numero_siaf', name: 'numero_siaf' },
+            {
+                data: 'proveedor',
+                name: 'proveedor.razon_social',
+                render: function (data) {
+                    if (!data) {
+                        return '<span class="text-muted">Sin proveedor</span>';
                     }
+
+                    if (data.responsable) {
+                        return `<strong>${safeHTML(data.responsable)}</strong><br><small class="text-muted">${safeHTML(data.razon_social ?? '')}</small>`;
+                    }
+
+                    return `<strong>${safeHTML(data.razon_social ?? '')}</strong>`;
                 }
             },
-            { data: 'fecha_compra', name: 'fecha_compra' },
-            { data: 'monto_total', name: 'monto_total' },
-            { 
-                data: 'acciones', 
-                name: 'acciones', 
-                orderable: false, 
-                searchable: false 
-            }
-        ],        
+            {
+                data: 'fecha_compra',
+                name: 'fecha_compra',
+                render: function (data) {
+                    return data ? `<span class="purchase-date">${formatearFechaCompra(data)}</span>` : '-';
+                }
+            },
+            {
+                data: 'monto_total',
+                name: 'monto_total',
+                render: function (data) {
+                    return `<span class="purchase-amount">S/ ${Number(data || 0).toFixed(2)}</span>`;
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
+        ],
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+            decorateTableActionButtons('#tabla-compras');
+        },
+        drawCallback: function () {
+            decorateTableActionButtons('#tabla-compras');
+        }
     });
 
-    // NUEVO
-    $('#btnNuevo').on('click', function () {
-        $('#formAutor')[0].reset();
-        $('#id').val('');
-        $('#modalAutor').modal('show');
-    });
-
-    // EDITAR
-    $('#tabla-autor').on('click', '.editarAutor', function () {
-        let data = tabla.row($(this).closest('tr')).data();        
-        $('#id').val(data.id);
-        $('#tipo_documento').val(data.tipo_documento);
-        $('#nro_documento').val(data.nro_documento);
-        $('#razon_social').val(data.razon_social);
-        $('#responsable').val(data.responsable);
-        $('#telefono').val(data.telefono);
-        $('#direccion').val(data.direccion);
-        $('#web').val(data.web);
-        $('#estado').val(data.estado ?? '');
-        // MARCAR roles del usuario
-            if (data.roles && Array.isArray(data.roles)) {
-                data.roles.forEach(function (rol) {
-                    $('#rol_' + rol.id).prop('checked', true);
-                });
-            }
-
-        $('#modalAutor').modal('show');
-    });
-    $('#formAutor').on('submit', function (e) {
-        e.preventDefault();
-
-        let form = $(this);
-        let formData = new FormData(this);
-
-        // Botón loading
-        let btn = form.find('button[type="submit"]');
-        btn.prop('disabled', true).text('Guardando...');
-        if(!validar('#formAutor')) {
-            btn.prop('disabled', false).text('Guardar');
+    $('#tabla-compras').on('click', '.verCompra', function () {
+        const id = $(this).data('id');
+        if (!id) {
             return;
         }
 
-        $.ajax({
-            url:$('#id').val()=='' ? '/api/autores/nuevo' : '/api/autores/edit',
-            type:'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('input[name="_token"]').val()
-            },
-            success: function (response) {
-                if (response.success) {
-                    alerta("Autor guardado correctamente", true);
-                    // Reset form
-                    form[0].reset();
-                    // Cerrar modal
-                    $('#modalAutor').modal('hide');
-                        tabla.ajax.reload();
-                } else {
-                    alerta(response.message??'Error al guardar el autor', false);
-                }
-            },
-            error: function (xhr) {
-                // Limpiar errores previos
-                $('.is-invalid').removeClass('is-invalid');
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    $.each(errors, function (field, messages) {
-                        let input = $('[name="' + field + '"]');
-                        // Campos array (roles[])
-                        if (field.includes('.')) {
-                            input = $('[name="' + field.split('.')[0] + '[]"]');
-                        }
-                        input.addClass('is-invalid');
-                        alerta(messages[0], false);
-                    });
-                } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar al autor', false);
-                    //toastr.error('Error interno del servidor');
-                }
-            },
-            complete: function () {
-                btn.prop('disabled', false).text('Guardar');
-            }
-        });
+        cargarCompra(id);
     });
 
-
-
-
-
-
-    $(document).on('click','.verCompra',function(){
-
-        let tabla = $('#tabla-compras').DataTable();
-        let data = tabla.row($(this).closest('tr')).data();
-
-        $('#ver_siaf').val(data.numero_siaf);
-        $('#ver_fecha').val(data.fecha_compra);
-        $('#ver_proveedor').val(data.proveedor.razon_social);
-        $('#ver_total').val(data.monto_total);
-
-        let html='';
-
-        data.compra_detalles.forEach(det => {
-
-            let ejemplares='';
-
-            if(det.ejemplares.length>0){
-
-                ejemplares = `<div class="ejemplares-box">` +
-
-                det.ejemplares.map(e =>
-                    `<span class="badge bg-primary text-white"style="margin-right: 8px;">
-                        ${e.codigo_dewey}${e.tipo}-${e.codigo_interno}
-                    </span>`
-                ).join('')
-
-                + `</div>`;
-
-            }else{
-
-                ejemplares = '<span class="text-muted">Sin ejemplares</span>';
-
-            }
-
-            html+=`
-            <tr>
-                <td>${det.libro.titulo}</td>
-                <td>${det.cantidad}</td>
-                <td>${det.precio_unitario}</td>
-                <td>${det.monto_total}</td>
-                <td>${ejemplares}</td>
-            </tr>
-            `;
-        });
-
-        $('#tablaDetalleCompra').html(html);
-
-        $('#modalVerCompra').modal('show');
-
+    $('#modalVerCompra').on('hidden.bs.modal', function () {
+        resetearModalCompra();
     });
-
 });
 
+function cargarCompra(id) {
+    resetearModalCompra();
+    $('#ver_proveedor').text('Cargando informacion...');
+    $('#tablaDetalleCompra').html(`
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">Cargando detalle de compra...</td>
+        </tr>
+    `);
 
+    $('#modalVerCompra').modal('show');
+
+    $.ajax({
+        url: `/api/inventario/compras/${id}`,
+        type: 'GET',
+        xhrFields: { withCredentials: true },
+        success: function (response) {
+            const data = response?.data;
+            if (!data) {
+                alerta('No se pudo cargar el detalle de la compra.', 0);
+                return;
+            }
+
+            $('#ver_siaf').text(data.numero_siaf ?? '-');
+            $('#ver_fecha').text(formatearFechaCompra(data.fecha_compra));
+            $('#ver_proveedor').text(data.proveedor?.razon_social ?? 'Sin proveedor');
+            $('#ver_proveedor_responsable').text(data.proveedor?.responsable ?? 'Sin responsable registrado');
+            $('#ver_total').text(`S/ ${Number(data.monto_total || 0).toFixed(2)}`);
+            $('#ver_observaciones').text((data.observaciones || '').trim() || 'Sin observaciones registradas.');
+            $('#tablaDetalleCompra').html(renderDetalleCompra(data.compra_detalles || []));
+        },
+        error: function () {
+            $('#tablaDetalleCompra').html(`
+                <tr>
+                    <td colspan="5" class="text-center text-danger py-4">No se pudo cargar el detalle de la compra.</td>
+                </tr>
+            `);
+            $('#ver_proveedor').text('Error al cargar');
+            alerta('No se pudo obtener el detalle de la compra.', 0);
+        }
+    });
+}
+
+function renderDetalleCompra(detalles) {
+    if (!Array.isArray(detalles) || !detalles.length) {
+        return `
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">No hay detalle asociado a esta compra.</td>
+            </tr>
+        `;
+    }
+
+    return detalles.map(function (det) {
+        let ejemplares = '<span class="text-muted">Sin ejemplares generados</span>';
+
+        if (Array.isArray(det.ejemplares) && det.ejemplares.length) {
+            ejemplares = `
+                <div class="purchase-badges">
+                    ${det.ejemplares.map(function (e) {
+                        const codigo = `${e.codigo_dewey ?? ''}${e.tipo ?? ''}${e.codigo_interno ?? ''}`.trim() || 'Sin codigo';
+                        const biblioteca = e.biblioteca?.nombre ? `<small>${safeHTML(e.biblioteca.nombre)}</small>` : '<small>Sin biblioteca</small>';
+                        return `
+                            <div class="purchase-badge-card">
+                                <span class="badge bg-primary">${safeHTML(codigo)}</span>
+                                ${biblioteca}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        const codigoLibro = det.libro?.codigo_dewey
+            ? `${det.libro.codigo_dewey}${det.libro.codigo ?? ''}`
+            : 'Sin codigo catalografico';
+
+        return `
+            <tr>
+                <td>
+                    <div class="purchase-view-modal__book">
+                        <strong>${safeHTML(det.libro?.titulo ?? 'Libro no disponible')}</strong>
+                        <small>${safeHTML(codigoLibro)}</small>
+                    </div>
+                </td>
+                <td><span class="purchase-view-modal__value">${det.cantidad ?? 0}</span></td>
+                <td><span class="purchase-view-modal__value">S/ ${Number(det.precio_unitario || 0).toFixed(2)}</span></td>
+                <td><span class="purchase-view-modal__value">S/ ${Number(det.monto_total || 0).toFixed(2)}</span></td>
+                <td>${ejemplares}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function resetearModalCompra() {
+    $('#ver_siaf').text('-');
+    $('#ver_fecha').text('-');
+    $('#ver_proveedor').text('-');
+    $('#ver_proveedor_responsable').text('Sin responsable registrado');
+    $('#ver_total').text('S/ 0.00');
+    $('#ver_observaciones').text('Sin observaciones registradas.');
+    $('#tablaDetalleCompra').html('');
+}
+
+function formatearFechaCompra(value) {
+    const texto = String(value || '');
+    if (/^\d{4}-\d{2}-\d{2}/.test(texto)) {
+        const [anio, mes, dia] = texto.slice(0, 10).split('-');
+        return `${dia}/${mes}/${anio}`;
+    }
+
+    return texto || '-';
+}

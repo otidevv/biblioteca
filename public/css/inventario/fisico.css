@@ -1,0 +1,379 @@
+.physical-inventory__header {
+    align-items: end;
+    gap: 1.25rem;
+}
+
+.physical-inventory__tools {
+    display: flex;
+    align-items: end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.physical-inventory__exports {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.physical-inventory__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.physical-inventory__filter,
+.physical-inventory__assigned {
+    min-width: 280px;
+    max-width: 320px;
+    padding: 1rem 1.1rem;
+    border-radius: 1.1rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.9));
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+}
+
+.physical-inventory__assigned span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #64748b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.physical-inventory__assigned strong {
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+.physical-inventory__table-shell {
+    overflow: hidden;
+}
+
+.physical-inventory__cover,
+.physical-inventory__cover-image {
+    width: 56px;
+    height: 76px;
+    border-radius: 0.95rem;
+}
+
+.physical-inventory__cover {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #eff6ff, #dbeafe);
+    color: #1d4ed8;
+    font-size: 1.35rem;
+}
+
+.physical-inventory__cover-image {
+    object-fit: cover;
+    box-shadow: 0 16px 28px rgba(15, 23, 42, 0.12);
+}
+
+.physical-inventory__code,
+.physical-inventory__book {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.physical-inventory__code strong,
+.physical-inventory__book strong {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.physical-inventory__code small,
+.physical-inventory__book small {
+    color: #64748b;
+}
+
+.physical-inventory__library {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(14, 165, 233, 0.12);
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.physical-inventory__library--empty {
+    background: rgba(148, 163, 184, 0.16);
+    color: #334155;
+}
+
+.physical-inventory__status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+    gap: 0.55rem;
+}
+
+.physical-inventory__metric {
+    padding: 0.72rem 0.85rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.physical-inventory__metric-label {
+    display: block;
+    margin-bottom: 0.18rem;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.physical-inventory__metric-value {
+    display: block;
+    color: #0f172a;
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.physical-inventory__metric--total {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+}
+
+.physical-inventory__metric--available {
+    border-left: 4px solid #16a34a;
+}
+
+.physical-inventory__metric--loaned {
+    border-left: 4px solid #d97706;
+}
+
+.physical-inventory__metric--reserved {
+    border-left: 4px solid #dc2626;
+}
+
+#tabla-inventario-fisico th,
+#tabla-inventario-fisico td {
+    vertical-align: middle;
+}
+
+#tabla-inventario-fisico td:nth-child(1) {
+    width: 84px;
+}
+
+#tabla-inventario-fisico td:nth-child(2) {
+    min-width: 160px;
+}
+
+#tabla-inventario-fisico td:nth-child(3) {
+    min-width: 280px;
+}
+
+#tabla-inventario-fisico td:nth-child(4) {
+    min-width: 170px;
+}
+
+    #tabla-inventario-fisico td:nth-child(5) {
+        min-width: 300px;
+    }
+
+#tabla-inventario-fisico td:nth-child(6) {
+    width: 110px;
+}
+
+@media (max-width: 991.98px) {
+    .physical-inventory__header {
+        align-items: stretch;
+    }
+
+    .physical-inventory__tools,
+    .physical-inventory__exports {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .physical-inventory__exports .admin-btn {
+        flex: 1 1 180px;
+        justify-content: center;
+    }
+
+    .physical-inventory__filter,
+    .physical-inventory__assigned {
+        min-width: 100%;
+        max-width: none;
+    }
+}
+.physical-inventory__hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.95rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(14, 165, 233, 0.16);
+    color: #0f172a;
+}
+
+.physical-inventory__hint i {
+    color: #0369a1;
+    font-size: 1.05rem;
+}
+
+.physical-inventory__queue-status {
+    margin-bottom: 1rem;
+}
+
+.physical-inventory__queue-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.92));
+}
+
+.physical-inventory__queue-card strong {
+    display: block;
+    margin-bottom: 0.28rem;
+    color: #0f172a;
+}
+
+.physical-inventory__queue-card p {
+    margin: 0;
+    color: #475569;
+}
+
+.physical-inventory__queue-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 0.95rem;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.physical-inventory__queue-card--processing {
+    border-color: rgba(245, 158, 11, 0.25);
+    background: linear-gradient(180deg, rgba(254, 249, 195, 0.9), rgba(254, 240, 138, 0.6));
+}
+
+.physical-inventory__queue-card--processing .physical-inventory__queue-icon {
+    background: rgba(251, 191, 36, 0.22);
+    color: #92400e;
+}
+
+.physical-inventory__queue-card--ready {
+    border-color: rgba(34, 197, 94, 0.22);
+    background: linear-gradient(180deg, rgba(220, 252, 231, 0.92), rgba(187, 247, 208, 0.72));
+}
+
+.physical-inventory__queue-card--ready .physical-inventory__queue-icon {
+    background: rgba(34, 197, 94, 0.18);
+    color: #166534;
+}
+
+.physical-inventory__queue-card--idle .physical-inventory__queue-icon {
+    background: rgba(148, 163, 184, 0.16);
+    color: #475569;
+}
+
+.physical-inventory__history-panel {
+    margin-top: 1.5rem;
+}
+
+.physical-inventory__history-table td,
+.physical-inventory__history-table th {
+    vertical-align: middle;
+}
+
+.physical-inventory__history-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.physical-inventory__history-status--pendiente {
+    background: rgba(253, 224, 71, 0.8);
+}
+
+.physical-inventory__history-status--procesando {
+    background: rgba(125, 211, 252, 0.8);
+}
+
+.physical-inventory__history-status--completado {
+    background: rgba(134, 239, 172, 0.72);
+}
+
+.physical-inventory__history-status--fallido {
+    background: rgba(252, 165, 165, 0.8);
+}
+
+.admin-shell.admin-dark .physical-inventory__filter,
+.admin-shell.admin-dark .physical-inventory__assigned,
+.admin-shell.admin-dark .physical-inventory__metric,
+.admin-shell.admin-dark .physical-inventory__queue-card,
+.admin-shell.admin-dark .physical-inventory__hint {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(148, 163, 184, 0.14);
+    box-shadow: 0 18px 36px rgba(2, 6, 23, 0.24);
+}
+
+.admin-shell.admin-dark .physical-inventory__assigned span,
+.admin-shell.admin-dark .physical-inventory__code small,
+.admin-shell.admin-dark .physical-inventory__book small,
+.admin-shell.admin-dark .physical-inventory__metric-label,
+.admin-shell.admin-dark .physical-inventory__queue-card p,
+.admin-shell.admin-dark .physical-inventory__hint span {
+    color: #94a3b8;
+}
+
+.admin-shell.admin-dark .physical-inventory__assigned strong,
+.admin-shell.admin-dark .physical-inventory__code strong,
+.admin-shell.admin-dark .physical-inventory__book strong,
+.admin-shell.admin-dark .physical-inventory__metric-value,
+.admin-shell.admin-dark .physical-inventory__queue-card strong {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .physical-inventory__library {
+    background: rgba(14, 165, 233, 0.16);
+    color: #dbe6ef;
+}
+
+.admin-shell.admin-dark .physical-inventory__library--empty {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+}
+
+.admin-shell.admin-dark #tabla-inventario-fisico thead th {
+    background: rgba(15, 23, 42, 0.96);
+    color: #cbd5e1;
+}
+
+.admin-shell.admin-dark #tabla-inventario-fisico tbody td {
+    color: #dbe6ef;
+    border-color: rgba(148, 163, 184, 0.1);
+}
+
+.admin-shell.admin-dark #tabla-inventario-fisico tbody tr:hover > * {
+    background: rgba(78, 181, 145, 0.08) !important;
+    color: #f8fafc;
+}

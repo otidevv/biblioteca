@@ -1,0 +1,224 @@
+.purchase-date,
+.purchase-amount {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.purchase-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.purchase-badges .badge {
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+}
+
+.purchase-badge-card {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.95rem;
+    background: rgba(241, 245, 249, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.purchase-badge-card small {
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.purchase-view-modal__header {
+    align-items: flex-start;
+}
+
+.purchase-view-modal__header .modal-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.purchase-view-modal__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(14, 165, 233, 0.12);
+    color: #0369a1;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.purchase-view-modal__copy {
+    color: #64748b;
+}
+
+.purchase-view-modal__summary {
+    margin-bottom: 1rem;
+}
+
+.purchase-view-modal__metrics {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.purchase-view-modal__metric {
+    grid-column: span 3;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(241, 245, 249, 0.88));
+}
+
+.purchase-view-modal__metric--wide {
+    grid-column: span 6;
+}
+
+.purchase-view-modal__metric strong {
+    color: #0f172a;
+    font-size: 1.02rem;
+    line-height: 1.35;
+}
+
+.purchase-view-modal__metric small {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.purchase-view-modal__metric-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0f766e;
+}
+
+.purchase-view-modal__observations {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.purchase-view-modal__observations p {
+    color: #334155;
+    line-height: 1.7;
+}
+
+.purchase-view-modal__table-shell {
+    overflow: auto;
+}
+
+.purchase-view-modal__table thead th {
+    white-space: nowrap;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 800;
+}
+
+.purchase-view-modal__table tbody td {
+    vertical-align: middle;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.purchase-view-modal__book {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.purchase-view-modal__book strong {
+    color: #0f172a;
+}
+
+.purchase-view-modal__book small {
+    color: #64748b;
+}
+
+.purchase-view-modal__value {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.purchase-view-modal__table .text-muted {
+    color: #64748b !important;
+}
+
+#modalVerCompra .modal-footer {
+    border-top: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(248, 250, 252, 0.9);
+}
+
+.admin-shell.admin-dark .purchase-date,
+.admin-shell.admin-dark .purchase-amount,
+.admin-shell.admin-dark .purchase-view-modal__header .modal-title,
+.admin-shell.admin-dark .purchase-view-modal__metric strong,
+.admin-shell.admin-dark .purchase-view-modal__book strong,
+.admin-shell.admin-dark .purchase-view-modal__value {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .purchase-badge-card,
+.admin-shell.admin-dark .purchase-view-modal__metric,
+.admin-shell.admin-dark .purchase-view-modal__observations,
+.admin-shell.admin-dark #modalVerCompra .modal-footer {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(148, 163, 184, 0.14);
+}
+
+.admin-shell.admin-dark .purchase-badge-card small,
+.admin-shell.admin-dark .purchase-view-modal__copy,
+.admin-shell.admin-dark .purchase-view-modal__metric small,
+.admin-shell.admin-dark .purchase-view-modal__book small,
+.admin-shell.admin-dark .purchase-view-modal__table .text-muted,
+.admin-shell.admin-dark .purchase-view-modal__observations p {
+    color: #94a3b8 !important;
+}
+
+.admin-shell.admin-dark .purchase-view-modal__metric-label,
+.admin-shell.admin-dark .purchase-view-modal__eyebrow,
+.admin-shell.admin-dark .purchase-view-modal__table thead th {
+    color: #86e2c0;
+}
+
+.admin-shell.admin-dark .purchase-view-modal__table thead th {
+    background: rgba(15, 23, 42, 0.96);
+    border-color: rgba(148, 163, 184, 0.14);
+}
+
+.admin-shell.admin-dark .purchase-view-modal__table tbody td {
+    color: #dbe6ef;
+    border-color: rgba(148, 163, 184, 0.1);
+}
+
+@media (max-width: 991.98px) {
+    .purchase-view-modal__metric,
+    .purchase-view-modal__metric--wide {
+        grid-column: span 6;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .purchase-view-modal__metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .purchase-view-modal__metric,
+    .purchase-view-modal__metric--wide {
+        grid-column: auto;
+    }
+}

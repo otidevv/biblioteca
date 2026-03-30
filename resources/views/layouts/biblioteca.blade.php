@@ -10,6 +10,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet">
 <link href="{{ asset('css/admin.css') }}" rel="stylesheet">
+@yield('css')
 
 <style>
 :root {
@@ -59,6 +60,18 @@ body {
     box-shadow: 18px 0 50px rgba(10, 26, 20, 0.18);
     z-index: 1040;
     transition: transform 0.28s ease;
+    isolation: isolate;
+}
+
+.library-sidebar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.04) 100%);
+    pointer-events: none;
+    z-index: -1;
 }
 
 .library-brand {
@@ -86,10 +99,7 @@ body {
     flex: 0 0 auto;
     border-radius: 18px;
     overflow: hidden;
-    color: #fff;
-    background:
-        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 32%),
-        linear-gradient(135deg, #efc96f 0%, #c98e1f 48%, #7e4d14 100%);
+    background: rgba(255, 255, 255, 0.96);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.28),
         0 14px 28px rgba(0, 0, 0, 0.18);
@@ -100,28 +110,16 @@ body {
     position: absolute;
     inset: 6px;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(24, 77, 59, 0.12);
 }
 
-.library-brand-seal {
+.library-brand-logo {
     position: relative;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1;
-}
-
-.library-brand-seal strong {
-    font-size: 1rem;
-    letter-spacing: 0.14em;
-}
-
-.library-brand-seal span {
-    margin-top: 0.25rem;
-    font-size: 0.5rem;
-    letter-spacing: 0.18em;
-    opacity: 0.92;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.45rem;
 }
 
 .library-brand-copy {
@@ -280,6 +278,7 @@ body {
     border-radius: 1.2rem;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .library-sidebar-footer small {
@@ -304,7 +303,9 @@ body {
     padding: 0.95rem 1.15rem;
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 1.4rem;
-    background: rgba(255, 251, 244, 0.82);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 234, 0.92)),
+        rgba(255, 251, 244, 0.82);
     backdrop-filter: blur(14px);
     box-shadow: 0 10px 35px rgba(24, 77, 59, 0.08);
 }
@@ -317,29 +318,55 @@ body {
 }
 
 .library-topbar-title-badge {
-    width: 44px;
-    height: 44px;
+    width: 54px;
+    height: 54px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    border-radius: 14px;
-    font-size: 1.1rem;
-    color: #fff;
-    background: linear-gradient(135deg, var(--library-leaf), var(--library-forest-deep));
-    box-shadow: 0 10px 24px rgba(24, 77, 59, 0.22);
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 0.35rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 246, 242, 0.94));
+    border: 1px solid rgba(24, 77, 59, 0.1);
+    box-shadow: 0 10px 24px rgba(24, 77, 59, 0.14);
+}
+
+.library-topbar-title-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.library-topbar-title-copy {
+    padding: 0.35rem 0.4rem 0.35rem 0;
+}
+
+.library-topbar-title-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.2rem;
+    padding: 0.22rem 0.58rem;
+    border-radius: 999px;
+    background: rgba(24, 77, 59, 0.08);
+    color: #2a5a49;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .library-topbar-title h5 {
     margin: 0;
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-size: 1.08rem;
+    font-weight: 800;
 }
 
 .library-topbar-title span {
     display: block;
     color: #5a6d66;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
 }
 
 .library-topbar-actions {
@@ -359,6 +386,18 @@ body {
     background: rgba(24, 77, 59, 0.08);
     color: var(--library-forest);
     font-weight: 600;
+    border: 1px solid rgba(24, 77, 59, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.library-user-chip.dropdown-toggle::after {
+    margin-left: 0.15rem;
+}
+
+.library-user-chip:hover,
+.library-user-chip:focus {
+    color: var(--library-forest);
+    background: rgba(24, 77, 59, 0.12);
 }
 
 .library-user-chip i {
@@ -367,7 +406,9 @@ body {
 
 .library-login-btn,
 .library-logout-btn,
-.library-menu-btn {
+.library-menu-btn,
+.library-alert-btn,
+.library-theme-btn {
     border: 0;
     border-radius: 999px;
     font-weight: 600;
@@ -394,12 +435,157 @@ body {
     box-shadow: 0 12px 30px rgba(24, 77, 59, 0.2);
 }
 
+.library-theme-btn {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--library-forest);
+    background: rgba(24, 77, 59, 0.08);
+    border: 1px solid rgba(24, 77, 59, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.library-theme-btn i {
+    font-size: 1rem;
+}
+
+.library-alert-dropdown {
+    position: relative;
+}
+
+.library-alert-btn {
+    width: 46px;
+    height: 46px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--library-forest);
+    background: rgba(24, 77, 59, 0.08);
+    border: 1px solid rgba(24, 77, 59, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.library-alert-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 0.3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #d86b52, #b1392f);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    box-shadow: 0 10px 20px rgba(177, 57, 47, 0.22);
+}
+
+.library-alert-menu {
+    width: min(380px, calc(100vw - 2rem));
+    padding: 0.75rem;
+    border: 1px solid rgba(24, 77, 59, 0.08);
+    border-radius: 1.1rem;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 24px 50px rgba(24, 77, 59, 0.16);
+}
+
+.library-alert-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.2rem 0.25rem 0.7rem;
+    border-bottom: 1px solid rgba(24, 77, 59, 0.08);
+}
+
+.library-alert-menu-header strong {
+    color: #173d2f;
+}
+
+.library-alert-list {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+}
+
+.library-alert-item {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.8rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,248,245,.94));
+    border: 1px solid rgba(24, 77, 59, 0.06);
+}
+
+.library-alert-item:hover {
+    background: rgba(24, 77, 59, 0.05);
+}
+
+.library-alert-item--button {
+    width: 100%;
+    border: 0;
+    text-align: left;
+}
+
+.library-alert-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(24, 77, 59, 0.08);
+    color: #1d654c;
+}
+
+.library-alert-copy strong {
+    display: block;
+    color: #173d2f;
+    font-size: 0.92rem;
+}
+
+.library-alert-copy p {
+    margin: 0.2rem 0 0;
+    color: #62756d;
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.library-alert-copy small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.35rem;
+    color: #7a8a84;
+}
+
 .library-content {
+    position: relative;
+    overflow: hidden;
     padding: 1.4rem;
     border: 1px solid rgba(255, 255, 255, 0.45);
     border-radius: 1.8rem;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.6));
     box-shadow: var(--library-shadow);
+}
+
+.library-content::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(216, 177, 92, 0.12), transparent 68%);
+    pointer-events: none;
 }
 
 .library-footer {
@@ -557,6 +743,221 @@ body {
     z-index: 1060;
 }
 
+body.library-dark {
+    color: #e7f0ea;
+    background:
+        radial-gradient(circle at top left, rgba(216, 177, 92, 0.12), transparent 22%),
+        radial-gradient(circle at 85% 12%, rgba(66, 153, 120, 0.14), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(47, 122, 93, 0.14), transparent 22%),
+        linear-gradient(180deg, #08110e 0%, #0d1714 38%, #111d19 100%);
+}
+
+body.library-dark .library-sidebar {
+    background:
+        radial-gradient(circle at top left, rgba(250, 204, 102, 0.12), transparent 22%),
+        linear-gradient(180deg, rgba(7, 16, 13, 0.98) 0%, rgba(10, 23, 19, 0.97) 55%, rgba(15, 33, 27, 0.96) 100%);
+    box-shadow: 18px 0 52px rgba(0, 0, 0, 0.34);
+}
+
+body.library-dark .library-brand,
+body.library-dark .library-sidebar-footer {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.library-dark .library-brand-copy small,
+body.library-dark .library-brand p,
+body.library-dark .library-sidebar-footer small,
+body.library-dark .library-nav-text small {
+    color: rgba(220, 231, 226, 0.68);
+}
+
+body.library-dark .library-nav-link {
+    color: rgba(233, 241, 236, 0.8);
+}
+
+body.library-dark .library-nav-link:hover,
+body.library-dark .library-nav-link.is-active {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+body.library-dark .library-nav-link.is-active .library-nav-text small,
+body.library-dark .library-nav-link:hover .library-nav-text small {
+    color: rgba(244, 248, 246, 0.82);
+}
+
+body.library-dark .library-topbar,
+body.library-dark .library-content,
+body.library-dark .library-footer {
+    border-color: rgba(255, 255, 255, 0.08);
+    background:
+        linear-gradient(180deg, rgba(18, 30, 24, 0.9), rgba(11, 20, 16, 0.88)),
+        rgba(14, 24, 20, 0.88);
+    box-shadow:
+        0 18px 42px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body.library-dark .library-content::before {
+    background: radial-gradient(circle, rgba(216, 177, 92, 0.1), transparent 68%);
+}
+
+body.library-dark .library-topbar-title h5,
+body.library-dark .library-content h1,
+body.library-dark .library-content h2,
+body.library-dark .library-content h3,
+body.library-dark .library-content h4,
+body.library-dark .library-content h5,
+body.library-dark .library-content h6,
+body.library-dark .library-footer h6,
+body.library-dark .library-alert-copy strong,
+body.library-dark .library-alert-menu-header strong,
+body.library-dark .library-user-chip,
+body.library-dark .library-theme-btn,
+body.library-dark .library-alert-btn {
+    color: #f8fafc;
+}
+
+body.library-dark .library-topbar-title span,
+body.library-dark .library-topbar-title-kicker,
+body.library-dark .library-content p,
+body.library-dark .library-content small,
+body.library-dark .library-footer p,
+body.library-dark .library-footer small,
+body.library-dark .library-footer a,
+body.library-dark .library-alert-copy p,
+body.library-dark .library-alert-copy small,
+body.library-dark .text-muted {
+    color: #a8bbb1 !important;
+}
+
+body.library-dark .library-user-chip,
+body.library-dark .library-theme-btn,
+body.library-dark .library-alert-btn {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.05));
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.library-dark .library-alert-menu,
+body.library-dark .dropdown-menu,
+body.library-dark .card,
+body.library-dark .modal-content,
+body.library-dark .table,
+body.library-dark .alert,
+body.library-dark .home-stat-card,
+body.library-dark .home-library-card,
+body.library-dark .home-book-card,
+body.library-dark .home-activity-card {
+    color: #e5efe9;
+    border-color: rgba(255, 255, 255, 0.08);
+    background:
+        linear-gradient(180deg, rgba(22, 35, 29, 0.98), rgba(13, 22, 18, 0.95)),
+        rgba(16, 27, 22, 0.96);
+    box-shadow:
+        0 16px 36px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body.library-dark .library-alert-item {
+    background: linear-gradient(180deg, rgba(26, 40, 33, 0.96), rgba(15, 24, 20, 0.94));
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+body.library-dark .library-alert-item:hover,
+body.library-dark .home-library-card:hover,
+body.library-dark .home-book-card:hover,
+body.library-dark .home-activity-card:hover {
+    background:
+        linear-gradient(180deg, rgba(29, 45, 37, 0.98), rgba(17, 28, 23, 0.95)),
+        rgba(21, 34, 28, 0.96);
+    box-shadow: 0 22px 46px rgba(0, 0, 0, 0.34);
+}
+
+body.library-dark .form-control,
+body.library-dark .form-select,
+body.library-dark .input-group-text,
+body.library-dark input,
+body.library-dark select,
+body.library-dark textarea {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.library-dark .table > :not(caption) > * > * {
+    color: #e5efe9;
+    background-color: transparent;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.library-dark .home-library-card h5,
+body.library-dark .home-book-card h6,
+body.library-dark .home-section-title,
+body.library-dark .home-stat-card h3,
+body.library-dark .home-activity-card h6 {
+    color: #f8fafc;
+}
+
+body.library-dark .home-library-card p,
+body.library-dark .home-section-subtitle,
+body.library-dark .home-book-authors,
+body.library-dark .home-book-meta small,
+body.library-dark .home-stat-card p,
+body.library-dark .home-activity-copy,
+body.library-dark .home-activity-date {
+    color: #a8bbb1;
+}
+
+body.library-dark .home-search-card {
+    background: rgba(12, 21, 18, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.library-dark .home-search-card .input-group-text,
+body.library-dark .home-search-card .form-control {
+    background: rgba(244, 248, 246, 0.94);
+    color: #10211a;
+}
+
+body.library-dark .home-link,
+body.library-dark .home-library-footer,
+body.library-dark .home-activity-footer,
+body.library-dark .report-center__download,
+body.library-dark a {
+    color: #9be7c5;
+}
+
+body.library-dark .home-library-badge,
+body.library-dark .home-activity-badge,
+body.library-dark .home-book-tag,
+body.library-dark .library-topbar-title-kicker {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f2cf82;
+}
+
+body.library-dark .home-book-button,
+body.library-dark .btn-libro,
+body.library-dark .library-login-btn {
+    color: #0c1713;
+    background: linear-gradient(135deg, #f0d58f, #cfa850);
+}
+
+body.library-dark .library-logout-btn {
+    color: #f8fafc;
+    background: linear-gradient(135deg, #1b5b43, #0f3528);
+}
+
+body.library-dark .library-footer-bottom {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+body.library-dark .overlay.active {
+    background: rgba(2, 7, 5, 0.58);
+}
+
 @media (max-width: 991.98px) {
     .library-sidebar {
         transform: translateX(-100%);
@@ -587,16 +988,43 @@ body {
 
 @media (max-width: 575.98px) {
     .library-topbar {
-        align-items: flex-start;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
     }
 
     .library-topbar-title {
         width: 100%;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .library-topbar-title-copy {
+        min-width: 0;
+        flex: 1 1 auto;
+        padding-right: 0;
+    }
+
+    .library-topbar-title h5 {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+
+    .library-topbar-title span {
+        font-size: 0.82rem;
+        line-height: 1.35;
     }
 
     .library-topbar-actions {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-start;
+    }
+
+    .library-user-chip,
+    .library-login-btn,
+    .library-logout-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 
@@ -614,7 +1042,75 @@ body {
 </head>
 
 <body>
+<script>
+(function () {
+    const enabled = localStorage.getItem('library-dark-mode') === 'true';
+    document.documentElement.classList.toggle('library-dark', enabled);
+    document.documentElement.classList.toggle('dark-mode', enabled);
+    document.body.classList.toggle('library-dark', enabled);
+    document.body.classList.toggle('dark-mode', enabled);
+})();
+</script>
 @php($user = Auth::user())
+<?php
+    $topbarMeta = [
+        'kicker' => 'UNAMAD',
+        'icon' => 'bi-mortarboard-fill',
+        'title' => 'Sistema de Biblioteca',
+        'subtitle' => 'Navegacion central para catalogo, reservas y consultas.',
+    ];
+
+    if (request()->routeIs('home')) {
+        $topbarMeta = [
+            'kicker' => 'Portada institucional',
+            'icon' => 'bi-house-heart-fill',
+            'title' => 'Sistema de Biblioteca',
+            'subtitle' => 'Explora novedades, bibliotecas y accesos principales desde una portada clara.',
+        ];
+    } elseif (request()->routeIs('catalogo')) {
+        $topbarMeta = [
+            'kicker' => 'Consulta bibliografica',
+            'icon' => 'bi-collection-fill',
+            'title' => 'Catalogo institucional',
+            'subtitle' => 'Busca libros, filtra resultados y revisa valoraciones antes de consultar el detalle.',
+        ];
+    } elseif (request()->routeIs('biblioteca.show')) {
+        $topbarMeta = [
+            'kicker' => 'Sede bibliotecaria',
+            'icon' => 'bi-buildings-fill',
+            'title' => 'Biblioteca y disponibilidad',
+            'subtitle' => 'Consulta la coleccion disponible por sede y encuentra ejemplares con mayor rapidez.',
+        ];
+    } elseif (request()->routeIs('libro.show')) {
+        $topbarMeta = [
+            'kicker' => 'Ficha bibliografica',
+            'icon' => 'bi-journal-bookmark-fill',
+            'title' => 'Detalle del libro',
+            'subtitle' => 'Revisa autores, disponibilidad, comentarios y reserva el ejemplar que necesitas.',
+        ];
+    } elseif (request()->routeIs('mis.reservas')) {
+        $topbarMeta = [
+            'kicker' => 'Seguimiento personal',
+            'icon' => 'bi-bookmark-star-fill',
+            'title' => 'Mis reservas',
+            'subtitle' => 'Monitorea tus solicitudes activas y mantente al tanto de su estado.',
+        ];
+    } elseif (request()->routeIs('prestamos')) {
+        $topbarMeta = [
+            'kicker' => 'Control de movimientos',
+            'icon' => 'bi-arrow-left-right',
+            'title' => 'Prestamos y movimientos',
+            'subtitle' => 'Consulta el flujo de prestamos y devoluciones desde una vista centralizada.',
+        ];
+    } elseif (request()->routeIs('evento')) {
+        $topbarMeta = [
+            'kicker' => 'Agenda cultural',
+            'icon' => 'bi-stars',
+            'title' => 'Eventos y actividades',
+            'subtitle' => 'Accede a novedades, actividades y espacios de participacion de la biblioteca.',
+        ];
+    }
+?>
 
 <a href="#contenido-principal" class="visually-hidden-focusable position-absolute top-0 start-0 m-3 p-2 rounded bg-white text-dark">
     Saltar al contenido principal
@@ -625,10 +1121,7 @@ body {
         <div class="library-brand">
             <div class="library-brand-header">
                 <div class="library-brand-mark">
-                    <div class="library-brand-seal">
-                        <strong>UNA</strong>
-                        <span>MDD</span>
-                    </div>
+                    <img src="{{ asset('img/logo_unamad.png') }}" alt="Logo UNAMAD" class="library-brand-logo">
                 </div>
                 <div class="library-brand-copy">
                     <h1>Biblioteca UNAMAD</h1>
@@ -703,30 +1196,101 @@ body {
                     <i class="bi bi-list"></i>
                 </button>
                 <div class="library-topbar-title-badge">
-                    <i class="bi bi-buildings-fill"></i>
+                    <img src="{{ asset('img/logo_unamad.png') }}" alt="Logo UNAMAD">
                 </div>
-                <div>
-                    <h5>Sistema de Biblioteca</h5>
-                    <span>Navegacion central para catalogo, reservas y consultas</span>
+                <div class="library-topbar-title-copy">
+                    <small class="library-topbar-title-kicker">
+                        <i class="bi {{ $topbarMeta['icon'] }}"></i>
+                        {{ $topbarMeta['kicker'] }}
+                    </small>
+                    <h5>{{ $topbarMeta['title'] }}</h5>
+                    <span>{{ $topbarMeta['subtitle'] }}</span>
                 </div>
             </div>
 
             <div class="library-topbar-actions">
-                @auth
-                <span class="library-user-chip">
-                    <i class="bi bi-person-circle"></i>
-                    {{ $user->name }}
-                </span>
+                <button type="button" class="btn library-theme-btn" aria-label="Alternar modo oscuro" onclick="toggleLibraryTheme()">
+                    <i class="bi bi-moon-stars-fill" id="libraryThemeIcon"></i>
+                </button>
 
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn library-logout-btn">
-                        <i class="bi bi-box-arrow-right me-1"></i>
-                        Salir
+                <div class="dropdown library-alert-dropdown">
+                    <button class="btn library-alert-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Ver mensajes y avisos">
+                        <i class="bi bi-bell-fill"></i>
+                        @if(isset($libraryAlerts) && $libraryAlerts->isNotEmpty())
+                            <span class="library-alert-badge">{{ min($libraryAlerts->count(), 9) }}</span>
+                        @endif
                     </button>
-                </form>
+                    <div class="dropdown-menu dropdown-menu-end library-alert-menu">
+                        <div class="library-alert-menu-header">
+                            <div>
+                                <strong>Actividades y noticias</strong>
+                                <small class="text-muted">Avisos, mensajes y novedades de biblioteca</small>
+                            </div>
+                        </div>
+
+                        @if(isset($libraryAlerts) && $libraryAlerts->isNotEmpty())
+                            <div class="library-alert-list">
+                                @foreach($libraryAlerts as $alert)
+                                    <a href="{{ $alert->url }}" class="library-alert-item">
+                                        <span class="library-alert-icon">
+                                            <i class="bi {{ $alert->icono }}"></i>
+                                        </span>
+                                        <span class="library-alert-copy">
+                                            <strong>{{ $alert->titulo }}</strong>
+                                            <p>{{ $alert->contenido }}</p>
+                                            @if($alert->meta)
+                                                <small><i class="bi bi-calendar3"></i>{{ $alert->meta }}</small>
+                                            @endif
+                                        </span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="pt-3 px-2 pb-1 text-muted small">
+                                No hay mensajes o avisos publicados por el momento.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                @auth
+                <div class="dropdown">
+                    <button class="btn library-user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle"></i>
+                        {{ $user->name }}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end library-alert-menu">
+                        <div class="library-alert-menu-header">
+                            <div>
+                                <strong>{{ $user->name }}</strong>
+                                <small class="text-muted">{{ $user->email }}</small>
+                            </div>
+                        </div>
+                        <a href="{{ route('perfil.edit', ['layout' => 'library']) }}" class="library-alert-item">
+                            <span class="library-alert-icon">
+                                <i class="bi bi-person-gear"></i>
+                            </span>
+                            <span class="library-alert-copy">
+                                <strong>Mi perfil</strong>
+                                <p>Ver y actualizar mis datos personales.</p>
+                            </span>
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST" class="d-block">
+                            @csrf
+                            <button type="submit" class="library-alert-item library-alert-item--button">
+                                <span class="library-alert-icon">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </span>
+                                <span class="library-alert-copy">
+                                    <strong>Cerrar sesion</strong>
+                                    <p>Salir del sistema de biblioteca.</p>
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
                 @else
-                <a href="{{ route('login') }}" class="btn library-login-btn">
+                <a href="{{ route('login', request()->routeIs('libro.show') ? ['redirect' => url()->current()] : []) }}" class="btn library-login-btn">
                     <i class="bi bi-box-arrow-in-right me-1"></i>
                     Iniciar sesion
                 </a>
@@ -784,6 +1348,31 @@ body {
 @yield('modal')
 
 <script>
+function toggleLibraryTheme() {
+    const root = document.documentElement;
+    const body = document.body;
+    const nextValue = !body.classList.contains('library-dark');
+
+    root.classList.toggle('library-dark', nextValue);
+    root.classList.toggle('dark-mode', nextValue);
+    body.classList.toggle('library-dark', nextValue);
+    body.classList.toggle('dark-mode', nextValue);
+    localStorage.setItem('library-dark-mode', nextValue ? 'true' : 'false');
+
+    const icon = document.getElementById('libraryThemeIcon');
+    if (icon) {
+        icon.className = nextValue ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const enabled = document.body.classList.contains('library-dark');
+    const icon = document.getElementById('libraryThemeIcon');
+    if (icon) {
+        icon.className = enabled ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+    }
+});
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');

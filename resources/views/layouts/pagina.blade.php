@@ -16,6 +16,7 @@
     @yield('css')
 </head>
 <body>
+    @php($logoUnamad = asset('img/logo_unamad.png'))
     <!-- TOPBAR -->
     <div class="topbar bg-dark text-white py-2">
         <div class="container d-flex justify-content-between align-items-center">

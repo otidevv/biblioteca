@@ -1,99 +1,94 @@
 $(document).ready(function () {
+    const libroActual = libro || null;
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+    const $formLibro = $('#formLibro');
+    const $submitLibro = $formLibro.find('button[type="submit"]');
+    const $deweyHint = $('#deweySuggestionHint');
+    const $codigoHint = $('#codigoLibroHint');
+
     $('.select2').select2({
         width: '100%'
     });
-    $('#modalEditorial').on('shown.bs.modal', function () {
 
+    $('#modalEditorial').on('shown.bs.modal', function () {
         $('#ed_pais').select2({
             dropdownParent: $('#modalEditorial'),
             width: '100%'
         });
-
     });
-    $('#modalAutor').on('shown.bs.modal', function () {
 
+    $('#modalAutor').on('shown.bs.modal', function () {
         $('#au_pais').select2({
             dropdownParent: $('#modalAutor'),
             width: '100%'
         });
-
     });
-    // Inicializamos Select2 con búsqueda manual
-   $('#codigo_dewey').select2({
-        placeholder: 'Seleccione código Dewey',
+
+    $('#codigo_dewey').select2({
+        placeholder: 'Seleccione codigo Dewey',
         allowClear: true,
         ajax: {
             url: '/api/inventario/dewey/buscar',
             dataType: 'json',
             delay: 250,
-            data: function(params) {
-                let titulo = $('input[name="titulo"]').val().trim();
-                return { q: params.term || titulo }; 
+            data: function (params) {
+                const titulo = ($('#titulo').val() || '').trim();
+                return { q: params.term || titulo };
             },
-            processResults: function(data) {
+            processResults: function (data) {
                 return {
-                    results: data.map(item => ({
-                        id: item.codigo,
-                        text: item.codigo + ' - ' + item.nombre
-                    }))
+                    results: (data || []).map(function (item) {
+                        return {
+                            id: item.codigo,
+                            text: item.codigo + ' - ' + item.nombre
+                        };
+                    })
                 };
             },
             cache: true
         }
     });
 
-    // =============================
-    // 🔥 CASO 1: EDICIÓN
-    // =============================
-   
     if (codigoDewey) {
-            $.ajax({
-            url: '/api/inventario/dewey/buscar',
-            data: { codigoDewey: codigoDewey },
-            success: function(data) {
+        const option = new Option(textoDewey || codigoDewey, codigoDewey, true, true);
+        $('#codigo_dewey').append(option).trigger('change');
+    }
+
+    $('#titulo').on('blur', function () {
+        const titulo = ($(this).val() || '').trim();
+
+        if (!titulo) {
+            return;
+        }
+
+        $.ajax({
+            url: '/api/inventario/libros/sugerir-dewey',
+            type: 'GET',
+            data: { titulo: titulo },
+            success: function (response) {
                 $('#codigo_dewey').empty().trigger('change');
-                if (Array.isArray(data) && data.length > 0) {
-                    let item = data[0];
-                    console.log(item.codigo);                    
-                    let texto = item.text;
-                    // 🔥 IMPORTANTE: usar codigo como value (igual que Select2)
-                    let newOption = new Option(texto, item.codigo, true, true);
-                    $('#codigo_dewey').append(newOption).trigger('change');
-                }
+                const option = new Option(response.codigo + ' - ' + response.nombre, response.codigo, true, true);
+                $('#codigo_dewey').append(option);
+                $deweyHint.text('Sugerencia automatica basada en el titulo. Coincidencias: ' + (response.coincidencias || []).join(', '));
+                actualizarCodigoLibro();
+
+                $('#codigo_dewey').trigger('change');
+            },
+            error: function () {
+                $deweyHint.text('No se encontro una sugerencia automatica confiable. Puedes elegir la clasificacion manualmente.');
             }
         });
-    }
-    // Evento para buscar Dewey según el título
-    $('input[name="titulo"]').on('blur', function() {
-        let titulo = $(this).val().trim();
-        if(titulo.length > 0){
-            $.ajax({
-                url: '/api/inventario/dewey/buscar',
-                type: 'GET',
-                data: { titulo: titulo },
-                success: function(response){
-                    // Limpiamos el select
-                    $('#codigo_dewey').empty().trigger('change');
-
-                    if(response.length > 0){
-                        // Agregamos todas las coincidencias
-                        response.forEach(function(item){
-                            let newOption = new Option(item.codigo + ' - ' + item.nombre, item.id, false, false);
-                            $('#codigo_dewey').append(newOption);
-                        });
-                        // Abrimos el dropdown para que el usuario vea las opciones
-                        $('#codigo_dewey').select2('open');
-                    }
-                },
-                error: function(err){
-                    console.error('Error al buscar Dewey', err);
-                }
-            });
-        }
     });
-    // ================= EDITORIAL =================
+
+    $('#codigo_dewey').on('change', function () {
+        const data = $(this).select2('data');
+        const item = Array.isArray(data) && data.length ? data[0] : null;
+        $deweyHint.text(item && item.text ? 'Clasificacion seleccionada: ' + item.text : '');
+        actualizarCodigoLibro();
+    });
+
     $('#editorial_id').select2({
-        placeholder: "Buscar editorial",
+        placeholder: 'Buscar editorial',
         allowClear: true,
         ajax: {
             url: '/api/inventario/editoriales',
@@ -101,28 +96,25 @@ $(document).ready(function () {
             delay: 250,
             processResults: function (data) {
                 return {
-                    results: data.map(item => ({
-                        id: item.id,
-                        text: item.nombre
-                    }))
+                    results: (data || []).map(function (item) {
+                        return {
+                            id: item.id,
+                            text: item.nombre
+                        };
+                    })
                 };
             }
         }
     });
-    //=====================actualoizar editoriales===============//
-    if (libro.editorial) {
-        editorial=libro.editorial;
 
-        let texto = editorial.nombre;
-
-        let newOption = new Option(texto, editorial.id, true, true);
-
-        $('#editorial_id').append(newOption).trigger('change');
+    if (libroActual && libroActual.editorial) {
+        const editorial = libroActual.editorial;
+        const option = new Option(editorial.nombre, editorial.id, true, true);
+        $('#editorial_id').append(option).trigger('change');
     }
 
-    // ================= AUTORES =================
     $('#autor_id').select2({
-        placeholder: "Seleccione autor(es)",
+        placeholder: 'Seleccione autor(es)',
         width: '100%',
         ajax: {
             url: '/api/inventario/autores',
@@ -130,52 +122,31 @@ $(document).ready(function () {
             delay: 250,
             data: params => ({ q: params.term }),
             processResults: data => ({
-                results: data.map(item => ({
+                results: (data || []).map(item => ({
                     id: item.id,
                     text: item.text,
-                    apellido: item.apellidos, // importante: traer apellido desde backend
-                    nombre: item.nombres    // importante: traer nombre desde backend
+                    apellido: item.apellidos,
+                    nombre: item.nombres
                 }))
             })
         }
     });
-    //=======================actualozar autores==================//
-    if (autores && autores.length > 0) {
 
-        $('#autor_id').empty().trigger('change');
+    if (Array.isArray(autores) && autores.length > 0) {
+        const ids = [];
 
-        // 🔥 eliminar duplicados
-        let autoresUnicos = [];
-        let ids = new Set();
-
-        autores.forEach(a => {
-            if (!ids.has(a.id)) {
-                ids.add(a.id);
-                autoresUnicos.push(a);
-            }
-        });
-
-        // 🔥 agregar y seleccionar todos
-        let valores = [];
-
-        autoresUnicos.forEach(item => {
-
-            let texto = item.nombres.trim() + ' ' + item.apellidos.trim();
-
-            let option = new Option(texto, item.id, true, true);
-
+        autores.forEach(function (item) {
+            const texto = (item.nombres || '').trim() + ' ' + (item.apellidos || '').trim();
+            const option = new Option(texto.trim(), item.id, true, true);
             $('#autor_id').append(option);
-
-            valores.push(item.id); // guardar ids
+            ids.push(item.id);
         });
 
-        // 🔥 seleccionar todos
-        $('#autor_id').val(valores).trigger('change');
+        $('#autor_id').val(ids).trigger('change');
     }
 
-    // ================= MATERIAS =================
     $('#materias').select2({
-        placeholder: "Seleccione materia(s)",
+        placeholder: 'Seleccione materia(s)',
         width: '100%',
         multiple: true,
         ajax: {
@@ -184,244 +155,256 @@ $(document).ready(function () {
             delay: 250,
             data: params => ({ q: params.term }),
             processResults: data => ({
-                results: data.map(item => ({
+                results: (data || []).map(item => ({
                     id: item.id,
                     text: item.nombre
                 }))
             })
         }
     });
-    //==================actualiza materias=================/
-    if (libro.materias && libro.materias.length > 0) {
-        materias=libro.materias;
-        $('#materias').empty().trigger('change');
-        let valores = [];
-        materias.forEach(item => {
-            let texto = item.nombre;
-            let option = new Option(texto, item.id, true, true);
+
+    if (libroActual && Array.isArray(libroActual.materias) && libroActual.materias.length > 0) {
+        const valores = [];
+
+        libroActual.materias.forEach(function (item) {
+            const option = new Option(item.nombre, item.id, true, true);
             $('#materias').append(option);
             valores.push(item.id);
         });
-        // 🔥 seleccionar todas
+
         $('#materias').val(valores).trigger('change');
     }
-    
+
+    $('#autor_id').on('change', function () {
+        actualizarCodigoLibro();
+    });
+
+    $('#titulo, input[name="edicion"]').on('blur', function () {
+        actualizarCodigoLibro();
+    });
+
     $('#formEditorial').on('submit', function (e) {
         e.preventDefault();
 
-        let form = $(this);
-        let formData = new FormData(this);
-
-        // Botón loading
-        let btn = form.find('button[type="submit"]');
-        btn.prop('disabled', true).text('Guardando...');
-        if(!validar('#formEditorial')) {
-            btn.prop('disabled', false).text('Guardar');
+        if (!validar('#formEditorial')) {
             return;
         }
 
+        const form = $(this);
+        const formData = new FormData(this);
+        const btn = form.find('button[type="submit"]');
+
+        btn.prop('disabled', true).text('Guardando...');
+
         $.ajax({
-            url:'/api/editoriales/nuevo',
-            type:'POST',
+            url: '/api/editoriales/nuevo',
+            type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('input[name="_token"]').val()
-            },
+            headers: { 'X-CSRF-TOKEN': csrfToken },
             success: function (response) {
-                if (response.success) {
-                    alerta("Editorial guardado correctamente", true);
-                    // Reset form
-                    form[0].reset();
-                    // Cerrar modal
-                    $('#modalEditorial').modal('hide');
-                    btn.prop('disabled', false).text('Guardar');
-
-                } else {
-                    alerta(response.message??'Error al guardar el editorial', false);
+                if (!response.success) {
+                    alerta(response.message || 'Error al guardar la editorial', false);
+                    return;
                 }
+
+                if (response.data) {
+                    const option = new Option(response.data.nombre, response.data.id, true, true);
+                    $('#editorial_id').append(option).trigger('change');
+                }
+
+                alerta('Editorial guardada correctamente', true);
+                form[0].reset();
+                $('#modalEditorial').modal('hide');
             },
             error: function (xhr) {
-                // Limpiar errores previos
-                $('.is-invalid').removeClass('is-invalid');
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    $.each(errors, function (field, messages) {
-                        let input = $('[name="' + field + '"]');
-                        // Campos array (roles[])
-                        if (field.includes('.')) {
-                            input = $('[name="' + field.split('.')[0] + '[]"]');
-                        }
-                        input.addClass('is-invalid');
-                        alerta(messages[0], false);
-                    });
-                } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar el editorial', false);
-                    //toastr.error('Error interno del servidor');
-                }
+                alerta(xhr.responseJSON?.message || 'Error al guardar la editorial', false);
             },
             complete: function () {
                 btn.prop('disabled', false).text('Guardar');
             }
         });
     });
-    // generar codigo    
-    // Evento para generar código automáticamente al seleccionar autores
-    $('#autor_id').on('change', function () {
 
-        let selectedData = $(this).select2('data');
+    $('#formAutor').on('submit', function (e) {
+        e.preventDefault();
 
-        if (selectedData.length === 0) {
-            $('input[name="codigo"]').val('');
+        if (!validar('#formAutor')) {
             return;
         }
 
-        let autor = selectedData[0];
+        const form = $(this);
+        const formData = new FormData(this);
+        const btn = form.find('button[type="submit"]');
 
-        if(!autor) return;
+        btn.prop('disabled', true).text('Guardando...');
 
-        let apellido = (autor.apellido || '').toUpperCase();
-        let nombre = (autor.nombre || '').toUpperCase();
-        let titulo = ($('#titulo').val() || '').toUpperCase();
-
-        if(!apellido || !nombre){
-            console.warn('Autor sin apellido o nombre');
-            return;
-        }
-
-        let primeraLetra = apellido.charAt(0);
-        let letrasBusqueda = 3;
-
-        generarCodigo();
-
-        function generarCodigo(){
-
-            let letrasApellido = apellido.substring(0, letrasBusqueda);
-
-            $.ajax({
-                url:'/api/inventario/codigo_cutter',
-                type:'GET',
-                data:{ letras: letrasApellido },
-                success:function(cutterData){
-
-                    let cutter = cutterData.codigo;
-                    let baseCodigo = primeraLetra + cutter;
-
-                    $.ajax({
-                        url:'/api/inventario/libros/check_codigo',
-                        type:'GET',
-                        data:{ codigo: baseCodigo },
-                        success:function(res){
-
-                            if(!res.existe){
-                                $('input[name="codigo"]').val(baseCodigo);
-                                return;
-                            }
-
-                            // MISMO AUTOR
-                            console.log(res.autor_id+" = "+autor.id);
-                            
-                            if(res.autor_id == autor.id){
-                                let letraTitulo = titulo.charAt(0);
-                                $('input[name="codigo"]').val(baseCodigo + letraTitulo);
-                                return;
-                            }
-
-                            // MISMO APELLIDO DIFERENTE AUTOR
-                            if(res.apellido === apellido){
-
-                                let letraNombre = nombre.charAt(0);
-                                $('input[name="codigo"]').val(baseCodigo + letraNombre);
-                                return;
-                            }
-
-                            // MUCHOS AUTORES MISMAS 3 LETRAS
-                            letrasBusqueda++;
-
-                            if(letrasBusqueda <= apellido.length){
-                                generarCodigo();
-                            }else{
-                                $('input[name="codigo"]').val(baseCodigo);
-                            }
-
-                        }
-                    });
-
+        $.ajax({
+            url: '/api/autores/nuevo',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRF-TOKEN': csrfToken },
+            success: function (response) {
+                if (!response.success) {
+                    alerta(response.message || 'Error al guardar el autor', false);
+                    return;
                 }
-            });
 
-        }
+                if (response.data) {
+                    const texto = ((response.data.nombres || '') + ' ' + (response.data.apellidos || '')).trim();
+                    const option = new Option(texto, response.data.id, true, true);
+                    $('#autor_id').append(option).trigger('change');
+                }
 
-    });
-    // Vista previa imagen
-    $('#imagen').on('change', function(e){
-
-        let file = e.target.files[0];
-
-        if(file){
-
-            let reader = new FileReader();
-
-            reader.onload = function(e){
-                $('#previewImagen').attr('src', e.target.result);
+                alerta('Autor guardado correctamente', true);
+                form[0].reset();
+                $('#modalAutor').modal('hide');
+            },
+            error: function (xhr) {
+                alerta(xhr.responseJSON?.message || 'Error al guardar el autor', false);
+            },
+            complete: function () {
+                btn.prop('disabled', false).text('Guardar');
             }
-
-            reader.readAsDataURL(file);
-        }
-
+        });
     });
 
-    // mostrar nombre PDF
-    $('#archivo_indice').on('change', function(){
+    $('#imagen').on('change', function (e) {
+        const file = e.target.files[0];
 
-        let file = this.files[0];
-
-        if(file){
-            $('#nombrePdf').text(file.name);
+        if (!file) {
+            return;
         }
 
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            $('#previewImagen').attr('src', event.target.result);
+        };
+        reader.readAsDataURL(file);
     });
-    //mandar datos del libro
-    $('#formLibro').submit(function(e){
 
-    e.preventDefault();
+    $('#archivo_indice').on('change', function () {
+        const file = this.files[0];
+        $('#nombrePdf').text(file ? file.name : '');
+    });
 
-    let formData = new FormData(this);
+    $formLibro.on('submit', function (e) {
+        e.preventDefault();
 
-    $.ajax({
+        const $selectGroups = $formLibro.find('.form-group').has('select');
+        $selectGroups.removeClass('form-required');
 
-        url:libro? '/api/inventario/libros/actualizar':'/api/inventario/libros/guardar',
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
+        const formularioBaseValido = validar('#formLibro');
 
-        success: function(resp){
+        $selectGroups.addClass('form-required');
 
-            alert("Libro guardado correctamente");
-
-            $('#formLibro')[0].reset();
-            $('#previewImagen').attr('src','https://via.placeholder.com/150x200?text=Sin+imagen');
-
-        },
-
-        error: function(xhr){
-
-            alert("Error al guardar");
-
+        if (!formularioBaseValido || !validarSelectsLibro()) {
+            return;
         }
 
+        const formData = new FormData(this);
+
+        $submitLibro.prop('disabled', true).text('Guardando...');
+
+        $.ajax({
+            url: libroActual && libroActual.id ? '/api/inventario/libros/actualizar' : '/api/inventario/libros/guardar',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRF-TOKEN': csrfToken },
+            success: function () {
+                alerta('Libro guardado correctamente', true);
+
+                if (!libroActual) {
+                    $formLibro[0].reset();
+                    $('#autor_id, #editorial_id, #materias, #codigo_dewey').val(null).trigger('change');
+                    $('#nombrePdf').text('');
+                }
+            },
+            error: function (xhr) {
+                alerta(xhr.responseJSON?.message || 'Error al guardar el libro', false);
+            },
+            complete: function () {
+                $submitLibro.prop('disabled', false).text('Guardar libro');
+            }
+        });
     });
 
-});
-});
+    $('#btnNuevaEditorial').on('click', function () {
+        $('#modalEditorial').modal('show');
+    });
 
-$('#btnNuevaEditorial').click(function(){
-    $('#modalEditorial').modal('show');
-});
-$('#btnNuevaEditoria2').click(function(){
-    console.log("dd");
-    
-    $('#modalEditorial').modal('show');
+    function actualizarCodigoLibro() {
+        const titulo = ($('#titulo').val() || '').trim();
+        const codigoDeweySeleccionado = $('#codigo_dewey').val();
+        const autoresSeleccionados = $('#autor_id').val() || [];
+
+        if (!titulo || !codigoDeweySeleccionado || !autoresSeleccionados.length) {
+            return;
+        }
+
+        $.ajax({
+            url: '/api/inventario/libros/generar-codigo',
+            type: 'GET',
+            data: {
+                id: $('#id').val() || '',
+                titulo: titulo,
+                codigo_dewey: codigoDeweySeleccionado,
+                autor_id: autoresSeleccionados,
+                edicion: $('input[name="edicion"]').val() || ''
+            },
+            success: function (response) {
+                $('input[name="codigo"]').val(response.codigo);
+
+                const detalle = response.detalle || {};
+                const partes = [
+                    detalle.cutter ? 'Cutter: ' + detalle.cutter : null,
+                    detalle.prefijo_autor ? 'Autor: ' + detalle.prefijo_autor : null,
+                    detalle.prefijo_edicion ? 'Edicion: ' + detalle.prefijo_edicion : null,
+                    detalle.prefijo_titulo ? 'Titulo: ' + detalle.prefijo_titulo : null
+                ].filter(Boolean);
+
+                $codigoHint.text(partes.length ? 'Codigo generado automaticamente. ' + partes.join(' | ') : 'Codigo generado automaticamente.');
+            },
+            error: function () {
+                $codigoHint.text('No fue posible generar el codigo automaticamente con los datos actuales.');
+            }
+        });
+    }
+
+    function validarSelectsLibro() {
+        let valido = true;
+
+        [
+            '#autor_id',
+            '#editorial_id',
+            'select[name="idioma"]',
+            'select[name="tipo_registro_id"]',
+            '#codigo_dewey'
+        ].forEach(function (selector) {
+            const $select = $(selector);
+            const $group = $select.closest('.form-group');
+            const valor = $select.val();
+            const estaVacio = Array.isArray(valor)
+                ? valor.length === 0
+                : !valor || valor === '0';
+
+            $select.removeClass('is-invalid');
+            $group.find('.invalid-feedback').remove();
+            $group.find('.select2-selection').removeClass('is-invalid');
+
+            if (estaVacio) {
+                valido = false;
+                $select.addClass('is-invalid');
+                $group.find('.select2-selection').addClass('is-invalid');
+                $group.append('<div class="invalid-feedback">Este campo es obligatorio</div>');
+            }
+        });
+
+        return valido;
+    }
 });

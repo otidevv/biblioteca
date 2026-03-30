@@ -1,7 +1,14 @@
 let tabla;
 let ejemplar_id=0;
+let ejemplaresCache = {};
 $(document).ready(function () {
-$('#barraSeleccion').hide();
+    $('#barraSeleccion').hide();
+
+    $('#modalEjemplar').on('hidden.bs.modal', function () {
+        ejemplar_id = 0;
+        resetEjemplarForm();
+    });
+
     /* ===============================
        FILTRO DE BIBLIOTECA
     ===============================*/
@@ -20,6 +27,9 @@ $('#barraSeleccion').hide();
         serverSide:true,
         pageLength:50,
         order:[],
+        autoWidth:false,
+        scrollX:true,
+        responsive:false,
         ajax:{
             url:"/api/administracion/libros/ejemplar/listar",
             type:"GET",
@@ -34,7 +44,7 @@ $('#barraSeleccion').hide();
                 orderable:false,
                 searchable:false,
                 render: function(data, type, row, meta){
-                    let disabled = row.estado !== 'DISPONIBLE' ? 'disabled' : '';
+                    let disabled = Number(row.estado_value) !== 1 ? 'disabled' : '';
                     return '<input type="checkbox" class="check-ejemplar" value="'+data+'" '+disabled+'>';
                 }
             },
@@ -42,14 +52,29 @@ $('#barraSeleccion').hide();
                 data:null,
                 name:'codigo_interno',
                 render:function(data,type,row){
-                    return row.codigo_dewey+' '+row.tipo+row.codigo_interno;
+                    let codigoPrincipal = [row.codigo_dewey || row.codigo_ant || 'Sin codigo', row.tipo ? (row.tipo + (row.codigo_interno ?? '')) : ''].join(' ').trim();
+                    let codigoInterno = row.codigo_interno ? 'Interno #' + row.codigo_interno : 'Sin numeracion';
+
+                    return `
+                        <div class="exemplars-table__code">
+                            <span class="exemplars-table__code-main">${codigoPrincipal}</span>
+                            <span class="exemplars-table__code-meta">${codigoInterno}</span>
+                        </div>
+                    `;
                 }
             },
             {
                 data:'detalle_compra.compra',
                 name:'compra',
                 render:function(data,type,row){
-                    return data ? data.nombre : (row.siaf ? row.siaf : '');
+                    const compra = data ? data.nombre : 'Sin compra asociada';
+                    const siaf = row.siaf ? row.siaf : 'Sin referencia SIAF';
+                    return `
+                        <div class="exemplars-table__purchase">
+                            <span class="exemplars-table__purchase-main">${compra}</span>
+                            <span class="exemplars-table__purchase-meta">${siaf}</span>
+                        </div>
+                    `;
                 }
             },
             {data:'biblioteca',name:'biblioteca'},
@@ -63,9 +88,32 @@ $('#barraSeleccion').hide();
             }
 
         ],
+        columnDefs: [
+            { targets: 0, width: '44px', className: 'exemplars-col exemplars-col--check' },
+            { targets: 1, width: '240px', className: 'exemplars-col exemplars-col--code' },
+            { targets: 2, width: '220px', className: 'exemplars-col exemplars-col--purchase' },
+            { targets: 3, width: '180px', className: 'exemplars-col exemplars-col--library' },
+            { targets: 4, width: '130px', className: 'exemplars-col exemplars-col--status' },
+            { targets: 5, width: '88px', className: 'admin-actions-cell exemplars-col exemplars-col--actions' }
+        ],
 
         dom:default_datatable_dom,
-        language:default_datatable_language
+        language:default_datatable_language,
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+            decorateTableActionButtons('#tabla-ejemplares');
+        },
+        preDrawCallback: function () {
+            ejemplaresCache = {};
+        },
+        rowCallback: function(row, data) {
+            ejemplaresCache[data.id] = data;
+        },
+        drawCallback: function () {
+            decorateTableActionButtons('#tabla-ejemplares');
+            $('#checkAll').prop('checked', false);
+            actualizarSeleccion();
+        }
 
     });
 
@@ -75,9 +123,8 @@ $('#barraSeleccion').hide();
     ===============================*/
 
     $('#btnAgregarEjemplar').click(function(){
-        ejemplar_id=0;
-        requiredCampo('.validar-div', true);
-        mostrarElemento('.validar-div', true);
+        ejemplar_id = 0;
+        prepareCreateMode();
         $('#modalEjemplar').modal('show');
     });
 
@@ -107,6 +154,7 @@ $('#barraSeleccion').hide();
                 if(response.success){
                     $('#modalEjemplar').modal('hide');
                     $('#formEjemplar')[0].reset();
+                    ejemplar_id = 0;
                     tabla.ajax.reload();
                     alerta(response.message,true);
                 }
@@ -141,7 +189,14 @@ $('#barraSeleccion').hide();
        SELECCIONAR FILA
     ===============================*/
     $(document).on('click','#tabla-ejemplares tbody tr',function(e){
-        if($(e.target).is('input,button,a')) return;
+        if (
+            $(e.target).is('input,button,a') ||
+            $(e.target).closest('.admin-action-menu').length ||
+            $(e.target).closest('.dropdown-menu').length ||
+            $(e.target).closest('.admin-action-link').length
+        ) {
+            return;
+        }
         let checkbox = $(this).find('.check-ejemplar');
         checkbox.prop('checked', !checkbox.prop('checked'));
         actualizarSeleccion();
@@ -168,9 +223,13 @@ $('#barraSeleccion').hide();
         $('.check-ejemplar:checked').each(function(){
             ejemplares.push($(this).val());
         });
+        if(!ejemplares.length){
+            alerta('Selecciona al menos un ejemplar disponible.', false);
+            return;
+        }
         let biblioteca = $('#biblioteca_destino').val();
         if(!biblioteca){
-            alert('Seleccione una biblioteca');
+            alerta('Seleccione una biblioteca de destino.', false);
             return;
         }
         $.ajax({
@@ -186,9 +245,13 @@ $('#barraSeleccion').hide();
                 'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')
             },
             success:function(respuesta){
-                alerta(respuesta.message,true)
+                alerta(respuesta.message,true);
                 ocultarBarra();
                 tabla.ajax.reload();
+            },
+            error: function(xhr) {
+                const message = xhr.responseJSON?.error || xhr.responseJSON?.message || 'No se pudo mover los ejemplares seleccionados.';
+                alerta(message, false);
             }
         });
     });
@@ -213,8 +276,44 @@ function ocultarBarra(){
 }
 function actualizarEjemplar(id) {
     ejemplar_id=id;
-    requiredCampo('.validar-div', false);
-    mostrarElemento('.validar-div', false);
+    prepareEditMode();
+    $('#modalEjemplarTitulo').text('Actualizar ejemplar');
+    $('#btnGuardarEjemplar').text('Actualizar');
+
+    const ejemplar = ejemplaresCache[id];
+    if (ejemplar) {
+        $('#siaf').val(ejemplar.siaf || '');
+        $('#biblioteca_modal').val(ejemplar.biblioteca_id || 0);
+    }
+
     $('#modalEjemplar').modal('show');
-    
+}
+
+function prepareCreateMode() {
+    resetEjemplarForm();
+    $('.js-quantity-group').removeClass('oculto');
+    $('.js-quantity-group').find('input').prop('disabled', false);
+    requiredCampo('.js-quantity-group', true);
+    $('#modalEjemplarTitulo').text('Registro de ejemplar');
+    $('#btnGuardarEjemplar').text('Guardar');
+}
+
+function prepareEditMode() {
+    resetEjemplarForm();
+    $('.js-quantity-group').addClass('oculto');
+    $('.js-quantity-group').find('input').prop('disabled', true);
+    requiredCampo('.js-quantity-group', false);
+    $('#modalEjemplarTitulo').text('Actualizar ejemplar');
+    $('#btnGuardarEjemplar').text('Actualizar');
+}
+
+function resetEjemplarForm() {
+    $('#formEjemplar')[0].reset();
+    $('.invalid-feedback').remove();
+    $('.is-invalid').removeClass('is-invalid');
+    $('#biblioteca_modal').val(0);
+    $('#cantidad').val(1);
+    $('#siaf').val('');
+    $('.js-quantity-group').removeClass('oculto');
+    $('.js-quantity-group').find('input').prop('disabled', false);
 }

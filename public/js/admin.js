@@ -35,8 +35,11 @@ function default_error_handler(jqXHR, ajaxOptions, thrownError) {
 
 
 function default_datatable_buttons() {
-    var input = $('.dataTables_filter input').unbind(),
-    self = this.api(),
+    var self = this.api(),
+    $container = $(self.table().container()).closest('.dataTables_wrapper'),
+    $filter = $container.find('.dataTables_filter').first(),
+    $length = $container.find('.dataTables_length').first(),
+    input = $filter.find('input').off('keypress'),
     $searchButton = $('<button>')
                 .html('<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>')
                 .addClass('btn btn-secondary align-top btn-icon ms-1')
@@ -59,13 +62,90 @@ function default_datatable_buttons() {
         }
     });
 
-    $('.dataTables_filter').append($searchButton, $clearButton);
+    $filter.find('.btn-icon').remove();
+    $filter.append($searchButton, $clearButton);
 
-    var select = $('.dataTables_length select');//.unbind();
+    var select = $length.find('select');
     select.removeClass('form-control-sm').removeClass('form-control').removeClass('form-select-sm');
     select.addClass('form-select'); 
     //custom-select custom-select-sm form-control form-control-sm
 } 
+
+function decorateTableActionButtons(tableSelector) {
+    const actionMap = [
+        { match: ['editar'], icon: 'bi-pencil-square', label: 'Editar', variant: 'edit' },
+        { match: ['eliminar'], icon: 'bi-trash3', label: 'Eliminar', variant: 'delete' },
+        { match: ['contrasena', 'password'], icon: 'bi-shield-lock', label: 'Clave', variant: 'password' },
+        { match: ['permisos'], icon: 'bi-shield-check', label: 'Permisos', variant: 'permissions' },
+        { match: ['ver'], icon: 'bi-eye', label: 'Ver', variant: 'view' },
+        { match: ['mover'], icon: 'bi-arrow-left-right', label: 'Mover', variant: 'move' }
+    ];
+
+    $(tableSelector + ' tbody tr').each(function () {
+        const $row = $(this);
+        const $cell = $row.find('td').last();
+        const $existingMenu = $cell.find('.admin-action-menu, .user-action-menu').first();
+        const $actions = $cell.find('a, button').filter(function () {
+            return !$(this).hasClass('dropdown-toggle')
+                && !$(this).is('[data-bs-dismiss]')
+                && !$(this).closest('.admin-action-menu__dropdown, .user-action-menu__dropdown').length
+                && !$(this).hasClass('admin-action-menu__trigger')
+                && !$(this).hasClass('user-action-menu__trigger');
+        });
+
+        if (!$actions.length && !$existingMenu.length) {
+            return;
+        }
+
+        $cell.addClass('admin-actions-cell');
+
+        if (!$existingMenu.length && $actions.length) {
+            const $menu = $(
+                '<div class="dropdown admin-action-menu">' +
+                    '<button class="btn admin-action-menu__trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir acciones">' +
+                        '<i class="bi bi-three-dots"></i>' +
+                    '</button>' +
+                    '<div class="dropdown-menu dropdown-menu-end admin-action-menu__dropdown"></div>' +
+                '</div>'
+            );
+
+            const $dropdown = $menu.find('.admin-action-menu__dropdown');
+            $actions.appendTo($dropdown);
+            $cell.empty().append($menu);
+        }
+
+        const $finalActions = $cell.find('a, button').filter(function () {
+            return !$(this).hasClass('dropdown-toggle')
+                && !$(this).is('[data-bs-dismiss]')
+                && !$(this).hasClass('admin-action-menu__trigger')
+                && !$(this).hasClass('user-action-menu__trigger');
+        });
+
+        $finalActions.each(function () {
+            const $action = $(this);
+            const classText = ($action.attr('class') || '').toLowerCase();
+            const action = actionMap.find(item => item.match.some(key => classText.includes(key)));
+
+            $action.removeClass('btn-sm btn-primary btn-secondary btn-success btn-warning btn-danger btn-info btn-light btn-dark');
+            $action.addClass('dropdown-item admin-action-link');
+
+            if (action) {
+                $action
+                    .removeClass('admin-action-link--edit admin-action-link--delete admin-action-link--password admin-action-link--permissions admin-action-link--view admin-action-link--move')
+                    .addClass('admin-action-link--' + action.variant)
+                    .attr('title', action.label)
+                    .attr('aria-label', action.label)
+                    .html('<i class="bi ' + action.icon + '"></i><span>' + action.label + '</span>');
+            } else {
+                const text = ($action.text() || '').trim();
+
+                if (!$action.find('span').length && text !== '') {
+                    $action.html('<span>' + text + '</span>');
+                }
+            }
+        });
+    });
+}
 
 
 //validar formulario (boostrap 4)

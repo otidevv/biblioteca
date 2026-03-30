@@ -18,6 +18,7 @@ class Persona extends Model
         'direccion',
         'telefono',
         'email_personal',
+        'foto',
         'tipo_persona',
         'carrera_id',
         'estado_academico',
@@ -44,5 +45,4 @@ class Persona extends Model
         return "{$this->apellido_paterno} {$this->apellido_materno}, {$this->nombres}";
     }
 }
-
 

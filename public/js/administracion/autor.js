@@ -44,13 +44,16 @@ $(document).ready(function () {
             { 
                 data: 'acciones', 
                 name: 'acciones', 
+                className: 'admin-actions-cell',
                 orderable: false, 
                 searchable: false 
             }
         ],        
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+        }
     });
 
     // NUEVO

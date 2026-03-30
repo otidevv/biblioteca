@@ -1,0 +1,200 @@
+.reader-page__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.reader-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.reader-summary__card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.reader-summary__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(6, 182, 212, 0.14));
+    color: #0f766e;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.reader-summary__title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.reader-summary__copy {
+    margin-top: 4px;
+    color: #64748b;
+    line-height: 1.55;
+    font-size: 14px;
+}
+
+.reader-table-shell {
+    overflow: visible !important;
+    position: relative;
+}
+
+.reader-table td:last-child,
+.reader-table th:last-child {
+    width: 1%;
+}
+
+.reader-modal {
+    border: 0;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+#formLector {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100vh - 2rem);
+}
+
+.reader-modal__header {
+    padding: 20px 24px;
+    background:
+        radial-gradient(circle at top right, rgba(45, 212, 191, 0.18), transparent 34%),
+        linear-gradient(135deg, #f8fffd 0%, #eefaf7 100%);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.reader-modal__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.reader-modal__body {
+    display: grid;
+    gap: 18px;
+    padding: 22px 24px;
+    background: linear-gradient(180deg, #fcfefd 0%, #f7fbfa 100%);
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.reader-modal__section {
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.reader-modal__section-head {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.reader-modal__section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(6, 182, 212, 0.14));
+    color: #0f766e;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.reader-modal__section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.reader-modal__section-copy {
+    margin: 4px 0 0;
+    color: #64748b;
+    line-height: 1.55;
+    font-size: 14px;
+}
+
+.reader-modal__footer {
+    padding: 16px 24px 20px;
+    background: rgba(248, 250, 252, 0.96);
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.admin-dark .reader-summary__card,
+.admin-dark .reader-modal__section {
+    background: rgba(15, 23, 42, 0.78);
+    border-color: rgba(148, 163, 184, 0.12);
+}
+
+.admin-dark .reader-summary__title,
+.admin-dark .reader-modal__section-title {
+    color: #f8fafc;
+}
+
+.admin-dark .reader-summary__copy,
+.admin-dark .reader-modal__section-copy {
+    color: #94a3b8;
+}
+
+.admin-dark .reader-modal__header,
+.admin-dark .reader-modal__body,
+.admin-dark .reader-modal__footer {
+    background: rgba(15, 23, 42, 0.96);
+}
+
+@media (max-width: 991.98px) {
+    .reader-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .reader-modal__header,
+    .reader-modal__body,
+    .reader-modal__footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .reader-modal__section {
+        padding: 14px;
+        border-radius: 16px;
+    }
+}

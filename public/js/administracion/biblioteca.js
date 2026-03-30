@@ -28,14 +28,21 @@ $(document).ready(function () {
         ],        
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+            decorateTableActionButtons('#tabla-biblioteca');
+        },
+        drawCallback: function () {
+            decorateTableActionButtons('#tabla-biblioteca');
+        }
     });
 
     // NUEVO
     $('#btnNuevo').on('click', function () {
         $('#formBiblioteca')[0].reset();
         $('#id').val('');
-        $('.password-group').show();
+        $('#previewImagen').attr('src', '').addClass('d-none');
+        $('#previewPlaceholder').removeClass('d-none');
         $('#modalBiblioteca').modal('show');
     });
 // PREVIEW IMAGEN
@@ -49,9 +56,13 @@ $('#imagen').on('change', function (e) {
             $('#previewImagen')
                 .attr('src', e.target.result)
                 .removeClass('d-none');
+            $('#previewPlaceholder').addClass('d-none');
         }
 
         reader.readAsDataURL(file);
+    } else {
+        $('#previewImagen').attr('src', '').addClass('d-none');
+        $('#previewPlaceholder').removeClass('d-none');
     }
 });
 
@@ -61,7 +72,8 @@ $('#tabla-biblioteca').on('click', '.editarBiblioteca', function () {
     let data = tablaBibliotecas.row($(this).closest('tr')).data();
 
     $('#formBiblioteca')[0].reset();
-    $('#previewImagen').addClass('d-none');
+    $('#previewImagen').attr('src', '').addClass('d-none');
+    $('#previewPlaceholder').removeClass('d-none');
 
     $('#id').val(data.id);
     $('#codigo').val(data.codigo);
@@ -71,9 +83,22 @@ $('#tabla-biblioteca').on('click', '.editarBiblioteca', function () {
 
     // Mostrar imagen si existe
     if (data.imagen) {
+        let imagenPath = String(data.imagen).trim();
+
+        if (!/^https?:\/\//i.test(imagenPath)) {
+            imagenPath = imagenPath.replace(/^\/+/, '');
+
+            if (imagenPath.startsWith('storage/')) {
+                imagenPath = '/' + imagenPath;
+            } else {
+                imagenPath = '/storage/' + imagenPath;
+            }
+        }
+
         $('#previewImagen')
-            .attr('src', '/storage/' + data.imagen)
+            .attr('src', imagenPath)
             .removeClass('d-none');
+        $('#previewPlaceholder').addClass('d-none');
     }
 
     $('#modalBiblioteca').modal('show');
@@ -111,7 +136,8 @@ $('#formBiblioteca').on('submit', function (e) {
                 alerta("Biblioteca guardada correctamente", true);
 
                 form[0].reset();
-                $('#previewImagen').addClass('d-none');
+                $('#previewImagen').attr('src', '').addClass('d-none');
+                $('#previewPlaceholder').removeClass('d-none');
 
                 $('#modalBiblioteca').modal('hide');
 
@@ -149,5 +175,3 @@ $('#formBiblioteca').on('submit', function (e) {
 });
 
 });
-
-

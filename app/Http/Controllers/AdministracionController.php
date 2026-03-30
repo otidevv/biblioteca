@@ -12,11 +12,28 @@ use App\Models\Libro;
 use App\Models\Tipo_registro;
 use App\Models\Idioma;
 use App\Models\Dewey;
+use App\Models\Prestamo;
+use App\Models\ActividadCategoria;
 class AdministracionController extends Controller
 {
     public function inicio()
     {
-        return view('administracion.index');
+        $totalLibros = Libro::count();
+        $totalUsuarios = User::count();
+        $prestamosActivos = Prestamo::whereIn('estado', [1, 'prestado'])->count();
+        $totalBibliotecas = Biblioteca::count();
+        $librosRecientes = Libro::with(['autores', 'editorial'])
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('administracion.index', compact(
+            'totalLibros',
+            'totalUsuarios',
+            'prestamosActivos',
+            'totalBibliotecas',
+            'librosRecientes'
+        ));
     }
     public function index(string $modulo, $id=null)
     {
@@ -33,6 +50,9 @@ class AdministracionController extends Controller
             'editoriales' => $this->editoriales(),
             'tipo_registros' => $this->tipo_registros(),
             'autores' => $this->autores(),
+            'sanciones' => $this->sanciones(),
+            'notificaciones' => $this->notificaciones(),
+            'actividades' => $this->actividades(),
             'compras' => $this->compras(),
             'libros' => $this->libros(),
             'libros_nuevo' => $this->libros_nuevo(),
@@ -79,6 +99,19 @@ class AdministracionController extends Controller
     {
         $paises = Pais::latest()->get();
         return view('administracion.autor',compact('paises'));    
+    }
+    protected function sanciones()
+    {
+        return view('administracion.sanciones');
+    }
+    protected function notificaciones()
+    {
+        return view('administracion.notificaciones');
+    }
+    protected function actividades()
+    {
+        $categorias = ActividadCategoria::where('estado', 1)->orderBy('nombre')->get();
+        return view('administracion.actividades', compact('categorias'));
     }
     protected function libros()
     {

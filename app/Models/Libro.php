@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Libro extends Model
 {
@@ -14,9 +15,37 @@ class Libro extends Model
         'idioma','anotaciones','editorial_id','tipo_registro_id','estado'
     ];
 
+    protected $appends = [
+        'imagen_url',
+    ];
+
+    public function getImagenUrlAttribute(): string
+    {
+        $imagen = trim((string) ($this->imagen ?? ''));
+
+        if ($imagen === '') {
+            return asset('img/libro-placeholder.png');
+        }
+
+        if (Str::startsWith($imagen, ['http://', 'https://'])) {
+            return $imagen;
+        }
+
+        if (Str::startsWith($imagen, '/storage/')) {
+            return asset(ltrim($imagen, '/'));
+        }
+
+        if (Str::startsWith($imagen, 'storage/')) {
+            return asset($imagen);
+        }
+
+        return asset('storage/libros/' . ltrim($imagen, '/'));
+    }
+
     public function autores()
     {
         return $this->belongsToMany(Autor::class, 'autor_libros')
+                ->distinct()
                 ->withTimestamps();
     }
     public function materias()
@@ -27,7 +56,7 @@ class Libro extends Model
 
     public function idioma()
     {
-        return $this->belongsTo(Idioma::class);
+        return $this->belongsTo(Idioma::class, 'idioma');
     }
 
     public function ejemplares()

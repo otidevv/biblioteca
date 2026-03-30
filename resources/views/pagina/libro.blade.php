@@ -1,484 +1,480 @@
-@extends('layouts.biblioteca')
+﻿@extends('layouts.biblioteca')
+
+@section('title', 'Biblioteca UNAMAD | Detalle del libro')
+@section('meta_description', 'Consulta la ficha completa del libro, revisa disponibilidad por biblioteca y gestiona tu reserva.')
+
+@section('css')
+<link href="{{ asset('css/pagina/libros-grid.css') }}" rel="stylesheet">
+<link href="{{ asset('css/pagina/libro.css') }}" rel="stylesheet">
+@endsection
+
 @section('js')
-
 <script>
-const libroId = "{{ $libro->id }}";
-
-document.addEventListener('DOMContentLoaded', function(){
-
-    // =========================
-    // COMENTARIOS
-    // =========================
-    let formComentario = document.getElementById('formComentario');
-
-    if(formComentario){
-        formComentario.addEventListener('submit', function(e){
-            e.preventDefault();
-
-            let data = new FormData(formComentario);
-
-            fetch("{{ route('comentario') }}", {
-                method: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: data
-            })
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('listaComentarios').innerHTML = html;
-                formComentario.reset();
-            });
-        });
-    }
-
-    // =========================
-    // SELECT BIBLIOTECA
-    // =========================
-    const bibliotecaSelect = document.getElementById('biblioteca_select');
-    const selectEjemplar = document.getElementById('ejemplar_select');
-
-    if(bibliotecaSelect){
-        bibliotecaSelect.addEventListener('change', function(){
-            cargarEjemplares(this.value);
-        });
-    }
-
-    // =========================
-    // RESERVA
-    // =========================
-    const formReserva = document.getElementById('formReserva');
-    if(formReserva){
-        formReserva.addEventListener('submit', function(e){
-            e.preventDefault();
-            let data = new FormData(formReserva);
-            fetch("{{ route('reservar') }}", {
-                method: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: data
-            })
-            .then(res => res.json())
-            .then(res => {
-                if(res.error){
-                    alerta(res.error,false);
-                    return;
-                }
-                alerta(res.ok, true);
-                // cerrar modal
-                let modal = bootstrap.Modal.getInstance(document.getElementById('modalReserva'));
-                modal.hide();
-                // limpiar form
-                formReserva.reset();
-                //ACTUALIZAR DATOS
-                if(bibliotecaSelect.value){
-                    cargarEjemplares(bibliotecaSelect.value);
-                }
-                refrescarDisponibilidad();
-                refrescarEjemplares();
-            });
-        });
-    }
-
-});
-
-// =========================
-// CARGAR EJEMPLARES
-// =========================
-function cargarEjemplares(bibliotecaId){
-
-    fetch(`/pagina/${bibliotecaId}/ejemplares/biblioteca?libro_id=${libroId}`)
-        .then(res => res.json())
-        .then(data => {
-
-            let html = '<option value="">-- Seleccionar ejemplar --</option>';
-
-            data.forEach(e => {
-                html += `<option value="${e.id}">
-                            ${e.codigo}
-                         </option>`;
-            });
-
-            document.getElementById('ejemplar_select').innerHTML = html;
-        });
-}
-
-// =========================
-// REFRESCAR DISPONIBILIDAD
-// =========================
-function refrescarDisponibilidad(){
-    fetch(`/pagina/libro/${libroId}/disponibilidad`)
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('tablaDisponibilidad').innerHTML = html;
-        });
-
-}
-function refrescarEjemplares(){
-    fetch(`/pagina/libro/${libroId}/ejemplares`)
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('listaEjemplares').innerHTML = html;
-        });
-}
+window.libroPage = {
+    id: @json($libro->id),
+    comentarioUrl: @json(route('comentario')),
+    reservarUrl: @json(route('reservar'))
+};
 </script>
+<script src="{{ asset('js/pagina/libro.js') }}"></script>
 @endsection
+
+
+
 @section('content')
+@php
+    $autoresLibro = $libro->autores
+        ->map(fn($autor) => trim($autor->nombres . ' ' . $autor->apellidos))
+        ->filter()
+        ->implode(', ');
 
-<style>
-    .libro-card {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    }
+    $materiasLibro = $libro->materias
+        ->pluck('nombre')
+        ->filter()
+        ->values();
 
-    .libro-img {
-        transition: 0.3s;
-    }
+    $editorialNombre = $libro->editorial?->nombre ?? 'Editorial desconocida';
+    $idiomaNombre = $libro->idioma?->nombre ?? 'No especificado';
+    $tipoRegistro = $libro->tipo_registro?->nombre ?? 'Catalogo general';
+    $descripcionLibro = $libro->resumen ?: ($libro->descripcion ?? 'No hay descripcion disponible para este libro.');
+    $bibliotecasDisponibles = $bibliotecas->count();
+    $ejemplaresConBiblioteca = $libro->ejemplares->filter(fn($ejemplar) => !is_null($ejemplar->biblioteca_id));
+    $ejemplaresDisponibles = $ejemplaresConBiblioteca->where('estado', 1)->count();
+    $ejemplaresTotales = $ejemplaresConBiblioteca->count();
+@endphp
 
-    .libro-img:hover {
-        transform: scale(1.05);
-    }
 
-    .info-box {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 10px;
-    }
 
-    /* COMENTARIOS */
-    .comentario {
-        border-radius: 10px;
-        padding: 12px;
-        background: #fff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
+<div class="book-detail-shell">
+    <section class="book-hero-card">
+        <div class="row g-4 align-items-start">
+            <div class="col-12 col-lg-4">
+                <div class="book-cover-panel">
+                    <div class="book-cover-frame">
+                        <img
+                            src="{{ $libro->imagen_url }}"
+                            alt="{{ $libro->titulo }}"
+                            class="book-cover-image"
+                            onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';">
+                    </div>
 
-    .comentario-user {
-        font-weight: bold;
-    }
-
-    .comentario-time {
-        font-size: 12px;
-        color: #888;
-    }
-</style>
-<div class="libro-card">
-
-    <div class="row">
-
-        <!-- IMAGEN -->
-        <div class="col-md-4 text-center">
-            <img src="{{'/'. $libro->imagen ?? '/img/libro.png' }}" class="img-fluid rounded shadow libro-img"
-                style="max-height:380px; object-fit:cover;">
-        </div>
-
-        <!-- DETALLE -->
-        <div class="col-md-8">
-
-            <h2 class="fw-bold">{{ $libro->titulo }}</h2>
-
-            <p class="text-muted mb-1">
-                ✍️
-                @foreach($libro->autores as $autor)
-                {{ $autor->nombres.' '.$autor->apellidos }}
-                @endforeach
-            </p>
-
-            <div class="mb-3">
-                <span class="badge bg-primary">Edición {{ $libro->edicion }}</span>
-                <span class="badge bg-secondary">
-                    {{ $libro->editoria->nombre ?? 'Editorial desconocida' }}
-                </span>
-            </div>
-
-            <div class="info-box">
-                <strong>📖 Descripción</strong>
-                <p class="mb-0">
-                    {{ $libro->descripcion ?? 'Sin descripción disponible' }}
-                </p>
-            </div>
-
-            <div class="mt-3">
-                <button class="btn btn-success"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalReserva">
-                    📚 Solicitar préstamo
-                </button>
-
-                <button class="btn btn-outline-primary">
-                    <i class="bi bi-bookmark"></i> Guardar
-                </button>
-            </div>
-
-        </div>
-
-    </div>
-</div>
-
-<!-- DISPONIBILIDAD -->
-<div class="card mt-4 shadow-sm">
-    <div class="card-body">
-
-        <h5>📊 Disponibilidad por biblioteca</h5>
-
-        <div class="table-responsive" id="tablaDisponibilidad">
-            <table class="table table-hover">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>Biblioteca</th>
-                        <th>Total</th>
-                        <th>Disponibles</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach($libro->ejemplares->groupBy('biblioteca.nombre') as $biblioteca => $ejemplares)
-
-                    @php
-                    $total = $ejemplares->count();
-                    $disponibles = $ejemplares->where('estado','1')->count();
-                    @endphp
-
-                    <tr>
-                        <td>{{ $biblioteca }}</td>
-                        <td>{{ $total }}</td>
-                        <td>{{ $disponibles }}</td>
-                        <td>
-                            @if($disponibles > 0)
-                            <span class="badge bg-success">Disponible</span>
-                            @else
-                            <span class="badge bg-danger">No disponible</span>
-                            @endif
-                        </td>
-                    </tr>
-
-                    @endforeach
-                </tbody>
-
-            </table>
-        </div>
-
-    </div>
-</div>
-
-<!-- EJEMPLARES -->
-<h4 class="mt-5">📦 Ejemplares</h4>
-
-<div class="row g-3" id="listaEjemplares">
-    @foreach($libro->ejemplares as $e)
-    <div class="col-6 col-md-3">
-        <div class="card card-hover p-3 text-center h-100">
-            <h6 class="fw-bold">{{ $e->codigo }}</h6>
-            <small class="text-muted">{{ $e->biblioteca->nombre }}</small>
-            <div class="mt-2">
-                @if($e->estado == '1')
-                <span class="badge bg-success">Disponible</span>
-                @else
-                <span class="badge bg-danger">Prestado</span>
-                @endif
-            </div>
-        </div>
-    </div>
-    @endforeach
-</div>
-
-<!-- LIBROS RELACIONADOS -->
-<h4 class="mt-5">📚 Libros Relacionados</h4>
-
-<div class="row g-3">
-    @forelse($libros as $libro)
-
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-
-        <div class="card book-card h-100">
-
-            <!-- IMAGEN -->
-           <img src="{{ $libro->imagen ? '/'.$libro->imagen : '/img/libro.png' }}" class="libro-img">
-
-            <div class="card-body d-flex flex-column">
-
-                <!-- TITULO -->
-                <h6 class="mb-1" data-bs-toggle="tooltip" title="{{ $libro->titulo }}">
-                    {{ \Illuminate\Support\Str::limit($libro->titulo, 40) }}
-                </h6>
-
-                <!-- AUTORES -->
-                <p class="text-muted small mb-2">
-                    @foreach($libro->autores as $autor)
-                    {{ $autor->nombres }} {{ $autor->apellidos }}@if(!$loop->last), @endif
-                    @endforeach
-                </p>
-
-                <!-- ESTRELLAS -->
-                <div class="stars mb-2">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star-half-stroke"></i>
-                    <i class="fa-regular fa-star"></i>
+                    <div class="book-cover-meta">
+                        <div class="book-cover-meta-card">
+                            <strong>Disponibilidad</strong>
+                            <span>{{ $ejemplaresDisponibles }} de {{ $ejemplaresTotales }} ejemplares disponibles</span>
+                        </div>
+                        <div class="book-cover-meta-card">
+                            <strong>Bibliotecas</strong>
+                            <span>{{ $bibliotecasDisponibles }} sede{{ $bibliotecasDisponibles === 1 ? '' : 's' }} con este libro</span>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <!-- BOTÓN -->
-                <a href="/{{ $libro->id }}/libro" class="btn btn-libro mt-auto btn-sm w-100">
-                    Ver detalle
+            <div class="col-12 col-lg-8">
+                <div class="book-summary">
+                    <span class="book-eyebrow">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        {{ $tipoRegistro }}
+                    </span>
+
+                    <h1 class="book-main-title">{{ $libro->titulo }}</h1>
+
+                    <div class="book-authors">
+                        <i class="bi bi-pen-fill me-2 text-success"></i>
+                        {{ $autoresLibro !== '' ? $autoresLibro : 'Autor no disponible' }}
+                    </div>
+
+                    <div class="book-chip-row">
+                        <span class="book-chip">
+                            <i class="bi bi-building"></i>
+                            {{ $editorialNombre }}
+                        </span>
+                        <span class="book-chip">
+                            <i class="bi bi-translate"></i>
+                            {{ $idiomaNombre }}
+                        </span>
+                        @if($libro->edicion)
+                            <span class="book-chip">
+                                <i class="bi bi-book-half"></i>
+                                Edicion {{ $libro->edicion }}
+                            </span>
+                        @endif
+                        @if($libro->anio_edicion)
+                            <span class="book-chip">
+                                <i class="bi bi-calendar3"></i>
+                                {{ $libro->anio_edicion }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="book-stat-grid">
+                        <div class="book-stat-card">
+                            <span>Paginas</span>
+                            <strong>{{ $libro->paginas ?: 'N/D' }}</strong>
+                        </div>
+                        <div class="book-stat-card">
+                            <span>ISBN</span>
+                            <strong>{{ $libro->isbn ?: 'Sin registro' }}</strong>
+                        </div>
+                        <div class="book-stat-card">
+                            <span>Codigo Dewey</span>
+                            <strong>{{ $libro->codigo_dewey ?: 'Pendiente' }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="book-description-card">
+                        <h2 class="book-section-title">Resumen</h2>
+                        <p class="book-description-text">{{ $descripcionLibro }}</p>
+                    </div>
+
+                    @if($materiasLibro->isNotEmpty())
+                        <div class="book-info-card">
+                            <h2 class="book-section-title">Materias relacionadas</h2>
+                            <div class="book-topic-list">
+                                @foreach($materiasLibro as $materia)
+                                    <span class="book-topic">
+                                        <i class="bi bi-bookmark-check-fill"></i>
+                                        {{ $materia }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="book-action-row">
+                        <button
+                            type="button"
+                            class="btn book-action-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalReserva">
+                            <i class="bi bi-journal-arrow-down me-2"></i>
+                            Solicitar prestamo
+                        </button>
+
+                        <a href="{{ route('catalogo') }}" class="btn book-action-secondary">
+                            <i class="bi bi-arrow-left-circle me-2"></i>
+                            Volver al catalogo
+                        </a>
+                    </div>
+
+                    <div class="book-note-card">
+                        <span class="book-note-icon">
+                            <i class="bi bi-info-circle-fill"></i>
+                        </span>
+                        <div>
+                            <strong>Consulta disponibilidad en tiempo real</strong>
+                            <span>Revisa las sedes con ejemplares disponibles y solicita tu prestamo desde esta misma pagina.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="book-layout-grid">
+        <div class="book-stack">
+            <div class="book-info-card">
+                <h2 class="book-section-title">Ficha bibliografica</h2>
+                <div class="book-info-grid">
+                    <div class="book-info-item">
+                        <strong>Editorial</strong>
+                        <span>{{ $editorialNombre }}</span>
+                    </div>
+                    <div class="book-info-item">
+                        <strong>Idioma</strong>
+                        <span>{{ $idiomaNombre }}</span>
+                    </div>
+                    <div class="book-info-item">
+                        <strong>Lugar de publicacion</strong>
+                        <span>{{ $libro->lugar_publicacion ?: 'No especificado' }}</span>
+                    </div>
+                    <div class="book-info-item">
+                        <strong>Fecha de publicacion</strong>
+                        <span>{{ $libro->fecha_publicacion ?: 'No especificada' }}</span>
+                    </div>
+                    <div class="book-info-item">
+                        <strong>Codigo interno</strong>
+                        <span>{{ $libro->codigo ?: ($libro->codigo_ant ?: 'Sin codigo') }}</span>
+                    </div>
+                    <div class="book-info-item">
+                        <strong>Tipo de registro</strong>
+                        <span>{{ $tipoRegistro }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="book-info-card">
+                <h2 class="book-section-title">Disponibilidad por biblioteca</h2>
+                <div class="table-responsive" id="tablaDisponibilidad">
+                    @include('pagina._disponibilidad', ['libro' => $libro])
+                </div>
+            </div>
+        </div>
+
+        <div class="book-subgrid">
+            <div class="book-info-card">
+                <div class="book-section-heading">
+                    <h2 class="book-section-title">Ejemplares registrados</h2>
+                    <span class="book-section-badge">
+                        <i class="bi bi-collection"></i>
+                        {{ $ejemplaresTotales }} ejemplar{{ $ejemplaresTotales === 1 ? '' : 'es' }}
+                    </span>
+                </div>
+                <div class="book-copies-grid" id="listaEjemplares">
+                    @include('pagina._ejemplares', ['ejemplares' => $ejemplaresConBiblioteca])
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="book-related-card p-3 p-lg-4">
+        <h2 class="book-section-title mb-3">Libros relacionados</h2>
+
+        <div class="book-related-grid">
+            @forelse($libros as $relacionado)
+                @php
+                    $autoresRelacionado = $relacionado->autores
+                        ->map(fn($autor) => trim($autor->nombres . ' ' . $autor->apellidos))
+                        ->filter()
+                        ->implode(', ');
+                @endphp
+
+                <a href="{{ route('libro.show', $relacionado->id) }}"
+                   class="catalog-grid-card"
+                   aria-label="Ver detalle del libro {{ $relacionado->titulo }}">
+                    <div class="catalog-grid-cover-wrap">
+                        <img
+                            src="{{ $relacionado->imagen_url }}"
+                            alt="{{ $relacionado->titulo }}"
+                            class="catalog-grid-cover"
+                            onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';"
+                            loading="lazy"
+                            decoding="async">
+                    </div>
+
+                    <div class="catalog-grid-body">
+                        <span class="catalog-grid-tag">
+                            <i class="bi bi-book-half"></i>
+                            Relacionado
+                        </span>
+
+                        <h3 class="catalog-grid-title" title="{{ $relacionado->titulo }}">
+                            {{ \Illuminate\Support\Str::limit($relacionado->titulo, 46) }}
+                        </h3>
+
+                        <div class="catalog-grid-authors">
+                            {{ $autoresRelacionado !== '' ? $autoresRelacionado : 'Autor no disponible' }}
+                        </div>
+
+                        <div class="catalog-grid-rating">
+                            <x-rating-stars :rating="$relacionado->rating_promedio" :count="$relacionado->comentarios_count" />
+                        </div>
+
+                        <div class="catalog-grid-meta">
+                            <small>
+                                <i class="bi bi-journal-text me-1"></i>
+                                Disponible en catalogo
+                            </small>
+                            <span class="catalog-grid-button">Ver detalle</span>
+                        </div>
+                    </div>
                 </a>
-
-            </div>
-
+            @empty
+                <div class="book-empty-state">
+                    No hay libros relacionados disponibles en este momento.
+                </div>
+            @endforelse
         </div>
+    </section>
 
-    </div>
+    <section class="book-comments-card">
+        <h2 class="book-section-title">Comentarios y valoraciones</h2>
 
-    @empty
-
-    <div class="col-12 text-center">
-        <p class="text-muted">No hay libros disponibles</p>
-    </div>
-
-    @endforelse
-
-</div>
-
-<!-- COMENTARIOS -->
-<h4 class="mt-5">💬 Comentarios</h4>
-
-<div class="row mt-3">
-
-    <!-- LISTA -->
-    <div class="col-md-8">
-
-        <div id="listaComentarios">
-            @include('pagina._comentarios', ['comentarios' => $libro->comentarios])
-        </div>
-
-    </div>
-
-    <!-- FORM -->
-    <div class="col-md-4">
-
-        @auth
-        <div class="card p-3 shadow-sm">
-
-            <h6 class="mb-2">✍️ Agregar comentario</h6>
-
-            <form id="formComentario">
-                @csrf
-
-                <input type="hidden" name="libro_id" value="{{ $libro->id }}">
-
-                <!-- ⭐ RATING -->
-                <div class="mb-2">
-                    <label class="form-label">Calificación</label>
-
-                    <div class="rating">
-                        @for($i=5; $i>=1; $i--)
-                            <input type="radio"
-                                   name="rating"
-                                   value="{{ $i }}"
-                                   id="star{{ $libro->id }}_{{ $i }}">
-
-                            <label for="star{{ $libro->id }}_{{ $i }}">★</label>
-                        @endfor
-                    </div>
+        <div class="book-comments-layout">
+            <div id="listaComentarios">
+                <div class="book-rating-panel" id="bookRatingSummary">
+                    @include('pagina._rating_summary', ['libro' => $libro])
                 </div>
 
-                <!-- COMENTARIO -->
-                <textarea name="comentario"
-                          class="form-control mb-2"
-                          rows="3"
-                          placeholder="Escribe tu comentario..."
-                          required></textarea>
-
-                <button class="btn btn-success w-100">
-                    💬 Comentar
-                </button>
-
-            </form>
-
-        </div>
-        @else
-        <div class="alert alert-warning">
-            Debes <a href="{{ route('login') }}">iniciar sesión</a>
-        </div>
-        @endauth
-
-    </div>
-
-</div>
-
-
-@endsection
-@section('modal')
-<div class="modal fade" id="modalReserva" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title">📩 Reservar libro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                @include('pagina._comentarios', ['comentarios' => $libro->comentarios])
             </div>
 
-            <div class="modal-body">
-
+            <div>
                 @auth
-                <form id="formReserva">
-                    @csrf
+                    <div class="book-comment-form-card">
+                        <h3 class="book-section-title mb-2">Agregar comentario</h3>
+                        <form id="formComentario">
+                            @csrf
 
-                    <input type="hidden" name="ejemplar_id" id="ejemplar_id">
+                            <input type="hidden" name="libro_id" value="{{ $libro->id }}">
 
-                    <!-- 📚 BIBLIOTECA -->
-                    <div class="mb-3">
-                        <label>Biblioteca</label>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Calificacion</label>
+                                <div class="rating">
+                                    @for($i = 5; $i >= 1; $i--)
+                                        <input
+                                            type="radio"
+                                            name="rating"
+                                            value="{{ $i }}"
+                                            id="star{{ $libro->id }}_{{ $i }}">
+                                        <label for="star{{ $libro->id }}_{{ $i }}">&#9733;</label>
+                                    @endfor
+                                </div>
+                            </div>
 
-                        <select id="biblioteca_select" class="form-control" required>
-                            <option value="">-- Seleccionar biblioteca --</option>
+                            <textarea
+                                name="comentario"
+                                class="form-control mb-3"
+                                rows="4"
+                                placeholder="Comparte tu experiencia de lectura..."
+                                required></textarea>
 
-                            @foreach($bibliotecas as $b)
-                                <option value="{{ $b->id }}">{{ $b->nombre }}</option>
-                            @endforeach
-                        </select>
+                            <button class="btn book-action-primary w-100" type="submit">
+                                <i class="bi bi-chat-square-text me-2"></i>
+                                Publicar comentario
+                            </button>
+                        </form>
                     </div>
-
-                    <!-- 📦 EJEMPLAR -->
-                    <div class="mb-3">
-                        <label>Ejemplar</label>
-
-                        <select name="ejemplar_id" id="ejemplar_select" class="form-control" required>
-                            <option value="">-- Seleccione una biblioteca primero --</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Tipo de préstamo</label>
-                        <select name="tipo_prestamo" id="tipo_prestamo" class="form-control" required>
-                            <option value="1">📖 Préstamo en sala</option>
-                            <option value="2">🏠 Préstamo a casa</option>
-                        </select>
-                    </div>
-                    <!-- ℹ️ INFO -->
-                    <div class="alert alert-info">
-                        ⏳ La reserva será válida hasta mañana a las <strong>20:00</strong>.
-                    </div>
-
-                    <button class="btn btn-primary w-100">
-                        📩 Confirmar reserva
-                    </button>
-
-                </form>
                 @else
-                <div class="alert alert-warning">
-                    Debes iniciar sesión
-                </div>
-                @endauth
+                    <div class="book-guest-card">
+                        <span class="book-guest-badge">
+                            <i class="bi bi-stars"></i>
+                            Comunidad lectora
+                        </span>
 
+                        <h3 class="book-guest-title">Participa en la valoracion</h3>
+
+                        <p class="book-guest-text">
+                            Comparte tu experiencia de lectura, ayuda a otros usuarios a descubrir mejores libros y deja una calificacion que aporte a la comunidad.
+                        </p>
+
+                        <div class="book-guest-points">
+                            <div class="book-guest-point">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Valora el libro con estrellas segun tu experiencia.</span>
+                            </div>
+                            <div class="book-guest-point">
+                                <i class="bi bi-chat-quote-fill"></i>
+                                <span>Escribe una opinion breve para orientar a otros lectores.</span>
+                            </div>
+                            <div class="book-guest-point">
+                                <i class="bi bi-person-check-fill"></i>
+                                <span>Necesitas iniciar sesion para publicar comentarios y calificaciones.</span>
+                            </div>
+                        </div>
+
+                        <div class="book-guest-actions">
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="btn book-action-primary book-guest-login">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Iniciar sesion
+                            </a>
+                        </div>
+                    </div>
+                @endauth
+            </div>
+        </div>
+    </section>
+</div>
+@endsection
+
+@section('modal')
+<div class="modal fade" id="modalReserva" tabindex="-1" aria-labelledby="modalReservaTitle" aria-describedby="modalReservaDescription" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content book-modal-content">
+            <div class="modal-header book-modal-header border-0">
+                <div>
+                    <h5 class="modal-title book-modal-title" id="modalReservaTitle">Solicitar prestamo</h5>
+                    <small class="book-modal-subtitle" id="modalReservaDescription">Elige la sede, selecciona un ejemplar disponible y define la modalidad del prestamo.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar modal de prestamo"></button>
             </div>
 
+            <div class="modal-body book-modal-body">
+                @auth
+                    <div class="book-modal-summary">
+                        <div class="book-modal-stat">
+                            <span>Titulo</span>
+                            <strong>{{ $libro->titulo }}</strong>
+                        </div>
+                        <div class="book-modal-stat">
+                            <span>Disponibles</span>
+                            <strong>{{ $ejemplaresDisponibles }} ejemplar{{ $ejemplaresDisponibles === 1 ? '' : 'es' }}</strong>
+                        </div>
+                        <div class="book-modal-stat">
+                            <span>Sedes</span>
+                            <strong>{{ $bibliotecasDisponibles }} biblioteca{{ $bibliotecasDisponibles === 1 ? '' : 's' }}</strong>
+                        </div>
+                    </div>
+
+                    <form id="formReserva" class="book-modal-form" novalidate>
+                        @csrf
+
+                        <h6 class="book-modal-section-title">Datos de la solicitud</h6>
+                        <p class="book-modal-section-text">
+                            Completa los siguientes campos para registrar tu reserva correctamente.
+                        </p>
+
+                        <div class="mb-3">
+                            <label for="biblioteca_select" class="form-label fw-semibold">Biblioteca</label>
+                            <select id="biblioteca_select" class="form-control" aria-describedby="bibliotecaSelectHelp" required>
+                                <option value="">-- Seleccionar biblioteca --</option>
+                                @foreach($bibliotecas as $biblioteca)
+                                    <option value="{{ $biblioteca->id }}">{{ $biblioteca->nombre }}</option>
+                                @endforeach
+                            </select>
+                            <small id="bibliotecaSelectHelp" class="book-modal-field-help">
+                                Selecciona la sede donde deseas consultar la disponibilidad del ejemplar.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ejemplar_select" class="form-label fw-semibold">Ejemplar</label>
+                            <select name="ejemplar_id" id="ejemplar_select" class="form-control" aria-describedby="ejemplarSelectHelp" disabled required>
+                                <option value="">-- Seleccione una biblioteca primero --</option>
+                            </select>
+                            <small id="ejemplarSelectHelp" class="book-modal-field-help">
+                                La lista se habilitara cuando elijas una biblioteca con ejemplares disponibles.
+                            </small>
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="tipo_prestamo" class="form-label fw-semibold">Tipo de prestamo</label>
+                            <select name="tipo_prestamo" id="tipo_prestamo" class="form-control" aria-describedby="tipoPrestamoHelp" required>
+                                <option value="0">Prestamo en sala</option>
+                                <option value="1">Prestamo a casa</option>
+                            </select>
+                            <small id="tipoPrestamoHelp" class="book-modal-field-help">
+                                El tipo de prestamo define las condiciones de uso y entrega del ejemplar.
+                            </small>
+                        </div>
+
+                    </form>
+
+                    <div class="book-modal-help">
+                        <i class="bi bi-clock-history"></i>
+                        <div>
+                            La reserva sera valida hasta manana a las <strong>20:00</strong>. Selecciona primero una biblioteca para ver los ejemplares disponibles en esa sede.
+                        </div>
+                    </div>
+
+                    <div class="book-modal-footer">
+                        <button type="button" class="btn book-modal-cancel" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button class="btn book-action-primary flex-grow-1" type="submit" form="formReserva">
+                            <i class="bi bi-journal-check me-2"></i>
+                            Confirmar reserva
+                        </button>
+                    </div>
+                @else
+                    <div class="alert alert-warning rounded-4 border-0 mb-0">
+                        Debes iniciar sesion para solicitar un prestamo de este libro.
+                    </div>
+                @endauth
+            </div>
         </div>
     </div>
 </div>
 @endsection
+

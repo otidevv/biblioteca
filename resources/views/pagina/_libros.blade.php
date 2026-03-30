@@ -1,95 +1,4 @@
-<style>
-.catalog-grid-card {
-    display: block;
-    height: 100%;
-    overflow: hidden;
-    border-radius: 1.4rem;
-    background: rgba(255, 255, 255, 0.88);
-    color: inherit;
-    text-decoration: none;
-    box-shadow: 0 16px 36px rgba(24, 77, 59, 0.08);
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-
-.catalog-grid-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 24px 48px rgba(24, 77, 59, 0.15);
-}
-
-.catalog-grid-card:focus-visible {
-    outline: 3px solid rgba(43, 122, 93, 0.4);
-    outline-offset: 4px;
-}
-
-.catalog-grid-cover-wrap {
-    padding: 1rem 1rem 0;
-}
-
-.catalog-grid-cover {
-    width: 100%;
-    height: 300px;
-    object-fit: contain;
-    border-radius: 1rem;
-    background: linear-gradient(180deg, #fbfaf5, #eef2ec);
-    padding: 0.85rem;
-}
-
-.catalog-grid-body {
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 316px);
-    padding: 1rem 1rem 1.1rem;
-}
-
-.catalog-grid-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    align-self: flex-start;
-    padding: 0.32rem 0.6rem;
-    margin-bottom: 0.7rem;
-    border-radius: 999px;
-    background: rgba(216, 177, 92, 0.16);
-    color: #946418;
-    font-size: 0.77rem;
-    font-weight: 700;
-}
-
-.catalog-grid-title {
-    margin-bottom: 0.45rem;
-    color: #173d2f;
-    font-size: 1rem;
-    font-weight: 800;
-}
-
-.catalog-grid-authors {
-    min-height: 2.8rem;
-    color: #6c7d76;
-    font-size: 0.9rem;
-}
-
-.catalog-grid-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-top: auto;
-    padding-top: 0.9rem;
-}
-
-.catalog-grid-meta small {
-    color: #688078;
-}
-
-.catalog-grid-button {
-    padding: 0.55rem 0.85rem;
-    border-radius: 0.9rem;
-    color: #fff;
-    background: linear-gradient(135deg, #2b7a5d, #11392c);
-    font-size: 0.88rem;
-    font-weight: 700;
-}
-</style>
+﻿
 
 <div class="row g-4" id="contenedorLibros">
     @forelse($libros as $libro)
@@ -98,9 +7,10 @@
                class="catalog-grid-card"
                aria-label="Ver detalle del libro {{ $libro->titulo }}">
                 <div class="catalog-grid-cover-wrap">
-                    <img src="{{ $libro->imagen ?: asset('img/banner1.png') }}"
+                    <img src="{{ $libro->imagen_url }}"
                          alt="{{ $libro->titulo }}"
                          class="catalog-grid-cover"
+                         onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';"
                          loading="lazy"
                          decoding="async">
                 </div>
@@ -121,6 +31,10 @@
                         @empty
                             Autor no disponible
                         @endforelse
+                    </div>
+
+                    <div class="catalog-grid-rating">
+                        <x-rating-stars :rating="$libro->rating_promedio" :count="$libro->comentarios_count" />
                     </div>
 
                     <div class="catalog-grid-meta">
@@ -148,3 +62,4 @@
     {{ $libros->links('vendor.pagination.bootstrap-5') }}
 </div>
 @endif
+

@@ -306,9 +306,12 @@ class DatosInicialSeeder extends Seeder
          *  ========================= */
 
         // ADMINISTRACIÓN
-        $permisoAdmin = Permiso::firstOrCreate(
+        $permisoAdmin = Permiso::updateOrCreate(
             ['codigo' => 'administracion'],
-            ['nombre' => 'Administración']
+            [
+                'nombre' => 'Administración',
+                'icono' => '<i class="bi bi-buildings-fill"></i>',
+            ]
         );
 
         $this->crearPermisos([
@@ -320,13 +323,19 @@ class DatosInicialSeeder extends Seeder
             ['administracion.editoriales', 'Gestión de editoriales'],
             ['administracion.tipo_registros', 'Gestión de tipo_registros'],
             ['administracion.autores', 'Gestión de autores'],
+            ['administracion.sanciones', 'Gestión de sanciones'],
             ['administracion.libros', 'Gestión de Libros'],
+            ['administracion.notificaciones', 'Gestión de notificaciones'],
+            ['administracion.actividades', 'Gestión de actividades'],
         ], $permisoAdmin->id);
 
         // LECTORES
-        $lectores = Permiso::firstOrCreate(
+        $lectores = Permiso::updateOrCreate(
             ['codigo' => 'lectores'],
-            ['nombre' => 'Lectores']
+            [
+                'nombre' => 'Lectores',
+                'icono' => '<i class="bi bi-people-fill"></i>',
+            ]
         );
 
         $this->crearPermisos([
@@ -337,12 +346,21 @@ class DatosInicialSeeder extends Seeder
         ], $lectores->id);
 
         // CATÁLOGO
-        Permiso::firstOrCreate(['codigo' => 'catalogo'], ['nombre' => 'Catálogo']);
+        Permiso::updateOrCreate(
+            ['codigo' => 'catalogo'],
+            [
+                'nombre' => 'Catálogo',
+                'icono' => '<i class="bi bi-journal-bookmark-fill"></i>',
+            ]
+        );
 
         // PRÉSTAMOS
-        $prestamos = Permiso::firstOrCreate(
+        $prestamos = Permiso::updateOrCreate(
             ['codigo' => 'prestamos'],
-            ['nombre' => 'Préstamos y Gestión']
+            [
+                'nombre' => 'Préstamos y Gestión',
+                'icono' => '<i class="bi bi-arrow-left-right"></i>',
+            ]
         );
 
         $this->crearPermisos([
@@ -352,12 +370,25 @@ class DatosInicialSeeder extends Seeder
         ], $prestamos->id);
 
         // REPORTES
-        Permiso::firstOrCreate(['codigo' => 'reportes'], ['nombre' => 'Reportes']);
+        $reportes=Permiso::updateOrCreate(
+            ['codigo' => 'reportes'],
+            [
+                'nombre' => 'Reportes',
+                'icono' => '<i class="bi bi-bar-chart-line-fill"></i>',
+            ]
+        );
+        $this->crearPermisos([
+            ['reportes.grafico', 'Graficos y estadistico'],
+            ['reportes.descargas', 'Descargas'],
+        ], $reportes->id);
 
         // INVENTARIO
-        $inventario = Permiso::firstOrCreate(
+        $inventario = Permiso::updateOrCreate(
             ['codigo' => 'inventario'],
-            ['nombre' => 'Inventario y Extras']
+            [
+                'nombre' => 'Inventario y Extras',
+                'icono' => '<i class="bi bi-box-seam-fill"></i>',
+            ]
         );
 
         $this->crearPermisos([
@@ -385,6 +416,7 @@ class DatosInicialSeeder extends Seeder
             );
         }
         
+        
     }
 
     private function crearPermisos(array $permisos, int $permisoPadreId): void
@@ -401,3 +433,4 @@ class DatosInicialSeeder extends Seeder
         }
     }
 }
+

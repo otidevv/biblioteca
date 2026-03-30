@@ -17,21 +17,30 @@ class CompraController extends Controller
             
     public function listarCompras(Request $request)
     {
-        $query = Compra::with('proveedor','compra_detalles.libro','compra_detalles.ejemplares');
+        $query = Compra::with('proveedor','compra_detalles.libro','compra_detalles.ejemplares')
+            ->latest('fecha_compra')
+            ->latest('id');
 
         return DataTables::of($query)
             ->addColumn('acciones', function($row) {
-                $btns = '<button class="btn btn-sm btn-primary me-1 verCompra">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 7h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" /><path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" /><line x1="16" y1="5" x2="19" y2="8" /></svg>
-                </button>';
-                $btns .= '<button class="btn btn-sm btn-danger me-1 eliminarCompra">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7h16" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1
-                    0 0 1 1 1v3" /><path d="M10 12l4 4m0 -4l-4 4" /></svg>  
-                </button>';
-                return $btns;   
+                return '<button type="button" class="btn btn-sm btn-primary verCompra" data-id="' . $row->id . '">Ver compra</button>';
             })
             ->rawColumns(['acciones'])
             ->make(true);
+    }
+
+    public function ver(int $id)
+    {
+        $compra = Compra::with([
+            'proveedor',
+            'compra_detalles.libro',
+            'compra_detalles.ejemplares.biblioteca',
+        ])->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => $compra,
+        ]);
     }
     public function buscar(Request $request)
     {
@@ -69,7 +78,17 @@ class CompraController extends Controller
         );
     }
     public function guardarCompra(Request $request){
-
+        $request->validate([
+            'siaf' => 'required|string|max:50',
+            'fecha_compra' => 'required|date',
+            'proveedor_id' => 'required|exists:proveedores,id',
+            'observaciones' => 'nullable|string',
+            'detalle' => 'required|array|min:1',
+            'detalle.*.libro_id' => 'required|exists:libros,id',
+            'detalle.*.cantidad' => 'required|integer|min:1',
+            'detalle.*.precio' => 'required|numeric|min:0.01',
+            'detalle.*.subtotal' => 'required|numeric|min:0.01',
+        ]);
         
         DB::beginTransaction();
         try {
@@ -122,7 +141,7 @@ class CompraController extends Controller
                         'libro_id' => $libro->id,
                         'biblioteca_id' => null,
                         'compra_detalle_id' => $detalle->id,
-                        'estado' => 'DISPONIBLE'
+                        'estado' => 1
                     ]);
                 }
             }

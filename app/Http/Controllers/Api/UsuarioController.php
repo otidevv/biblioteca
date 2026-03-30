@@ -11,10 +11,21 @@ use App\Models\Persona;
 use App\Models\Usuario_rol_biblioteca;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class UsuarioController extends Controller
-{   
+{
+    private function construirNombreUsuario(Request $request): string
+    {
+        return trim(implode(' ', array_filter([
+            $request->nombres,
+            $request->apellido_paterno,
+            $request->apellido_materno,
+        ])));
+    }
+
     // ===================USUARIOS ADMINISTRACIÓN============================
     public function listar(Request $request)
     {
@@ -38,6 +49,17 @@ class UsuarioController extends Controller
 
 
         return DataTables::of($query)
+            ->filterColumn('rol', function ($query, $keyword) {
+                $search = mb_strtolower(trim($keyword));
+
+                if ($search === '') {
+                    return;
+                }
+
+                $query->whereHas('roles', function ($roleQuery) use ($search) {
+                    $roleQuery->whereRaw('LOWER(roles.nombre) LIKE ?', ["%{$search}%"]);
+                });
+            })
             ->addColumn('acciones', function ($row) {
 
                 return '
@@ -60,7 +82,8 @@ class UsuarioController extends Controller
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
             'biblioteca'        => 'nullable|string|max:20',
-            'telefono'          => 'nullable|string|max:20',
+            'telefono'          => 'required|string|max:20',
+            'direccion'         => 'required|string|max:255',
             'correo'            => 'required|email|unique:users,email',
 
             // USUARIO
@@ -92,7 +115,7 @@ class UsuarioController extends Controller
              *  USUARIO
              *  ========================= */
             $user = User::create([
-                'name'       => $request->nombres,
+                'name'       => $this->construirNombreUsuario($request),
                 'email'      => $request->correo,
                 'password'   => Hash::make($request->password),
                 'estado'     => 1,
@@ -155,7 +178,8 @@ class UsuarioController extends Controller
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
-            'telefono'          => 'nullable|string|max:20',
+            'telefono'          => 'required|string|max:20',
+            'direccion'         => 'required|string|max:255',
             'biblioteca'        => 'nullable|integer|exists:bibliotecas,id',
             'roles'             => 'required|array|min:1',
             'roles.*'           => 'exists:roles,id',
@@ -175,6 +199,8 @@ class UsuarioController extends Controller
             $persona->telefono=$request->telefono;
             $persona->direccion=$request->direccion;
             $persona->save();
+            $user->name = $this->construirNombreUsuario($request);
+            $user->save();
             $user->roles()->sync($request->roles);
 
             // 👉 OPCIÓN B: usuario_rol_bibliotecas
@@ -231,10 +257,18 @@ class UsuarioController extends Controller
             });
         return DataTables::of($query)
             ->addColumn('acciones', function($row) {
-                $btns = '<button class="btn btn-sm btn-primary me-1 editarLector">
-                <svg xmlns="http://www.w3.org/2000/svg" class=" icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 7h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" /><path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" /><line x1="16" y1="5" x2="19" y2="8" /></svg>
-                </button>';
-                return $btns;
+                return '
+                    <div class="dropdown admin-action-menu">
+                        <button class="btn admin-action-menu__trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir acciones">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end admin-action-menu__dropdown">
+                            <button class="dropdown-item admin-action-link admin-action-link--edit editarLector" type="button">
+                                <i class="bi bi-pencil-square"></i><span>Editar</span>
+                            </button>
+                        </div>
+                    </div>
+                ';
             })
             ->rawColumns(['acciones'])
             ->make(true);
@@ -249,8 +283,28 @@ class UsuarioController extends Controller
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
-            'telefono'          => 'nullable|string|max:20',
+            'telefono'          => 'required|string|max:20',
             'email_personal'    => 'required|email|unique:users,email',
+            'direccion'         => 'nullable|string|max:255',
+            'codigo_institucional' => [
+                'exclude_unless:tipo_persona,ESTUDIANTE',
+                'required',
+                'string',
+                'max:255',
+                'unique:personas,codigo_institucional',
+            ],
+            'carrera_id'        => [
+                'exclude_unless:tipo_persona,ESTUDIANTE',
+                'required',
+                'integer',
+                'exists:carreras,id',
+            ],
+            'estado_academico'  => [
+                'exclude_unless:tipo_persona,ESTUDIANTE',
+                'required',
+                'string',
+                'max:255',
+            ],
 
             // USUARIO
             'password'          => 'required|confirmed|min:6',
@@ -265,6 +319,7 @@ class UsuarioController extends Controller
              *  ========================= */
             $persona = Persona::create([
                 'dni'               => $request->dni,
+                'tipo_persona'      => $request->tipo_persona,
                 'nombres'           => $request->nombres,
                 'apellido_paterno'  => $request->apellido_paterno,
                 'apellido_materno'  => $request->apellido_materno,
@@ -272,16 +327,19 @@ class UsuarioController extends Controller
                 'telefono'          => $request->telefono,
                 'email_personal'    => $request->email_personal,
                 'direccion'         => $request->direccion,
+                'codigo_institucional' => $request->codigo_institucional,
+                'carrera_id'        => $request->filled('carrera_id') && $request->carrera_id != 0 ? $request->carrera_id : null,
+                'estado_academico'  => $request->filled('estado_academico') && $request->estado_academico != 0 ? $request->estado_academico : null,
             ]);
 
             /** =========================
              *  USUARIO
              *  ========================= */
             $user = User::create([
-                'name'       => $request->nombres,
+                'name'       => $this->construirNombreUsuario($request),
                 'email'      => $request->email_personal,
                 'password'   => Hash::make($request->password),
-                'estado'     => 'activo',
+                'estado'     => 1,
                 'origen'     => 'local',
                 'tipo_usuario'     => 'Lector',
                 'persona_id'=> $persona->id,
@@ -296,9 +354,32 @@ class UsuarioController extends Controller
 
             DB::commit();
 
+            $mailSent = true;
+
+            try {
+                Mail::send('emails.lector_bienvenida', [
+                    'nombre' => $user->name,
+                    'correo' => $user->email,
+                    'passwordTemporal' => $request->password,
+                ], function ($message) use ($user) {
+                    $message->to($user->email, $user->name)
+                        ->subject('Bienvenido al Sistema de Biblioteca');
+                });
+            } catch (\Throwable $mailException) {
+                $mailSent = false;
+                Log::warning('No se pudo enviar el correo de bienvenida al lector.', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $mailException->getMessage(),
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Lector registrado correctamente'
+                'message' => $mailSent
+                    ? 'Lector registrado correctamente y correo de bienvenida enviado.'
+                    : 'Lector registrado correctamente, pero no se pudo enviar el correo de bienvenida.',
+                'mail_sent' => $mailSent,
             ], 201);
 
         } catch (\Throwable $e) {
@@ -328,7 +409,7 @@ class UsuarioController extends Controller
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
-            'telefono'          => 'nullable|string|max:20',
+            'telefono'          => 'required|string|max:20',
             'email_personal'    => [
                 'required',
                 'email',
@@ -336,13 +417,24 @@ class UsuarioController extends Controller
             ],
             'direccion'         => 'nullable|string|max:255',
             'codigo_institucional' => [
-                'nullable',
+                'exclude_unless:tipo_persona,ESTUDIANTE',
+                'required',
                 'string',
                 'max:255',
                 Rule::unique('personas', 'codigo_institucional')->ignore($persona->id),
             ],
-            'carrera_id'        => 'nullable|integer|exists:carreras,id',
-            'estado_academico'  => 'nullable|string|max:255',
+            'carrera_id'        => [
+                'exclude_unless:tipo_persona,ESTUDIANTE',
+                'required',
+                'integer',
+                'exists:carreras,id',
+            ],
+            'estado_academico'  => [
+                'exclude_unless:tipo_persona,ESTUDIANTE',
+                'required',
+                'string',
+                'max:255',
+            ],
         ]);
 
         DB::beginTransaction();
@@ -364,7 +456,7 @@ class UsuarioController extends Controller
             ]);
 
             $user->update([
-                'name' => $request->nombres,
+                'name' => $this->construirNombreUsuario($request),
                 'email' => $request->email_personal,
             ]);
 

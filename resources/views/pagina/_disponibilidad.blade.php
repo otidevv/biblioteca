@@ -9,7 +9,11 @@
     </thead>
 
     <tbody>
-        @foreach($libro->ejemplares->groupBy('biblioteca.nombre') as $biblioteca => $ejemplares)
+        @php
+            $ejemplaresConBiblioteca = $libro->ejemplares->filter(fn($ejemplar) => !is_null($ejemplar->biblioteca_id));
+        @endphp
+
+        @forelse($ejemplaresConBiblioteca->groupBy(fn($ejemplar) => $ejemplar->biblioteca?->nombre) as $biblioteca => $ejemplares)
 
         @php
             $total = $ejemplares->count();
@@ -29,6 +33,10 @@
             </td>
         </tr>
 
-        @endforeach
+        @empty
+        <tr>
+            <td colspan="4" class="text-center text-muted py-4">No hay ejemplares con biblioteca asignada.</td>
+        </tr>
+        @endforelse
     </tbody>
 </table>

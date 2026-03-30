@@ -1,3 +1,4 @@
+let tabla;
 
 $(document).ready(function () {
     tabla = $('#tabla-libros').DataTable({        
@@ -37,6 +38,7 @@ $(document).ready(function () {
             {
                 data: 'acciones',
                 name: 'acciones',
+                className: 'admin-actions-cell',
                 orderable: false,
                 searchable: false
             }
@@ -44,6 +46,8 @@ $(document).ready(function () {
 
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+        }
     });
 });

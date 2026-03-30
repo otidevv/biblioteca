@@ -1,0 +1,207 @@
+.purchase-create__form {
+    display: grid;
+    gap: 1rem;
+}
+
+.purchase-create__section-title {
+    margin-bottom: 0.9rem;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.purchase-create__detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.purchase-create__detail-copy {
+    color: #64748b;
+}
+
+.purchase-create__table-shell {
+    overflow: hidden;
+}
+
+.purchase-create__empty-row td {
+    background: #f8fafc;
+}
+
+.purchase-create__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.purchase-book-modal__header {
+    align-items: flex-start;
+}
+
+.purchase-book-modal__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.purchase-book-modal__copy {
+    color: #64748b;
+}
+
+.purchase-book-modal__body {
+    display: grid;
+    gap: 1rem;
+}
+
+.purchase-book-modal__intro {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(16, 185, 129, 0.16);
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(236, 253, 245, 0.96), rgba(248, 250, 252, 0.96));
+}
+
+.purchase-book-modal__intro-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.purchase-book-modal__section {
+    border-radius: 20px;
+}
+
+.purchase-book-modal__section-title {
+    margin-bottom: 0.9rem;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.purchase-book-modal__preview-grid {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.purchase-book-modal__cover {
+    position: relative;
+    min-height: 220px;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px dashed rgba(148, 163, 184, 0.26);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.purchase-book-modal__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.purchase-book-modal__image-empty {
+    display: grid;
+    place-items: center;
+    gap: 0.45rem;
+    text-align: center;
+    color: #94a3b8;
+    font-weight: 700;
+    padding: 1rem;
+}
+
+.purchase-book-modal__image-empty i {
+    font-size: 1.5rem;
+}
+
+.purchase-book-modal__meta {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.purchase-book-modal__field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.purchase-book-modal__field label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.admin-shell.admin-dark .purchase-create__section-title,
+.admin-shell.admin-dark .purchase-book-modal__section-title {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .purchase-create__detail-copy,
+.admin-shell.admin-dark .purchase-book-modal__copy,
+.admin-shell.admin-dark .purchase-book-modal__field label,
+.admin-shell.admin-dark .purchase-book-modal__image-empty {
+    color: #94a3b8;
+}
+
+.admin-shell.admin-dark .purchase-create__empty-row td,
+.admin-shell.admin-dark .purchase-book-modal__intro,
+.admin-shell.admin-dark .purchase-book-modal__cover {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(148, 163, 184, 0.14);
+}
+
+.admin-shell.admin-dark .purchase-book-modal__intro-icon {
+    background: rgba(78, 181, 145, 0.14);
+    color: #86e2c0;
+}
+
+.admin-shell.admin-dark #lbl_titulo,
+.admin-shell.admin-dark #lbl_autor,
+.admin-shell.admin-dark #lbl_editorial {
+    background: rgba(15, 23, 42, 0.9) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.16) !important;
+}
+
+.admin-shell.admin-dark .select2-container,
+.admin-shell.admin-dark .select2-container .select2-selection--single,
+.admin-shell.admin-dark .select2-container .select2-selection--multiple {
+    color: #e2e8f0;
+}
+
+@media (max-width: 991px) {
+    .purchase-create__detail-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .purchase-book-modal__preview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .purchase-book-modal__cover {
+        min-height: 180px;
+    }
+}

@@ -7,17 +7,37 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    private function resolverLayout(Request $request): string
+    {
+        $layout = (string) $request->query('layout', $request->input('layout', ''));
+
+        if (in_array($layout, ['admin', 'library'], true)) {
+            return $layout;
+        }
+
+        $tieneAccesoAdmin = $request->user()
+            ?->roles()
+            ->whereHas('permisos')
+            ->exists();
+
+        return $tieneAccesoAdmin ? 'admin' : 'library';
+    }
+
     /**
      * Display the user's profile form.
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
+        $layout = $this->resolverLayout($request);
+
+        return view($layout === 'library' ? 'profile.library' : 'profile.admin', [
             'user' => $request->user(),
+            'profileLayout' => $layout,
         ]);
     }
 
@@ -26,15 +46,33 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $data = $request->validated();
+        $persona = $user->persona;
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($request->hasFile('foto')) {
+            $rutaAnterior = $persona?->foto;
+
+            if (!empty($rutaAnterior) && Storage::disk('public')->exists($rutaAnterior)) {
+                Storage::disk('public')->delete($rutaAnterior);
+            }
+
+            $rutaFoto = $request->file('foto')->store('perfiles', 'public');
+
+            if ($persona) {
+                $persona->update(['foto' => $rutaFoto]);
+            }
         }
 
-        $request->user()->save();
+        $user->fill([
+            'name' => $data['name'],
+        ]);
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $user->save();
+
+        return Redirect::route('perfil.edit', [
+            'layout' => $this->resolverLayout($request),
+        ])->with('status', 'profile-updated');
     }
 
     /**
@@ -47,8 +85,13 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $persona = $user->persona;
 
         Auth::logout();
+
+        if (!empty($persona?->foto) && Storage::disk('public')->exists($persona->foto)) {
+            Storage::disk('public')->delete($persona->foto);
+        }
 
         $user->delete();
 

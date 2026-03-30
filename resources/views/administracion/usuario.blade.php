@@ -1,279 +1,267 @@
 @extends('layouts.admin')
 
+@section('page-title', 'Gestion de usuarios')
+
+@section('css')
+    <link href="{{ asset('css/administracion/usuario.css') }}" rel="stylesheet" />
+@endsection
+
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('/js/administracion/usuario.js') }}"></script>
 @endsection
+
 @section('content')
-<nav class="mb-4 text-sm text-gray-600">
-    <ol class="flex items-center space-x-2">
-        <li class="font-semibold text-gray-800">
-            Administración
-        </li>
-        <li class="text-gray-400">›</li>
-        <li class="text-emerald-700 font-semibold">
-            Usuarios
-        </li>
-    </ol>
-</nav>
-
-<div class="bg-white p-6 rounded-xl shadow-lg">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>
-        <button id="btnNuevo"
-            class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-            ➕ Agregar Usuario
-        </button>
+<div class="admin-section">
+    <div class="admin-breadcrumb">
+        <span>Administracion</span>
+        <span>/</span>
+        <span class="admin-breadcrumb__current">Usuarios</span>
     </div>
 
-    {{-- Select para tipos de usuario --}}
-    <div class="mb-4">
-        <label for="tipo_usuario" class="block text-gray-700 font-semibold mb-1">Tipo de Usuario:</label>
-        <select id="tipo_usuario" class="w-full md:w-1/3 border-gray-300 rounded-lg p-2">
-            <option value="">Todos</option>
-            @foreach($tiposUsuarios as $tipo)
-                @if($tipo['id'] == 5) <!-- O el ID que corresponda al rol de administrador -->
-                    @continue <!-- Saltar este rol para que no aparezca en el filtro -->
-                @endif
-                <option value="{{ $tipo['id'] }}">{{ $tipo['nombre'] }}</option>
-            @endforeach
-        </select>
-    </div>
+    <section class="admin-panel">
+        <div class="admin-panel__header">
+            <div>
+                <div class="user-page__eyebrow">
+                    <i class="bi bi-people-fill"></i>
+                    Gestion institucional
+                </div>
+                <h2 class="admin-panel__title">Usuarios y roles</h2>
+                <p class="admin-panel__copy">Administra cuentas, roles asignados y datos de contacto desde una vista mas clara.</p>
+            </div>
 
-    <div class="overflow-x-auto">
-        <table id="tabla-usuarios" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Usuario</th>
-                    <th>Rol</th>
-                    <th class="text-center">Acciones</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
+            <div class="admin-actions">
+                <button id="btnNuevo" class="admin-btn admin-btn--primary">
+                    <i class="bi bi-person-plus-fill"></i>
+                    Agregar usuario
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-toolbar user-toolbar">
+            <div class="admin-field user-filter">
+                <label for="tipo_usuario" class="admin-field__label user-filter__label">Filtrar por rol</label>
+                <div class="user-filter__inline">
+                    <i class="bi bi-funnel-fill user-filter__icon"></i>
+                    <select id="tipo_usuario" class="form-select user-filter__select">
+                        <option value="">Todos</option>
+                        @foreach($tiposUsuarios as $tipo)
+                            @if($tipo['id'] == 5)
+                                @continue
+                            @endif
+                            <option value="{{ $tipo['id'] }}">{{ $tipo['nombre'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-table-shell table-responsive user-table-shell">
+            <table id="tabla-usuarios" class="table table-hover table-bordered align-middle text-nowrap datatable w-100 user-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </section>
 </div>
-
-
-<!-- MODAL -->
-
 @endsection
+
 @section('modal')
 <div class="modal fade" id="modalUsuario" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div id="div_form">
-            <form id="formUsuario">
-                <input type="hidden" id="id" name="id">
-                <div class="modal-content shadow-sm">
-                    <div class="modal-header bg-light">
-                        <h5 class="modal-title fw-semibold">Registro de Usuario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <form id="formUsuario" class="modal-content shadow-sm user-modal">
+            <input type="hidden" id="id" name="id">
+            <div class="modal-header user-modal__header">
+                <div>
+                    <span class="user-modal__eyebrow">
+                        <i class="bi bi-person-badge-fill"></i>
+                        Gestion de cuentas
+                    </span>
+                    <h5 class="modal-title fw-semibold mb-1">Registro de usuario</h5>
+                    <p class="user-modal__header-copy mb-0">Completa la informacion personal, acceso y roles para habilitar la cuenta en el sistema.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body user-modal__body">
+                <div class="user-modal__intro">
+                    <div class="user-modal__intro-icon">
+                        <i class="bi bi-person-vcard"></i>
                     </div>
+                    <div>
+                        <strong>Alta institucional</strong>
+                        <p class="mb-0">Usa este formulario para registrar personal con acceso administrativo y asociarlo a una biblioteca y uno o varios roles.</p>
+                    </div>
+                </div>
 
-                    <div class="modal-body">
-
-                        <!-- ================= DATOS PERSONA ================= -->
-                        <h6 class="text-primary mb-2">Datos personales</h6>
-                        <div class="row g-3 mb-3">
-
-                            <div class="col-md-4 form-group form-required">
-                                <label class="form-label">DNI</label>
-                                <input type="text" id="dni" name="dni" class="form-control validar_numero">
-                            </div>
-
-                            <div class="col-md-8 form-group form-required">
-                                <label class="form-label">Nombres</label>
-                                <input type="text" id="nombres" name="nombres" class="form-control">
-                            </div>
-                            <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Apellido paterno</label>
-                                <input type="text" id="apellido_paterno" name="apellido_paterno" class="form-control">
-                            </div>
-
-                            <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Apellido materno</label>
-                                <input type="text" id="apellido_materno" name="apellido_materno" class="form-control">
-                            </div>
-                            <div class="col-md-6 form-group form-required ">
-                                <label class="form-label">Sexo</label>
-                                <select id="sexo" name="sexo" class="form-select validar_select">
-                                    <option value="0">Seleccione</option>
-                                    <option value="M">Masculino</option>
-                                    <option value="F">Femenino</option>
-                                    <option value="O">Otro</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Biblioteca</label>
-                                <select id="biblioteca" name="biblioteca" class="form-select validar_select">
-                                    <option value="0">Seleccione</option>
-                                    <option value="">Todos</option>
-                                    @foreach ($bibliotecas as $biblioteca)
-                                        <option value="{{ $biblioteca->id }}">{{ $biblioteca->nombre }}</option>    
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Teléfono</label>
-                                <input type="text" id="telefono" name="telefono" class="form-control validar_numero">
-                            </div>
-                            <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Dirección</label>
-                                <input type="text" id="direccion" name="direccion" class="form-control">
-                            </div>
+                <div class="admin-modal-section user-modal__section">
+                    <h6 class="user-modal__section-title">Datos personales</h6>
+                    <p class="user-modal__section-copy">Datos de identificacion y contacto que se mostraran en la gestion interna.</p>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4 form-group form-required">
+                            <label class="form-label">DNI</label>
+                            <input type="text" id="dni" name="dni" class="form-control validar_numero">
+                            <div class="form-text">Documento unico del usuario.</div>
                         </div>
-                        <div class="row g-3 mb-3" id="div_credenciales">
-                            <hr>
-                            <h6 class="text-primary mb-2 mt-2">Credenciales de acceso</h6>
-                            <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Correo</label>
-                                <input type="email" id="correo" name="correo" class="form-control">
-                            </div>
-                            <div class="col-md-6 form-group password-group form-required">
-                                <label class="form-label">Contraseña</label>
-                                <input type="password" id="password" name="password" class="form-control">
-                            </div>
-                            <div class="col-md-6 form-group password-group form-required">
-                                <label class="form-label">Confirmar 
-                                    contraseña</label>
-                                <input type="password" id="re_password" class="form-control">
-                            </div>
+
+                        <div class="col-md-8 form-group form-required">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" id="nombres" name="nombres" class="form-control">
                         </div>
-                        <div class="col-md-12" id="div_roles">
-                            <hr>
-                            <h6 class="text-primary mb-2 mt-2">Roles asignados</h6>
-                            <div class="row  ps-6">
-                                @foreach ($tiposUsuarios as $rol)
-                                    <div class="col-md-4">
-                                        <div class="form-check  rounded p-2 mb-2">
-                                            <input
-                                                class="form-check-input"
-                                                type="checkbox"
-                                                name="roles[]"
-                                                id="rol_{{ $rol->id }}"
-                                                value="{{ $rol->id }}"
-                                            >
-                                            <label class="form-check-label fw-medium" for="rol_{{ $rol->id }}">
-                                                {{ $rol->nombre }}
-                                            </label>
-                                        </div>
-                                    </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Apellido paterno</label>
+                            <input type="text" id="apellido_paterno" name="apellido_paterno" class="form-control">
+                        </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Apellido materno</label>
+                            <input type="text" id="apellido_materno" name="apellido_materno" class="form-control">
+                        </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Sexo</label>
+                            <select id="sexo" name="sexo" class="form-select validar_select">
+                                <option value="0">Seleccione</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                                <option value="O">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Biblioteca</label>
+                            <select id="biblioteca" name="biblioteca" class="form-select validar_select">
+                                <option value="0">Seleccione</option>
+                                <option value="">Todos</option>
+                                @foreach ($bibliotecas as $biblioteca)
+                                    <option value="{{ $biblioteca->id }}">{{ $biblioteca->nombre }}</option>
                                 @endforeach
+                            </select>
+                            <div class="form-text">Define el alcance operativo del usuario.</div>
+                        </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Telefono</label>
+                            <input type="text" id="telefono" name="telefono" class="form-control validar_numero">
+                        </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Direccion</label>
+                            <input type="text" id="direccion" name="direccion" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-modal-section user-modal__section user-modal__section--soft" id="div_credenciales">
+                    <h6 class="user-modal__section-title">Credenciales de acceso</h6>
+                    <p class="user-modal__section-copy">Solo se solicitan al crear la cuenta. Luego podras actualizar la contrasena desde acciones.</p>
+                    <div class="row g-3 mt-1 mb-0">
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Correo</label>
+                            <input type="email" id="correo" name="correo" class="form-control">
+                            <div class="form-text">Se usara como usuario de inicio de sesion.</div>
+                        </div>
+                        <div class="col-md-6 form-group password-group form-required">
+                            <label class="form-label">Contrasena</label>
+                            <input type="password" id="password" name="password" class="form-control">
+                        </div>
+                        <div class="col-md-6 form-group password-group form-required">
+                            <label class="form-label">Confirmar contrasena</label>
+                            <input type="password" id="re_password" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-modal-section user-modal__section user-modal__section--roles" id="div_roles">
+                    <h6 class="user-modal__section-title">Roles asignados</h6>
+                    <p class="user-modal__section-copy">Selecciona uno o varios perfiles segun las tareas que realizara el usuario dentro del sistema.</p>
+                    <div class="row g-2">
+                        @foreach ($tiposUsuarios as $rol)
+                            <div class="col-md-4">
+                                <label class="form-check user-role-option">
+                                    <input class="form-check-input" type="checkbox" name="roles[]" id="rol_{{ $rol->id }}" value="{{ $rol->id }}">
+                                    <span class="user-role-option__check">
+                                        <i class="bi bi-check2"></i>
+                                    </span>
+                                    <span class="user-role-option__content">
+                                        <span class="form-check-label fw-medium user-role-option__name">
+                                            {{ $rol->nombre }}
+                                        </span>
+                                        <span class="user-role-option__hint">Permite acceso a funciones relacionadas.</span>
+                                    </span>
+                                </label>
                             </div>
-
-                        </div>
-
-
-                    </div>
-
-                    <div class="modal-footer bg-light">
-                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-success px-4" type="submit">
-                            Guardar
-                        </button>
+                        @endforeach
                     </div>
                 </div>
-            </form>
+            </div>
 
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="modalContraseña" tabindex="-1">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-        <form id="formContraseña">
-            <div class="modal-content shadow-lg border-0">
-
-                <!-- HEADER -->
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-semibold d-flex align-items-center gap-2">
-                        🔐 Cambiar contraseña
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <!-- BODY -->
-                <div class="modal-body px-4 py-3">
-
-                    <!-- USUARIO -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-muted">Usuario</label>
-                        <input id="p_apodo" type="text" class="form-control" disabled>
-                    </div>
-
-                    <hr class="my-3">
-
-                    <!-- NUEVA CONTRASEÑA -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Nueva contraseña
-                        </label>
-
-                        <div class="input-group">
-                            <input
-                                id="pchange"
-                                type="password"
-                                class="form-control validar_minimo:8"
-                                placeholder="Mínimo 8 caracteres"
-                            >
-                            <button class="btn btn-outline-secondary toggle-password"
-                                    type="button"
-                                    data-target="pchange">
-                                👁
-                            </button>
-                        </div>
-
-                        <div class="form-text">
-                            <span id="password-strength" class="small text-muted">
-                                Usa al menos 8 caracteres
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- CONFIRMAR -->
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold">
-                            Confirmar contraseña
-                        </label>
-
-                        <div class="input-group">
-                            <input
-                                id="pchange_confirmed"
-                                type="password"
-                                class="form-control validar_igual:pchange"
-                                placeholder="Repetir contraseña"
-                            >
-                            <button class="btn btn-outline-secondary toggle-password"
-                                    type="button"
-                                    data-target="pchange_confirmed">
-                                👁
-                            </button>
-                        </div>
-
-                        <div class="form-text" id="password-match-status">
-                            <span class="text-muted small">
-                                Las contraseñas deben coincidir
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- FOOTER -->
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-success px-4">
-                        Guardar cambios
-                    </button>
-                </div>
-
+            <div class="modal-footer user-modal__footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-success px-4" type="submit">Guardar</button>
             </div>
         </form>
     </div>
 </div>
 
- @endsection
+<div class="modal fade" id="modalContrasena" tabindex="-1">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <form id="formContrasena" class="modal-content shadow-lg border-0 user-password-modal">
+            <input type="hidden" id="password_user_id" name="id">
+            <div class="modal-header user-password-modal__header">
+                <div>
+                    <span class="user-modal__eyebrow">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        Seguridad de acceso
+                    </span>
+                    <h5 class="modal-title fw-semibold mb-0">Cambiar contrasena</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body px-4 py-3 user-password-modal__body">
+                <div class="user-password-modal__account">
+                    <label class="form-label fw-semibold text-muted">Usuario</label>
+                    <input id="p_apodo" type="text" class="form-control" disabled>
+                </div>
+
+                <div class="user-password-modal__divider"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nueva contrasena</label>
+                    <div class="input-group">
+                        <input id="pchange" type="password" class="form-control validar_minimo:8" placeholder="Minimo 8 caracteres">
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="pchange">Ver</button>
+                    </div>
+                    <div class="form-text">
+                        <span id="password-strength" class="small text-muted">Usa al menos 8 caracteres</span>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Confirmar contrasena</label>
+                    <div class="input-group">
+                        <input id="pchange_confirmed" type="password" class="form-control validar_igual:pchange" placeholder="Repetir contrasena">
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="pchange_confirmed">Ver</button>
+                    </div>
+                    <div class="form-text" id="password-match-status">
+                        <span class="text-muted small">Las contrasenas deben coincidir</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer user-modal__footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-success px-4">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection

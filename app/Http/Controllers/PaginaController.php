@@ -11,7 +11,11 @@ use App\Models\Idioma;
 use App\Models\Editorial;
 use App\Models\Biblioteca;
 use App\Models\Reservacion;
+use App\Models\Prestamo;
+use App\Models\Actividad;
+use App\Models\ActividadCategoria;
 use App\Models\Tipo_registro;
+use Illuminate\Support\Facades\Schema;
 class PaginaController extends Controller
 {
     //    
@@ -19,9 +23,23 @@ class PaginaController extends Controller
     {
 
         $bibliotecas = Biblioteca::all();
-        $libros = Libro::latest()->take(8)->get();
+        $libros = Libro::with(['autores', 'editorial'])
+            ->withAvg('comentarios as rating_promedio', 'calificacion')
+            ->withCount('comentarios')
+            ->latest()
+            ->take(8)
+            ->get();
+        $actividades = Actividad::with('categoria')
+            ->where('estado', 1)
+            ->where(function ($query) {
+                $query->whereNull('fecha_fin')
+                    ->orWhereDate('fecha_fin', '>=', now()->toDateString());
+            })
+            ->orderBy('fecha_inicio')
+            ->take(4)
+            ->get();
 
-        return view('pagina.index', compact('bibliotecas','libros'));
+        return view('pagina.index', compact('bibliotecas','libros', 'actividades'));
         /*
             $query = Libro::with(['autores','editorial','materias','idioma','tipo_registro'])
                 ->select('id','titulo','imagen');
@@ -73,7 +91,12 @@ class PaginaController extends Controller
     }
     public function catalogo(Request $request)
     {
-        $query = Libro::with(['autores','editorial']);
+        $query = Libro::with(['autores','editorial'])
+            ->withAvg('comentarios as rating_promedio', 'calificacion')
+            ->withCount('comentarios')
+            ->whereHas('ejemplares', function ($q) {
+                $q->whereNotNull('biblioteca_id');
+            });
 
         if ($request->titulo) {
             $query->where('titulo','like','%'.$request->titulo.'%');
@@ -110,6 +133,8 @@ class PaginaController extends Controller
         $biblioteca = Biblioteca::findOrFail($id);
         
         $query = Libro::with(['autores','editorial','ejemplares'])
+            ->withAvg('comentarios as rating_promedio', 'calificacion')
+            ->withCount('comentarios')
             ->whereHas('ejemplares', function($q) use ($id) {
                 $q->where('biblioteca_id', $id);
             });
@@ -154,7 +179,10 @@ class PaginaController extends Controller
             'tipo_registro',
             'comentarios.usuario',
             'ejemplares.biblioteca' // 👈 aquí traes los ejemplares y su biblioteca
-        ])->findOrFail($id);
+        ])
+        ->withAvg('comentarios as rating_promedio', 'calificacion')
+        ->withCount('comentarios')
+        ->findOrFail($id);
         //OBTENER BIBLIOTECAS QUE TIENEN ESE LIBRO
         $bibliotecas = Biblioteca::whereHas('ejemplares', function($q) use ($id) {
             $q->where('libro_id', $id)
@@ -168,6 +196,8 @@ class PaginaController extends Controller
 
         // Libros relacionados
         $libros = Libro::with(['autores','editorial','materias','idioma','tipo_registro'])
+            ->withAvg('comentarios as rating_promedio', 'calificacion')
+            ->withCount('comentarios')
             ->where('id', '!=', $libro->id)
             ->where(function($q) use ($libro, $keywords) {
                 $q->whereHas('materias', function($mq) use ($libro) {
@@ -201,6 +231,50 @@ class PaginaController extends Controller
             ->get();
 
         return view('pagina.mis_reservas', compact('reservas'));
+    }
+
+    public function misPrestamos()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $prestamos = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca'])
+            ->where('lector_id', auth()->id())
+            ->latest('fecha_prestamo')
+            ->get();
+
+        return view('pagina.mis_prestamos', compact('prestamos'));
+    }
+
+    public function eventos()
+    {
+        $eventosQuery = Actividad::with('categoria')
+            ->where('estado', 1);
+
+        if (Schema::hasColumn('actividades', 'destacado')) {
+            $eventosQuery->orderByDesc('destacado');
+        }
+
+        $eventosDestacados = $eventosQuery
+            ->orderBy('fecha_inicio')
+            ->limit(6)
+            ->get();
+
+        $categorias = ActividadCategoria::withCount(['actividades' => function ($query) {
+                $query->where('estado', 1);
+            }])
+            ->where('estado', 1)
+            ->orderBy('nombre')
+            ->get();
+
+        $agenda = Actividad::with('categoria')
+            ->where('estado', 1)
+            ->orderBy('fecha_inicio')
+            ->limit(6)
+            ->get();
+
+        return view('pagina.eventos', compact('eventosDestacados', 'agenda', 'categorias'));
     }
 
 }

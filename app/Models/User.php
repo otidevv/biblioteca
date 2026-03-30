@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,7 +13,10 @@ use App\Models\Rol;
 use App\Models\User;
 use App\Models\Permiso;
 use \App\Models\Usuario_rol_biblioteca;
-class User extends Authenticatable
+use App\Models\NotificacionDestinatario;
+use App\Models\SeguimientoLibro;
+use App\Models\HistorialBusquedaLibro;
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -81,5 +84,20 @@ class User extends Authenticatable
     public function usuarioRolBibliotecas()
     {
         return $this->hasMany(Usuario_rol_biblioteca::class, 'user_id');
+    }
+
+    public function notificacionDestinatarios()
+    {
+        return $this->hasMany(NotificacionDestinatario::class, 'user_id');
+    }
+
+    public function seguimientosLibros()
+    {
+        return $this->hasMany(SeguimientoLibro::class, 'user_id');
+    }
+
+    public function historialBusquedasLibros()
+    {
+        return $this->hasMany(HistorialBusquedaLibro::class, 'user_id');
     }
 }

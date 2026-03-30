@@ -1,0 +1,289 @@
+.penalty-overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.penalty-stat {
+    padding: 22px 24px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+}
+
+.penalty-stat__label {
+    display: block;
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.penalty-stat__value {
+    display: block;
+    margin-top: 0.55rem;
+    color: #0f172a;
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.penalty-filters {
+    margin-bottom: 24px;
+}
+
+.penalty-filters__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.penalty-field {
+    grid-column: span 2;
+}
+
+.penalty-field--wide {
+    grid-column: span 4;
+}
+
+.penalty-field label {
+    display: block;
+    margin-bottom: 0.55rem;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.penalty-field input,
+.penalty-field select {
+    width: 100%;
+    height: 48px;
+    padding: 0.75rem 0.9rem;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: #fff;
+    color: #0f172a;
+}
+
+.penalty-actions {
+    grid-column: span 2;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.penalty-empty {
+    padding: 28px;
+    border-radius: 22px;
+    background: rgba(248, 250, 252, 0.9);
+    color: #64748b;
+    text-align: center;
+    border: 1px dashed rgba(148, 163, 184, 0.35);
+}
+
+.penalty-list {
+    display: grid;
+    gap: 22px;
+}
+
+.penalty-card {
+    padding: 26px 28px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 250, 252, 0.98));
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.penalty-card__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.penalty-card__title {
+    color: #0f172a;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.penalty-card__meta {
+    margin-top: 0.35rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.penalty-card__badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.penalty-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.penalty-badge.is-active {
+    background: rgba(234, 179, 8, 0.15);
+    color: #111827;
+}
+
+.penalty-badge.is-closed {
+    background: rgba(34, 197, 94, 0.14);
+    color: #111827;
+}
+
+.penalty-badge.is-neutral {
+    background: rgba(15, 23, 42, 0.08);
+    color: #111827;
+}
+
+.penalty-card__book {
+    margin-top: 1rem;
+    color: #0f172a;
+    font-size: 1.04rem;
+    font-weight: 700;
+}
+
+.penalty-card__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.penalty-card__item {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(248, 250, 252, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.penalty-card__item span {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #64748b;
+    font-size: 0.83rem;
+}
+
+.penalty-card__item strong {
+    color: #0f172a;
+    font-size: 0.98rem;
+}
+
+.penalty-card__notes {
+    margin-top: 18px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: rgba(241, 245, 249, 0.9);
+    color: #334155;
+}
+
+.penalty-card__notes p {
+    margin: 0;
+    line-height: 1.7;
+}
+
+.penalty-card__notes p + p {
+    margin-top: 0.75rem;
+}
+
+.admin-shell.admin-dark .penalty-stat,
+.admin-shell.admin-dark .penalty-card,
+.admin-shell.admin-dark .penalty-card__item,
+.admin-shell.admin-dark .penalty-card__notes,
+.admin-shell.admin-dark .penalty-field input,
+.admin-shell.admin-dark .penalty-field select {
+    background: rgba(15, 23, 42, 0.78);
+    border-color: rgba(148, 163, 184, 0.12);
+}
+
+.admin-shell.admin-dark .penalty-stat__value,
+.admin-shell.admin-dark .penalty-card__title,
+.admin-shell.admin-dark .penalty-card__book,
+.admin-shell.admin-dark .penalty-card__item strong {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .penalty-stat__label,
+.admin-shell.admin-dark .penalty-card__meta,
+.admin-shell.admin-dark .penalty-card__item span,
+.admin-shell.admin-dark .penalty-card__notes,
+.admin-shell.admin-dark .penalty-field label {
+    color: #cbd5e1;
+}
+
+.admin-shell.admin-dark .penalty-badge.is-neutral {
+    background: rgba(148, 163, 184, 0.12);
+    color: #e2e8f0;
+}
+
+.admin-shell.admin-dark .penalty-badge.is-active {
+    background: rgba(245, 158, 11, 0.18);
+    color: #f7d48b;
+}
+
+.admin-shell.admin-dark .penalty-badge.is-closed {
+    background: rgba(34, 197, 94, 0.18);
+    color: #b7f0c7;
+}
+
+.admin-shell.admin-dark .penalty-card__notes {
+    background: rgba(30, 41, 59, 0.82);
+}
+
+.admin-shell.admin-dark .penalty-card__head {
+    border-bottom-color: rgba(148, 163, 184, 0.12);
+}
+
+@media (max-width: 1199.98px) {
+    .penalty-overview,
+    .penalty-card__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .penalty-field,
+    .penalty-field--wide,
+    .penalty-actions {
+        grid-column: span 6;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .penalty-overview,
+    .penalty-card__grid,
+    .penalty-filters__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .penalty-field,
+    .penalty-field--wide,
+    .penalty-actions {
+        grid-column: auto;
+    }
+
+    .penalty-card,
+    .penalty-stat {
+        padding: 20px;
+    }
+
+    .penalty-card__head {
+        flex-direction: column;
+    }
+
+    .penalty-card__badges {
+        justify-content: flex-start;
+    }
+}

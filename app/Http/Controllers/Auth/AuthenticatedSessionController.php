@@ -14,8 +14,14 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        $redirect = $request->query('redirect');
+
+        if ($this->isSafeLocalRedirect($redirect)) {
+            $request->session()->put('auth.redirect', $redirect);
+        }
+
         return view('auth.login');
     }
 
@@ -24,30 +30,26 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-       $request->authenticate();
+        $request->authenticate();
         $request->session()->regenerate();
 
         $user = $request->user();
+        $redirect = $request->input('redirect') ?: $request->session()->pull('auth.redirect');
 
-        // 1. Si viene un parámetro redirect en la URL, úsalo
-        if ($request->has('redirect')) {
-            return redirect()->to($request->get('redirect'));
+        if ($this->isSafeLocalRedirect($redirect)) {
+            return redirect()->to($redirect);
         }
 
-        // 2. Si no hay redirect, revisa roles
         $roles = $user->usuarioRolBibliotecas()
-                    ->where('estado', 1)
-                    ->pluck('rol_id')
-                    ->toArray();
+            ->where('estado', 1)
+            ->pluck('rol_id')
+            ->toArray();
 
         if (in_array(5, $roles)) {
-            // Página para lectores
             return redirect()->route('home');
         }
 
-        // Página general para otros roles
-
-        return redirect()->intended(route('administracion.index', absolute: false));
+        return redirect()->route('dashboard');
     }
 
     /**
@@ -58,9 +60,21 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    protected function isSafeLocalRedirect(?string $redirect): bool
+    {
+        if (!$redirect) {
+            return false;
+        }
+
+        if (str_starts_with($redirect, '/')) {
+            return true;
+        }
+
+        return str_starts_with($redirect, url('/'));
     }
 }

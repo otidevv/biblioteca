@@ -26,9 +26,21 @@ class AutorController extends Controller
 
         return DataTables::of($query)
             ->addColumn('acciones', function($row) {
-                $btns = '<button class="btn btn-sm btn-primary me-1 editarAutor">Editar</button>';
-                $btns .= '<button class="btn btn-sm btn-danger me-1 eliminarAutor">Eliminar</button>';
-                return $btns;   
+                return '
+                    <div class="dropdown admin-action-menu">
+                        <button class="btn admin-action-menu__trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir acciones">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end admin-action-menu__dropdown">
+                            <button class="dropdown-item admin-action-link admin-action-link--edit editarAutor" type="button">
+                                <i class="bi bi-pencil-square"></i><span>Editar</span>
+                            </button>
+                            <button class="dropdown-item admin-action-link admin-action-link--delete eliminarAutor" type="button">
+                                <i class="bi bi-trash3"></i><span>Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
+                ';
             })
             ->editColumn('pais', function($row) {
                 return optional($row->pais)->nombre ?? '';

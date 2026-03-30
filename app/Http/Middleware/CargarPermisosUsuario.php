@@ -23,18 +23,23 @@ class CargarPermisosUsuario
                 ->map(function ($grupo) {
 
                     $padre = $grupo->first()->padre ?? $grupo->first();
-
-                    return [
-                        'codigo' => $padre->codigo,
-                        'nombre' => $padre->nombre,
-                        'icono'  => $padre->icono,
-                        'subpermisos' => $grupo->map(function ($hijo) {
+                    $subpermisos = $grupo
+                        ->filter(fn ($hijo) => $hijo->id !== $padre->id)
+                        ->map(function ($hijo) {
                             return [
                                 'codigo' => $hijo->codigo,
                                 'nombre' => $hijo->nombre,
                                 'ruta'   => str_replace('.', '/', $hijo->codigo),
                             ];
-                        })->values()->toArray()
+                        })
+                        ->values()
+                        ->toArray();
+
+                    return [
+                        'codigo' => $padre->codigo,
+                        'nombre' => $padre->nombre,
+                        'icono'  => $padre->icono,
+                        'subpermisos' => $subpermisos,
                     ];
                 })
                 ->values()

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Compra;
+use App\Models\Ejemplar;
+use App\Models\Usuario_rol_biblioteca;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Yajra\DataTables\Facades\DataTables;    
+use Yajra\DataTables\Facades\DataTables;
 
 class InventarioController extends Controller
 {
@@ -122,5 +125,133 @@ class InventarioController extends Controller
             'success' => true,
             'message' => 'Compra eliminada correctamente',
         ], 200);
+    }
+
+    public function listarInventarioFisico(Request $request)
+    {
+        $usuario = Auth::user();
+        $asignaciones = Usuario_rol_biblioteca::query()
+            ->where('user_id', $usuario->id)
+            ->where('estado', 1)
+            ->pluck('biblioteca_id')
+            ->unique()
+            ->values();
+
+        $bibliotecasAsignadas = $asignaciones
+            ->filter(fn ($id) => !is_null($id))
+            ->map(fn ($id) => (int) $id)
+            ->values();
+        $accesoGlobal = $bibliotecasAsignadas->isEmpty() && $asignaciones->contains(null);
+
+        $query = Ejemplar::query()
+            ->leftJoin('libros', 'libros.id', '=', 'ejemplares.libro_id')
+            ->leftJoin('tipo_registros', 'tipo_registros.id', '=', 'libros.tipo_registro_id')
+            ->leftJoin('bibliotecas', 'bibliotecas.id', '=', 'ejemplares.biblioteca_id')
+            ->selectRaw('
+                ejemplares.libro_id,
+                ejemplares.biblioteca_id,
+                libros.titulo,
+                libros.imagen,
+                libros.codigo_dewey,
+                libros.codigo,
+                libros.codigo_ant,
+                tipo_registros.nombre as tipo_registro,
+                bibliotecas.nombre as biblioteca_nombre,
+                COUNT(ejemplares.id) as total_ejemplares,
+                SUM(CASE WHEN ejemplares.estado = 1 THEN 1 ELSE 0 END) as disponibles,
+                SUM(CASE WHEN ejemplares.estado = 0 THEN 1 ELSE 0 END) as prestados,
+                SUM(CASE WHEN ejemplares.estado = 2 THEN 1 ELSE 0 END) as reservados
+            ')
+            ->groupBy(
+                'ejemplares.libro_id',
+                'ejemplares.biblioteca_id',
+                'libros.titulo',
+                'libros.imagen',
+                'libros.codigo_dewey',
+                'libros.codigo',
+                'libros.codigo_ant',
+                'tipo_registros.nombre',
+                'bibliotecas.nombre'
+            );
+
+        if ($accesoGlobal) {
+            if ($request->filled('biblioteca_id')) {
+                if ((string) $request->biblioteca_id === 'sin_biblioteca') {
+                    $query->whereNull('ejemplares.biblioteca_id');
+                } else {
+                    $query->where('ejemplares.biblioteca_id', (int) $request->biblioteca_id);
+                }
+            }
+        } elseif ($bibliotecasAsignadas->isNotEmpty()) {
+            $query->whereIn('ejemplares.biblioteca_id', $bibliotecasAsignadas->all());
+        } else {
+            $query->whereRaw('1 = 0');
+        }
+
+        return DataTables::of($query)
+            ->editColumn('imagen', function ($row) {
+                if (!$row->imagen) {
+                    return '<div class="physical-inventory__cover physical-inventory__cover--empty"><i class="bi bi-journal"></i></div>';
+                }
+
+                $ruta = str_starts_with($row->imagen, 'http')
+                    ? $row->imagen
+                    : asset(ltrim($row->imagen, '/'));
+
+                return '<img src="' . e($ruta) . '" alt="Portada" class="physical-inventory__cover-image">';
+            })
+            ->addColumn('codigo_catalogo', function ($row) {
+                $codigo = trim((string) (($row->codigo_dewey ?? '') . ($row->codigo ?? '')));
+
+                if ($codigo !== '') {
+                    return '<div class="physical-inventory__code"><strong>' . e($codigo) . '</strong><small>Codigo catalografico</small></div>';
+                }
+
+                if (!empty($row->codigo_ant)) {
+                    return '<div class="physical-inventory__code"><strong>' . e($row->codigo_ant) . '</strong><small>Codigo anterior</small></div>';
+                }
+
+                return '<div class="physical-inventory__code"><strong>Sin codigo</strong><small>Pendiente</small></div>';
+            })
+            ->editColumn('titulo', function ($row) {
+                return '<div class="physical-inventory__book"><strong>' . e($row->titulo ?? 'Sin titulo') . '</strong><small>' . e($row->tipo_registro ?? 'Sin tipo de registro') . '</small></div>';
+            })
+            ->addColumn('biblioteca', function ($row) {
+                if ($row->biblioteca_nombre) {
+                    return '<span class="physical-inventory__library">' . e($row->biblioteca_nombre) . '</span>';
+                }
+
+                return '<span class="physical-inventory__library physical-inventory__library--empty">Sin biblioteca</span>';
+            })
+            ->addColumn('resumen_estado', function ($row) {
+                return '
+                    <div class="physical-inventory__status-grid">
+                        <div class="physical-inventory__metric physical-inventory__metric--total">
+                            <span class="physical-inventory__metric-label">Total</span>
+                            <strong class="physical-inventory__metric-value">' . (int) $row->total_ejemplares . '</strong>
+                        </div>
+                        <div class="physical-inventory__metric physical-inventory__metric--available">
+                            <span class="physical-inventory__metric-label">Disponibles</span>
+                            <strong class="physical-inventory__metric-value">' . (int) $row->disponibles . '</strong>
+                        </div>
+                        <div class="physical-inventory__metric physical-inventory__metric--loaned">
+                            <span class="physical-inventory__metric-label">Prestados</span>
+                            <strong class="physical-inventory__metric-value">' . (int) $row->prestados . '</strong>
+                        </div>
+                        <div class="physical-inventory__metric physical-inventory__metric--reserved">
+                            <span class="physical-inventory__metric-label">Reservados</span>
+                            <strong class="physical-inventory__metric-value">' . (int) $row->reservados . '</strong>
+                        </div>
+                    </div>
+                ';
+            })
+            ->addColumn('acciones', function ($row) {
+                $url = url('administracion/ejemplares/' . $row->libro_id);
+                $url .= $row->biblioteca_id ? '?biblioteca_id=' . $row->biblioteca_id : '';
+
+                return '<a href="' . e($url) . '" class="btn btn-sm btn-primary">Ver ejemplares</a>';
+            })
+            ->rawColumns(['imagen', 'codigo_catalogo', 'titulo', 'biblioteca', 'resumen_estado', 'acciones'])
+            ->make(true);
     }
 }

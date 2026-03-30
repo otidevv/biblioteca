@@ -41,21 +41,25 @@ $(document).ready(function () {
         ],        
         dom: default_datatable_dom,
         language: default_datatable_language,
-        initComplete: default_datatable_buttons
+        initComplete: function () {
+            default_datatable_buttons.call(this);
+            decorateTableActionButtons('#tabla-proveedor');
+        },
+        drawCallback: function () {
+            decorateTableActionButtons('#tabla-proveedor');
+        }
     });
 
     // NUEVO
     $('#btnNuevo').on('click', function () {
         $('#formProveedor')[0].reset();
         $('#id').val('');
-        $('.password-group').show();
         $('#modalProveedor').modal('show');
     });
 
     // EDITAR
     $('#tabla-proveedor').on('click', '.editarProveedor', function () {
         let data = tabla.row($(this).closest('tr')).data();        
-        $('input[name="roles[]"]').prop('checked', false);
         $('#id').val(data.id);
         $('#tipo_documento').val(data.tipo_documento);
         $('#nro_documento').val(data.nro_documento);
@@ -64,15 +68,6 @@ $(document).ready(function () {
         $('#telefono').val(data.telefono);
         $('#direccion').val(data.direccion);
         $('#web').val(data.web);
-        $('#estado').val(data.estado ?? '');
-        // MARCAR roles del usuario
-            if (data.roles && Array.isArray(data.roles)) {
-                data.roles.forEach(function (rol) {
-                    $('#rol_' + rol.id).prop('checked', true);
-                });
-            }
-
-        $('#div_credenciales').hide();
         $('#modalProveedor').modal('show');
     });
     $('#formProveedor').on('submit', function (e) {
@@ -125,7 +120,7 @@ $(document).ready(function () {
                         alerta(messages[0], false);
                     });
                 } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar el usuario', false);
+                    alerta(xhr.responseJSON.message??'Error al guardar el proveedor', false);
                     //toastr.error('Error interno del servidor');
                 }
             },
@@ -136,5 +131,3 @@ $(document).ready(function () {
     });
 
 });
-
-

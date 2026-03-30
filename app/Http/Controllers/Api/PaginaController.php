@@ -85,6 +85,12 @@ class PaginaController extends Controller
         
     public function agregarComentario(Request $request)
     {
+        if (! auth()->check()) {
+            return response()->json([
+                'error' => 'Debes iniciar sesion',
+            ], 401);
+        }
+
         $request->validate([
             'libro_id' => 'required',
             'comentario' => 'required',
@@ -153,6 +159,16 @@ public function ejemplares($id)
     $libro = Libro::with('ejemplares.biblioteca')->findOrFail($id);
 
     return view('pagina._ejemplares', compact('libro'))->render();
+}
+
+public function rating($id)
+{
+    $libro = Libro::query()
+        ->withAvg('comentarios as rating_promedio', 'calificacion')
+        ->withCount('comentarios')
+        ->findOrFail($id);
+
+    return view('pagina._rating_summary', compact('libro'))->render();
 }
     
 }

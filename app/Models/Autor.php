@@ -12,6 +12,7 @@ class Autor extends Model
     public function libros()
     {
         return $this->belongsToMany(Libro::class, 'autor_libros')
+                ->distinct()
                 ->withTimestamps();
     }
     public function pais()
