@@ -1,6 +1,6 @@
 ﻿@extends('layouts.admin')
 
-@section('page-title', 'Historial de prestamos')
+@section('page-title', 'Historial de préstamos')
 
 @section('css')
     <link href="{{ asset('css/prestamo/historial.css') }}?v={{ filemtime(public_path('css/prestamo/historial.css')) }}" rel="stylesheet" />
@@ -35,15 +35,15 @@
     <div class="admin-breadcrumb">
         <span>Lectores</span>
         <span>/</span>
-        <span class="admin-breadcrumb__current">Historial de prestamos</span>
+        <span class="admin-breadcrumb__current">Historial de préstamos</span>
     </div>
 
     <div class="loan-history">
         <section class="loan-history__hero">
             <div>
-                <span class="loan-history__eyebrow"><i class="bi bi-clock-history"></i> Trazabilidad de circulacion</span>
-                <h2>Historial de prestamos</h2>
-                <p>Consulta el historial completo de prestamos, revisa cierres, devoluciones, tardanzas y deterioros para cada lector y biblioteca.</p>
+                <span class="loan-history__eyebrow"><i class="bi bi-clock-history"></i> Trazabilidad de circulación</span>
+                <h2>Historial de préstamos</h2>
+                <p>Consulta el historial completo de préstamos, revisa cierres, devoluciones, tardanzas y deterioros para cada lector y biblioteca.</p>
             </div>
         </section>
 
@@ -67,7 +67,7 @@
                 <div>
                     <span class="loan-history__filters-kicker">Reportes</span>
                     <h3>Solicita exportaciones del historial</h3>
-                    <p>Los archivos se procesan en segundo plano y todas las descargas se concentran en un unico Centro de reportes.</p>
+                    <p>Los archivos se procesan en segundo plano y todas las descargas se concentran en un único Centro de reportes.</p>
                 </div>
                 <div class="loan-history__filter-actions">
                     <a href="{{ route('reportes.descargas') }}" class="loan-history__filter-btn loan-history__filter-btn--ghost">
@@ -90,9 +90,9 @@
             <form method="GET" class="loan-history__filters-form">
                 <div class="loan-history__filters-head">
                     <div>
-                        <span class="loan-history__filters-kicker">Busqueda avanzada</span>
-                        <h3>Filtra el historial con mas precision</h3>
-                        <p>Encuentra prestamos por libro, lector, estado o rango de fechas sin perder la paginacion actual.</p>
+                        <span class="loan-history__filters-kicker">Búsqueda avanzada</span>
+                        <h3>Filtra el historial con más precisión</h3>
+                        <p>Encuentra préstamos por libro, lector, estado o rango de fechas sin perder la paginación actual.</p>
                     </div>
                     <div class="loan-history__filter-actions">
                         <button type="submit" class="loan-history__filter-btn loan-history__filter-btn--primary">
@@ -107,7 +107,7 @@
                 </div>
 
                 <div class="loan-history__filter-search">
-                    <label for="q">Busqueda principal</label>
+                    <label for="q">Búsqueda principal</label>
                     <div class="loan-history__search-box">
                         <i class="bi bi-search"></i>
                         <input
@@ -115,7 +115,7 @@
                             id="q"
                             name="q"
                             value="{{ request('q') }}"
-                            placeholder="Buscar por libro, lector, biblioteca o ID del prestamo"
+                            placeholder="Buscar por libro, lector, biblioteca o ID del préstamo"
                         >
                     </div>
                 </div>
@@ -131,7 +131,7 @@
                     </div>
 
                     <div class="loan-history__filter-field">
-                        <label for="estado_prestamo">Estado del prestamo</label>
+                        <label for="estado_prestamo">Estado del préstamo</label>
                         <select id="estado_prestamo" name="estado_prestamo">
                             <option value="">Todos</option>
                             <option value="0" @selected(request('estado_prestamo') === '0')>Prestado</option>
@@ -156,7 +156,7 @@
 
         @if($historial->isEmpty())
             <section class="loan-history__empty">
-                Aun no hay prestamos registrados para mostrar en este historial.
+                Aún no hay préstamos registrados para mostrar en este historial.
             </section>
         @else
             <section class="loan-history__list">
@@ -175,7 +175,7 @@
                             ? $codigoDeweyEjemplar . $tipoEjemplar . $codigoInternoEjemplar
                             : ($codigoAntiguoEjemplar !== ''
                                 ? $codigoAntiguoEjemplar
-                                : ($codigoQntEjemplar !== '' ? $codigoQntEjemplar : 'Sin codigo'));
+                                : ($codigoQntEjemplar !== '' ? $codigoQntEjemplar : 'Sin código'));
                         $diasPrestado = $fechaInicio ? max(1, $fechaInicio->copy()->startOfDay()->diffInDays($fechaFin->copy()->startOfDay()) + 1) : null;
                         $badgeClass = match (true) {
                             $estadoGeneral === 1 => 'is-active',
@@ -232,23 +232,23 @@
                                 <strong>{{ $codigoEjemplar }}</strong>
                             </div>
                             <div class="loan-history__item">
-                                <span>Fecha de prestamo</span>
+                                <span>Fecha de préstamo</span>
                                 <strong>{{ $prestamo->fecha_prestamo?->format('d/m/Y H:i') ?? '-' }}</strong>
                             </div>
                             <div class="loan-history__item">
-                                <span>Fecha de devolucion</span>
+                                <span>Fecha de devolución</span>
                                 <strong>{{ $prestamo->fecha_devolucion?->format('d/m/Y H:i') ?? '-' }}</strong>
                             </div>
                             <div class="loan-history__item">
-                                <span>Dias prestado</span>
-                                <strong>{{ $diasPrestado ? $diasPrestado . ' dia' . ($diasPrestado === 1 ? '' : 's') : '-' }}</strong>
+                                <span>Días prestado</span>
+                                <strong>{{ $diasPrestado ? $diasPrestado . ' día' . ($diasPrestado === 1 ? '' : 's') : '-' }}</strong>
                             </div>
                             <div class="loan-history__item">
                                 <span>Estado general</span>
                                 <strong>{{ $estadoGeneralTexto }}</strong>
                             </div>
                             <div class="loan-history__item">
-                                <span>Estado del prestamo</span>
+                                <span>Estado del préstamo</span>
                                 <strong>{{ $estadoPrestamoTexto }}</strong>
                             </div>
                             <div class="loan-history__item">

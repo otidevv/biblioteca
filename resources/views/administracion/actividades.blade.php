@@ -98,7 +98,7 @@
                         Programacion cultural
                     </span>
                     <h5 class="modal-title fw-semibold mb-1">Registro de actividad</h5>
-                    <p class="activities-modal__copy mb-0">Configura informacion, fechas y visibilidad de una actividad. Si queda activa, tambien se notificara a los usuarios.</p>
+                    <p class="activities-modal__copy mb-0">Configura información, fechas y visibilidad de una actividad. Si queda activa, también se notificará a los usuarios.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -109,7 +109,7 @@
                     </div>
                     <div>
                         <strong>Publicacion con notificacion</strong>
-                        <p class="mb-0">Este modulo alimenta la pagina de eventos y el centro de notificaciones. Solo las actividades activas se publican y notifican.</p>
+                        <p class="mb-0">Este módulo alimenta la página de eventos y el centro de notificaciones. Solo las actividades activas se publican y notifican.</p>
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@
                     <div class="row g-3">
                         <div class="col-md-8 form-group form-required">
                             <label class="form-label">Titulo</label>
-                            <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Taller de alfabetizacion informacional">
+                            <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Taller de alfabetización informacional">
                         </div>
                         <div class="col-md-4 form-group form-required">
                             <label class="form-label">Categoria</label>
@@ -228,7 +228,7 @@
                     </div>
                     <div>
                         <strong>Taxonomia de actividades</strong>
-                        <p class="mb-0">Usa categorias claras y breves para que el personal identifique rapido el tipo de publicacion y los usuarios encuentren mejor cada actividad.</p>
+                        <p class="mb-0">Usa categorías claras y breves para que el personal identifique rápido el tipo de publicación y los usuarios encuentren mejor cada actividad.</p>
                     </div>
                 </div>
 

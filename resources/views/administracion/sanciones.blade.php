@@ -34,7 +34,7 @@
             <table id="tabla-sanciones" class="table table-hover table-bordered align-middle datatable w-100">
                 <thead>
                     <tr>
-                        <th>Codigo</th>
+                        <th>Código</th>
                         <th>Nombre</th>
                         <th>Origen</th>
                         <th>Condicion</th>
@@ -73,7 +73,7 @@
                     </div>
                     <div>
                         <strong>Configuracion base</strong>
-                        <p class="mb-0">Define el comportamiento general de la sancion y luego complementa la automatizacion con reglas mas especificas.</p>
+                        <p class="mb-0">Define el comportamiento general de la sanción y luego complementa la automatización con reglas más específicas.</p>
                     </div>
                 </div>
 
@@ -82,7 +82,7 @@
                     <p class="sanction-modal__section-copy">Usa un codigo estable y un nombre claro para que el equipo identifique de inmediato cuando debe aplicarse.</p>
                     <div class="row g-3">
                             <div class="col-md-4 form-group form-required">
-                                <label class="form-label">Codigo</label>
+                                <label class="form-label">Código</label>
                                 <input type="text" id="codigo" name="codigo" class="form-control mayuscula" placeholder="PRESTAMO_TARDANZA">
                             </div>
                             <div class="col-md-8 form-group form-required">
@@ -98,13 +98,13 @@
 
                     <div class="admin-modal-section sanction-modal__section sanction-modal__section--rules">
                         <h6 class="sanction-modal__section-title">Comportamiento y efecto</h6>
-                        <p class="sanction-modal__section-copy">Ajusta origen, condicion, duracion, monto y si debe restringir prestamos o generar cobro.</p>
+                        <p class="sanction-modal__section-copy">Ajusta origen, condición, duración, monto y si debe restringir préstamos o generar cobro.</p>
                         <div class="row g-3">
                             <div class="col-md-3 form-group">
                                 <label class="form-label">Origen del evento</label>
                                 <select id="origen_evento" name="origen_evento" class="form-select">
                                     <option value="">Seleccione</option>
-                                    <option value="prestamo">Prestamo</option>
+                                    <option value="prestamo">Préstamo</option>
                                     <option value="reservacion">Reservacion</option>
                                     <option value="manual">Manual</option>
                                 </select>
@@ -143,7 +143,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4 form-group">
-                                <label class="form-label">Bloquea prestamos</label>
+                                <label class="form-label">Bloquea préstamos</label>
                                 <select id="bloquea_prestamos" name="bloquea_prestamos" class="form-select">
                                     <option value="1">Si</option>
                                     <option value="0">No</option>
@@ -195,7 +195,7 @@
                             <thead>
                                 <tr>
                                     <th>Evento</th>
-                                    <th>Rango dias</th>
+                                    <th>Rango días</th>
                                     <th>Cantidad</th>
                                     <th>Duracion</th>
                                     <th>Monto</th>
@@ -216,7 +216,7 @@
                         <div class="admin-panel__header mb-3">
                             <div>
                                 <h6 class="admin-card__title mb-1">Registrar o actualizar regla</h6>
-                                <p class="admin-panel__copy mb-0">Puedes definir umbrales por dias, cantidades y si requiere aprobacion.</p>
+                                <p class="admin-panel__copy mb-0">Puedes definir umbrales por días, cantidades y si requiere aprobación.</p>
                             </div>
                         </div>
 
@@ -225,8 +225,8 @@
                                 <label class="form-label">Evento</label>
                                 <select id="evento" name="evento" class="form-select">
                                     <option value="">Seleccione</option>
-                                    <option value="prestamo_tardio">Prestamo tardio</option>
-                                    <option value="devolucion_deterioro">Devolucion con deterioro</option>
+                                    <option value="prestamo_tardio">Préstamo tardío</option>
+                                    <option value="devolucion_deterioro">Devolución con deterioro</option>
                                     <option value="reserva_no_recogida">Reserva no recogida</option>
                                     <option value="manual">Manual</option>
                                 </select>
@@ -248,7 +248,7 @@
                                 <input type="number" id="cantidad_maxima" name="cantidad_maxima" class="form-control" min="0">
                             </div>
                             <div class="col-md-3 form-group">
-                                <label class="form-label">Duracion en dias</label>
+                                <label class="form-label">Duración en días</label>
                                 <input type="number" id="duracion_dias" name="duracion_dias" class="form-control" min="0">
                             </div>
                             <div class="col-md-3 form-group">

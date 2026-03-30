@@ -24,12 +24,12 @@
     <section class="prestamos-hero">
         <span class="prestamos-eyebrow">
             <i class="bi bi-journal-bookmark-fill"></i>
-            Seguimiento de prestamos
+            Seguimiento de préstamos
         </span>
 
-        <h1 class="prestamos-title">Mis prestamos</h1>
+        <h1 class="prestamos-title">Mis préstamos</h1>
         <p class="prestamos-subtitle">
-            Revisa tus ejemplares en curso, controla la fecha limite de devolucion y consulta el historial reciente de prestamos realizados.
+            Revisa tus ejemplares en curso, controla la fecha límite de devolución y consulta el historial reciente de préstamos realizados.
         </p>
 
         <div class="prestamos-stats">
@@ -53,7 +53,7 @@
                     <i class="bi bi-hourglass-split"></i>
                 </span>
                 <div>
-                    <strong>Proximo prestamo por vencer</strong>
+                    <strong>Próximo préstamo por vencer</strong>
                     <span>
                         "{{ $proximoVencimiento->ejemplar->libro->titulo }}" debe devolverse hasta el
                         {{ $proximoVencimiento->fecha_limite_real->format('d/m/Y') }} a las 20:00.
@@ -68,17 +68,17 @@
             <div class="prestamos-empty-icon">
                 <i class="bi bi-journal-x"></i>
             </div>
-            <h3>Aun no tienes prestamos registrados</h3>
+            <h3>Aún no tienes préstamos registrados</h3>
             <p>
-                Cuando una reserva sea atendida o se te registre un prestamo, podras consultarlo aqui con su estado y fecha limite.
+                Cuando una reserva sea atendida o se te registre un préstamo, podrás consultarlo aquí con su estado y fecha límite.
             </p>
         </section>
     @else
         <section class="prestamos-card">
             <div class="prestamos-card-header">
                 <div>
-                    <h2>Historial de prestamos</h2>
-                    <p>Consulta el libro, la biblioteca, el tipo de prestamo y el estado actual de cada ejemplar.</p>
+                    <h2>Historial de préstamos</h2>
+                    <p>Consulta el libro, la biblioteca, el tipo de préstamo y el estado actual de cada ejemplar.</p>
                 </div>
                 <span class="prestamos-stat-badge">
                     <i class="bi bi-collection"></i>
@@ -108,10 +108,10 @@
                                     <div>
                                         <div class="prestamos-book-title">{{ $prestamo->ejemplar->libro->titulo }}</div>
                                         <div class="prestamos-book-meta">
-                                            {{ $prestamo->ejemplar->codigo ?? 'Sin codigo' }}
+                                            {{ $prestamo->ejemplar->codigo ?? 'Sin código' }}
                                         </div>
                                         <div class="prestamos-book-subtitle">
-                                            Prestamo gestionado desde {{ $prestamo->ejemplar->biblioteca->nombre ?? 'biblioteca no disponible' }}.
+                                            Préstamo gestionado desde {{ $prestamo->ejemplar->biblioteca->nombre ?? 'biblioteca no disponible' }}.
                                         </div>
                                     </div>
                                 </div>
@@ -126,14 +126,14 @@
                                 </div>
                                 <div class="prestamos-meta-card">
                                     <span>Tipo</span>
-                                    <strong>{{ $tipoPrestamo === 1 ? 'Prestamo a casa' : 'Prestamo en sala' }}</strong>
+                                    <strong>{{ $tipoPrestamo === 1 ? 'Préstamo a casa' : 'Préstamo en sala' }}</strong>
                                 </div>
                                 <div class="prestamos-meta-card">
-                                    <span>Fecha de prestamo</span>
+                                    <span>Fecha de préstamo</span>
                                     <strong>{{ $prestamo->fecha_prestamo?->format('d/m/Y H:i') ?? '-' }}</strong>
                                 </div>
                                 <div class="prestamos-meta-card">
-                                    <span>Fecha limite</span>
+                                    <span>Fecha límite</span>
                                     <strong>{{ $fechaLimiteReal ? $fechaLimiteReal->format('d/m/Y') . ' a las 20:00' : '-' }}</strong>
                                 </div>
                             </div>
@@ -193,5 +193,4 @@
     @endif
 </div>
 @endsection
-
 

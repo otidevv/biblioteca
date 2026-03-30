@@ -87,7 +87,7 @@ class PaginaController extends Controller
     {
         if (! auth()->check()) {
             return response()->json([
-                'error' => 'Debes iniciar sesion',
+                'error' => 'Debes iniciar sesión',
             ], 401);
         }
 

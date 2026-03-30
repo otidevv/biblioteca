@@ -13,7 +13,7 @@
 
         <div style="padding:28px 32px;">
             <p style="margin:0 0 16px; font-size:15px; line-height:1.7;">
-                Tu cuenta de lector ha sido creada correctamente. Ya puedes ingresar al sistema de biblioteca y consultar tus reservas, prestamos y actividad lectora.
+                Tu cuenta de lector ha sido creada correctamente. Ya puedes ingresar al sistema de biblioteca y consultar tus reservas, préstamos y actividad lectora.
             </p>
 
             <div style="margin:20px 0; padding:18px 20px; border-radius:16px; background:#f8fafc; border:1px solid #e2e8f0;">

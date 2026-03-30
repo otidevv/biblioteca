@@ -27,7 +27,7 @@
                     Gestion institucional
                 </div>
                 <h2 class="admin-panel__title">Usuarios y roles</h2>
-                <p class="admin-panel__copy">Administra cuentas, roles asignados y datos de contacto desde una vista mas clara.</p>
+                <p class="admin-panel__copy">Administra cuentas, roles asignados y datos de contacto desde una vista más clara.</p>
             </div>
 
             <div class="admin-actions">
@@ -84,7 +84,7 @@
                         Gestion de cuentas
                     </span>
                     <h5 class="modal-title fw-semibold mb-1">Registro de usuario</h5>
-                    <p class="user-modal__header-copy mb-0">Completa la informacion personal, acceso y roles para habilitar la cuenta en el sistema.</p>
+                    <p class="user-modal__header-copy mb-0">Completa la información personal, acceso y roles para habilitar la cuenta en el sistema.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -161,19 +161,19 @@
 
                 <div class="admin-modal-section user-modal__section user-modal__section--soft" id="div_credenciales">
                     <h6 class="user-modal__section-title">Credenciales de acceso</h6>
-                    <p class="user-modal__section-copy">Solo se solicitan al crear la cuenta. Luego podras actualizar la contrasena desde acciones.</p>
+                    <p class="user-modal__section-copy">Solo se solicitan al crear la cuenta. Luego podrás actualizar la contraseña desde acciones.</p>
                     <div class="row g-3 mt-1 mb-0">
                         <div class="col-md-6 form-group form-required">
                             <label class="form-label">Correo</label>
                             <input type="email" id="correo" name="correo" class="form-control">
-                            <div class="form-text">Se usara como usuario de inicio de sesion.</div>
+                            <div class="form-text">Se usará como usuario de inicio de sesión.</div>
                         </div>
                         <div class="col-md-6 form-group password-group form-required">
                             <label class="form-label">Contrasena</label>
                             <input type="password" id="password" name="password" class="form-control">
                         </div>
                         <div class="col-md-6 form-group password-group form-required">
-                            <label class="form-label">Confirmar contrasena</label>
+                            <label class="form-label">Confirmar contraseña</label>
                             <input type="password" id="re_password" class="form-control">
                         </div>
                     </div>
@@ -221,7 +221,7 @@
                         <i class="bi bi-shield-lock-fill"></i>
                         Seguridad de acceso
                     </span>
-                    <h5 class="modal-title fw-semibold mb-0">Cambiar contrasena</h5>
+                    <h5 class="modal-title fw-semibold mb-0">Cambiar contraseña</h5>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -235,7 +235,7 @@
                 <div class="user-password-modal__divider"></div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Nueva contrasena</label>
+                    <label class="form-label fw-semibold">Nueva contraseña</label>
                     <div class="input-group">
                         <input id="pchange" type="password" class="form-control validar_minimo:8" placeholder="Minimo 8 caracteres">
                         <button class="btn btn-outline-secondary toggle-password" type="button" data-target="pchange">Ver</button>
@@ -246,13 +246,13 @@
                 </div>
 
                 <div class="mb-2">
-                    <label class="form-label fw-semibold">Confirmar contrasena</label>
+                    <label class="form-label fw-semibold">Confirmar contraseña</label>
                     <div class="input-group">
-                        <input id="pchange_confirmed" type="password" class="form-control validar_igual:pchange" placeholder="Repetir contrasena">
+                        <input id="pchange_confirmed" type="password" class="form-control validar_igual:pchange" placeholder="Repetir contraseña">
                         <button class="btn btn-outline-secondary toggle-password" type="button" data-target="pchange_confirmed">Ver</button>
                     </div>
                     <div class="form-text" id="password-match-status">
-                        <span class="text-muted small">Las contrasenas deben coincidir</span>
+                        <span class="text-muted small">Las contraseñas deben coincidir</span>
                     </div>
                 </div>
             </div>

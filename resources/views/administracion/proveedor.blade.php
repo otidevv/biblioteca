@@ -71,7 +71,7 @@
                     </div>
                     <div>
                         <strong>Ficha comercial</strong>
-                        <p class="mb-0">Registra informacion clara del proveedor para identificarlo rapido, validar sus datos y facilitar futuras compras institucionales.</p>
+                        <p class="mb-0">Registra información clara del proveedor para identificarlo rápido, validar sus datos y facilitar futuras compras institucionales.</p>
                     </div>
                 </div>
 
@@ -103,12 +103,12 @@
                 </div>
 
                 <div class="admin-modal-section supplier-modal__section supplier-modal__section--contact">
-                    <h6 class="supplier-modal__section-title">Contacto y ubicacion</h6>
-                    <p class="supplier-modal__section-copy">Estos datos ayudan a coordinar compras, confirmar entregas y mantener un historial mas ordenado del proveedor.</p>
+                    <h6 class="supplier-modal__section-title">Contacto y ubicación</h6>
+                    <p class="supplier-modal__section-copy">Estos datos ayudan a coordinar compras, confirmar entregas y mantener un historial más ordenado del proveedor.</p>
                     <div class="row g-3">
                         <div class="col-md-6 form-group form-required">
                             <label class="form-label">Telefono</label>
-                            <input type="text" id="telefono" name="telefono" class="form-control validar_numero" placeholder="Telefono principal">
+                            <input type="text" id="telefono" name="telefono" class="form-control validar_numero" placeholder="Teléfono principal">
                         </div>
                         <div class="col-md-6 form-group">
                             <label class="form-label">Web</label>
@@ -116,7 +116,7 @@
                         </div>
                         <div class="col-md-12 form-group">
                             <label class="form-label">Direccion</label>
-                            <input type="text" id="direccion" name="direccion" class="form-control" placeholder="Direccion comercial o fiscal">
+                            <input type="text" id="direccion" name="direccion" class="form-control" placeholder="Dirección comercial o fiscal">
                         </div>
                     </div>
                 </div>

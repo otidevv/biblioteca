@@ -50,13 +50,13 @@
                 <span class="manual-doc__highlight-icon"><i class="bi bi-123"></i></span>
                 <div>
                     <h4>Orden de desempate</h4>
-                    <p>Cutter, nombre, titulo, edicion y luego sufijo numerico si todavia existe colision.</p>
+                    <p>Cutter, nombre, título, edición y luego sufijo numérico si todavía existe colisión.</p>
                 </div>
             </article>
             <article class="manual-doc__highlight">
                 <span class="manual-doc__highlight-icon"><i class="bi bi-journal-bookmark"></i></span>
                 <div>
-                    <h4>Codigo completo</h4>
+                    <h4>Código completo</h4>
                     <p>El codigo topografico final concatena `codigo_dewey` del libro y `codigo` local.</p>
                 </div>
             </article>
@@ -64,7 +64,7 @@
                 <span class="manual-doc__highlight-icon"><i class="bi bi-diagram-3"></i></span>
                 <div>
                     <h4>Fuentes del sistema</h4>
-                    <p>La logica toma datos de Dewey, Cutter, autores, relaciones y actualizacion topografica masiva.</p>
+                    <p>La lógica toma datos de Dewey, Cutter, autores, relaciones y actualización topográfica masiva.</p>
                 </div>
             </article>
         </section>

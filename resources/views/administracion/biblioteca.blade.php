@@ -23,7 +23,7 @@
         <div class="admin-panel__header">
             <div>
                 <h2 class="admin-panel__title">Sedes bibliotecarias</h2>
-                <p class="admin-panel__copy">Configura las bibliotecas, su informacion institucional y la identidad visual de cada sede.</p>
+                <p class="admin-panel__copy">Configura las bibliotecas, su información institucional y la identidad visual de cada sede.</p>
             </div>
             <div class="admin-actions">
                 <button id="btnNuevo" class="admin-btn admin-btn--primary">Agregar biblioteca</button>
@@ -60,7 +60,7 @@
                         Gestion de sedes
                     </span>
                     <h5 class="modal-title fw-semibold mb-1">Registro de biblioteca</h5>
-                    <p class="library-admin-modal__copy mb-0">Define la identidad de cada sede bibliotecaria con su nombre, informacion institucional y recurso visual.</p>
+                    <p class="library-admin-modal__copy mb-0">Define la identidad de cada sede bibliotecaria con su nombre, información institucional y recurso visual.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -82,7 +82,7 @@
                         <div class="col-md-4 form-group">
                             <label class="form-label">Abrev.</label>
                             <input type="text" id="codigo" name="codigo" class="form-control" placeholder="Ejemplo: CENTRAL">
-                            <div class="form-text">Codigo breve para identificar la sede.</div>
+                            <div class="form-text">Código breve para identificar la sede.</div>
                         </div>
                         <div class="col-md-8 form-group">
                             <label class="form-label">Nombre</label>
@@ -90,7 +90,7 @@
                         </div>
                         <div class="col-md-12 form-group">
                             <label class="form-label">Direccion</label>
-                            <textarea id="direccion" name="direccion" class="form-control" rows="3" placeholder="Ubicacion o direccion referencial de la sede"></textarea>
+                            <textarea id="direccion" name="direccion" class="form-control" rows="3" placeholder="Ubicación o dirección referencial de la sede"></textarea>
                         </div>
                         <div class="col-md-12 form-group">
                             <label class="form-label">Descripcion</label>
@@ -113,7 +113,7 @@
                                 <div class="library-admin-modal__preview-label">Vista previa</div>
                                 <div class="library-admin-modal__preview-empty" id="previewPlaceholder">
                                     <i class="bi bi-image"></i>
-                                    <span>Aun no se selecciono una imagen</span>
+                                    <span>Aún no se seleccionó una imagen</span>
                                 </div>
                                 <img id="previewImagen" src="" class="img-fluid rounded shadow-sm d-none library-admin-modal__preview-image">
                             </div>

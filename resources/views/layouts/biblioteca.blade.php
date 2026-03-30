@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>@yield('title', 'Biblioteca UNAMAD')</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="@yield('meta_description', 'Biblioteca UNAMAD: consulta catalogos, revisa disponibilidad de libros y gestiona reservas y prestamos en linea.')">
+<meta name="description" content="@yield('meta_description', 'Biblioteca UNAMAD: consulta catálogos, revisa disponibilidad de libros y gestiona reservas y préstamos en línea.')">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -1057,7 +1057,7 @@ body.library-dark .overlay.active {
         'kicker' => 'UNAMAD',
         'icon' => 'bi-mortarboard-fill',
         'title' => 'Sistema de Biblioteca',
-        'subtitle' => 'Navegacion central para catalogo, reservas y consultas.',
+        'subtitle' => 'Navegación central para catálogo, reservas y consultas.',
     ];
 
     if (request()->routeIs('home')) {
@@ -1071,7 +1071,7 @@ body.library-dark .overlay.active {
         $topbarMeta = [
             'kicker' => 'Consulta bibliografica',
             'icon' => 'bi-collection-fill',
-            'title' => 'Catalogo institucional',
+            'title' => 'Catálogo institucional',
             'subtitle' => 'Busca libros, filtra resultados y revisa valoraciones antes de consultar el detalle.',
         ];
     } elseif (request()->routeIs('biblioteca.show')) {
@@ -1100,7 +1100,7 @@ body.library-dark .overlay.active {
             'kicker' => 'Control de movimientos',
             'icon' => 'bi-arrow-left-right',
             'title' => 'Prestamos y movimientos',
-            'subtitle' => 'Consulta el flujo de prestamos y devoluciones desde una vista centralizada.',
+            'subtitle' => 'Consulta el flujo de préstamos y devoluciones desde una vista centralizada.',
         ];
     } elseif (request()->routeIs('evento')) {
         $topbarMeta = [
@@ -1125,13 +1125,13 @@ body.library-dark .overlay.active {
                 </div>
                 <div class="library-brand-copy">
                     <h1>Biblioteca UNAMAD</h1>
-                    <small>Universidad Nacional Amazonica de Madre de Dios</small>
+                    <small>Universidad Nacional Amazónica de Madre de Dios</small>
                 </div>
             </div>
             <p>Explora catálogos, reservas y préstamos desde una experiencia más clara y ordenada.</p>
         </div>
 
-        <nav class="library-nav" aria-label="Navegacion principal">
+        <nav class="library-nav" aria-label="Navegación principal">
             <a href="{{ route('home') }}" class="library-nav-link nav-home {{ request()->routeIs('home') ? 'is-active' : '' }}">
                 <span class="library-nav-icon">
                     <i class="bi bi-house-heart-fill"></i>
@@ -1146,8 +1146,8 @@ body.library-dark .overlay.active {
                     <i class="bi bi-collection-fill"></i>
                 </span>
                 <span class="library-nav-text">
-                    <strong>Catalogo</strong>
-                    <small>Busqueda de libros</small>
+                    <strong>Catálogo</strong>
+                    <small>Búsqueda de libros</small>
                 </span>
             </a>
             <a href="{{ route('evento') }}" class="library-nav-link nav-events {{ request()->routeIs('evento') ? 'is-active' : '' }}">
@@ -1174,7 +1174,7 @@ body.library-dark .overlay.active {
                     <i class="bi bi-arrow-left-right"></i>
                 </span>
                 <span class="library-nav-text">
-                    <strong>Prestamos</strong>
+                    <strong>Préstamos</strong>
                     <small>Control de movimientos</small>
                 </span>
             </a>
@@ -1282,7 +1282,7 @@ body.library-dark .overlay.active {
                                     <i class="bi bi-box-arrow-right"></i>
                                 </span>
                                 <span class="library-alert-copy">
-                                    <strong>Cerrar sesion</strong>
+                                    <strong>Cerrar sesión</strong>
                                     <p>Salir del sistema de biblioteca.</p>
                                 </span>
                             </button>
@@ -1292,7 +1292,7 @@ body.library-dark .overlay.active {
                 @else
                 <a href="{{ route('login', request()->routeIs('libro.show') ? ['redirect' => url()->current()] : []) }}" class="btn library-login-btn">
                     <i class="bi bi-box-arrow-in-right me-1"></i>
-                    Iniciar sesion
+                    Iniciar sesión
                 </a>
                 @endauth
             </div>
@@ -1302,22 +1302,22 @@ body.library-dark .overlay.active {
             @yield('content')
         </section>
 
-        <footer class="library-footer" aria-label="Pie de pagina institucional">
+        <footer class="library-footer" aria-label="Pie de página institucional">
             <div class="library-footer-grid">
                 <div>
                     <h6>Biblioteca UNAMAD</h6>
                     <p class="mb-2">
-                        Plataforma de consulta para explorar catalogos, revisar disponibilidad bibliografica
-                        y gestionar reservas y prestamos en la Universidad Nacional Amazonica de Madre de Dios.
+                        Plataforma de consulta para explorar catálogos, revisar disponibilidad bibliográfica
+                        y gestionar reservas y préstamos en la Universidad Nacional Amazónica de Madre de Dios.
                     </p>
-                    <small>Madre de Dios, Peru</small>
+                    <small>Madre de Dios, Perú</small>
                 </div>
 
                 <div>
-                    <h6>Enlaces rapidos</h6>
+                    <h6>Enlaces rápidos</h6>
                     <div class="library-footer-list">
                         <a href="{{ route('home') }}">Inicio</a>
-                        <a href="{{ route('catalogo') }}">Catalogo</a>
+                        <a href="{{ route('catalogo') }}">Catálogo</a>
                         <a href="{{ route('evento') }}">Eventos</a>
                         @auth
                         <a href="{{ route('mis.reservas') }}">Mis reservas</a>
@@ -1328,9 +1328,9 @@ body.library-dark .overlay.active {
                 <div>
                     <h6>Contacto</h6>
                     <div class="library-footer-list">
-                        <span><i class="bi bi-geo-alt me-2"></i>Universidad Nacional Amazonica de Madre de Dios</span>
+                        <span><i class="bi bi-geo-alt me-2"></i>Universidad Nacional Amazónica de Madre de Dios</span>
                         <span><i class="bi bi-envelope me-2"></i>biblioteca@unamad.edu.pe</span>
-                        <span><i class="bi bi-clock me-2"></i>Consulta digital disponible todo el dia</span>
+                        <span><i class="bi bi-clock me-2"></i>Consulta digital disponible todo el día</span>
                     </div>
                 </div>
             </div>

@@ -23,7 +23,7 @@
         <div class="admin-panel__header">
             <div>
                 <h2 class="admin-panel__title">Clasificacion de registros</h2>
-                <p class="admin-panel__copy">Define los tipos bibliograficos del sistema con codigo, abreviatura y descripcion operativa.</p>
+                <p class="admin-panel__copy">Define los tipos bibliográficos del sistema con código, abreviatura y descripción operativa.</p>
             </div>
             <div class="admin-actions">
                 <button id="btnNuevo" class="admin-btn admin-btn--primary">Agregar tipo de registro</button>
@@ -34,7 +34,7 @@
             <table id="tabla-tipo-registro" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
                 <thead>
                     <tr>
-                        <th>Codigo</th>
+                        <th>Código</th>
                         <th>Abreviatura</th>
                         <th>Nombre</th>
                         <th>Estado</th>
@@ -59,7 +59,7 @@
                         Clasificacion bibliografica
                     </span>
                     <h5 class="modal-title fw-semibold mb-1">Registro de tipo de registro</h5>
-                    <p class="recordtype-modal__copy mb-0">Define como se etiquetaran los distintos tipos de material bibliografico dentro del sistema.</p>
+                    <p class="recordtype-modal__copy mb-0">Define cómo se etiquetarán los distintos tipos de material bibliográfico dentro del sistema.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -79,7 +79,7 @@
                     <p class="recordtype-modal__section-copy">Estos campos se usan en formularios de libros y deben mantener un lenguaje uniforme para todo el equipo.</p>
                     <div class="row g-3">
                             <div class="col-md-6 form-group form-required">
-                                <label class="form-label">Codigo</label>
+                                <label class="form-label">Código</label>
                                 <input type="text" id="codigo" name="codigo" class="form-control mayuscula" placeholder="Ingrese el codigo">
                             </div>
                             <div class="col-md-6 form-group form-required">

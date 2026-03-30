@@ -17,7 +17,7 @@ class ReservacionController extends Controller
     public function listar(Request $request)
     {
         if (! auth()->check()) {
-            return response()->json(['error' => 'Debes iniciar sesion'], 401);
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
         $user = auth()->user();
@@ -104,7 +104,7 @@ class ReservacionController extends Controller
     {
         if (! auth()->check()) {
             return response()->json([
-                'error' => 'Debes iniciar sesion',
+                'error' => 'Debes iniciar sesión',
             ], 401);
         }
 
@@ -214,7 +214,7 @@ class ReservacionController extends Controller
     public function entregar(Request $request, $id)
     {
         if (! auth()->check()) {
-            return response()->json(['error' => 'Debes iniciar sesion'], 401);
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
         $request->validate([

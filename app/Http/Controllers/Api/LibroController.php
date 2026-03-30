@@ -297,7 +297,7 @@ class LibroController extends Controller
         if (!$prediccion) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se encontro una sugerencia confiable para el titulo enviado.',
+                'message' => 'No se encontró una sugerencia confiable para el título enviado.',
             ], 404);
         }
 

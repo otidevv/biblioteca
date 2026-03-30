@@ -202,7 +202,7 @@
                     <button type="button" class="admin-user" @click="open = !open">
                         <span class="admin-user__avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
                         <span class="admin-user__meta">
-                            <span class="admin-user__label">Sesion activa</span>
+                            <span class="admin-user__label">Sesión activa</span>
                             <span class="admin-user__name">{{ auth()->user()->name ?? 'Usuario' }}</span>
                         </span>
                     </button>
@@ -217,7 +217,7 @@
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="admin-dropdown__link admin-dropdown__link--danger">Cerrar sesion</button>
+                            <button type="submit" class="admin-dropdown__link admin-dropdown__link--danger">Cerrar sesión</button>
                         </form>
                     </div>
                 </div>

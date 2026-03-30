@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Historial de prestamos</title>
+    <title>Historial de préstamos</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #111827; }
         h1 { margin: 0 0 6px; font-size: 18px; }
@@ -14,7 +14,7 @@
     </style>
 </head>
 <body>
-    <h1>Historial de prestamos</h1>
+    <h1>Historial de préstamos</h1>
     <div class="meta">
         <div>Generado: {{ $generadoEn->format('d/m/Y H:i') }}</div>
         <div>Filtros: {{ $filtrosTexto }}</div>
@@ -31,8 +31,8 @@
                 <th>Tipo</th>
                 <th>Estado</th>
                 <th>Prestamo</th>
-                <th>Fecha prestamo</th>
-                <th>Fecha devolucion</th>
+                <th>Fecha préstamo</th>
+                <th>Fecha devolución</th>
                 <th>Dias</th>
                 <th>Registrado por</th>
             </tr>

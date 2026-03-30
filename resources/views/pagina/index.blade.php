@@ -1,7 +1,7 @@
 ﻿@extends('layouts.biblioteca')
 
 @section('title', 'Biblioteca UNAMAD | Inicio')
-@section('meta_description', 'Portada de la Biblioteca UNAMAD con acceso al catalogo, bibliotecas disponibles y libros recientes.')
+@section('meta_description', 'Portada de la Biblioteca UNAMAD con acceso al catálogo, bibliotecas disponibles y libros recientes.')
 
 @section('css')
 <link href="{{ asset('css/pagina/index.css') }}" rel="stylesheet">
@@ -19,13 +19,13 @@
 <section class="home-hero">
     <span class="home-eyebrow">
         <i class="bi bi-mortarboard-fill"></i>
-        Universidad Nacional Amazonica de Madre de Dios
+        Universidad Nacional Amazónica de Madre de Dios
     </span>
 
     <h2>Biblioteca UNAMAD para descubrir, consultar y reservar conocimiento.</h2>
     <p>
-        Accede al catÃ¡logo institucional, revisa disponibilidad por biblioteca y encuentra publicaciones recientes
-        desde una portada mÃ¡s clara, rÃ¡pida y orientada a la consulta.
+        Accede al catálogo institucional, revisa disponibilidad por biblioteca y encuentra publicaciones recientes
+        desde una portada más clara, rápida y orientada a la consulta.
     </p>
 
     <div class="home-search-card">
@@ -37,7 +37,7 @@
                 <input type="text"
                        name="titulo"
                        class="form-control"
-                       placeholder="Buscar por titulo, autor o palabra clave"
+                       placeholder="Buscar por título, autor o palabra clave"
                        value="{{ request('titulo') }}">
                 <button class="btn" type="submit">
                     Buscar ahora
@@ -67,7 +67,7 @@
             <div class="home-stat-card">
                 <span><i class="bi bi-calendar-event-fill"></i></span>
                 <h3>{{ $totalActividades }}</h3>
-                <p>Actividades activas o proximas dentro de la agenda de biblioteca.</p>
+                <p>Actividades activas o próximas dentro de la agenda de biblioteca.</p>
             </div>
         </div>
     </div>
@@ -80,7 +80,7 @@
             <p class="home-section-subtitle">Explora las sedes y espacios de consulta disponibles.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
-            Ver catalogo completo <i class="bi bi-arrow-right-short"></i>
+            Ver catálogo completo <i class="bi bi-arrow-right-short"></i>
         </a>
     </div>
 
@@ -102,7 +102,7 @@
                         Sede bibliotecaria
                     </span>
                     <h5>{{ $b->nombre }}</h5>
-                    <p>{{ \Illuminate\Support\Str::limit($b->descripcion ?: 'Espacio de acceso bibliografico de la universidad.', 110) }}</p>
+                    <p>{{ \Illuminate\Support\Str::limit($b->descripcion ?: 'Espacio de acceso bibliográfico de la universidad.', 110) }}</p>
 
                     <div class="home-library-footer">
                         <span>Explorar biblioteca</span>
@@ -114,7 +114,7 @@
         @empty
         <div class="col-12">
             <div class="alert alert-light border rounded-4 mb-0">
-                No hay bibliotecas registradas todavia.
+                No hay bibliotecas registradas todavía.
             </div>
         </div>
         @endforelse
@@ -153,7 +153,7 @@
 
                 <div class="home-activity-footer">
                     <span>{{ $actividad->referencia ?: 'Biblioteca UNAMAD' }}</span>
-                    <a href="{{ route('evento') }}" class="home-link">Ver mas</a>
+                    <a href="{{ route('evento') }}" class="home-link">Ver más</a>
                 </div>
             </article>
         </div>
@@ -170,10 +170,10 @@
     <div class="home-section-header">
         <div>
             <h3 class="home-section-title">Libros recientes</h3>
-            <p class="home-section-subtitle">Una selecciÃ³n rÃ¡pida para empezar a explorar el catÃ¡logo.</p>
+            <p class="home-section-subtitle">Una selección rápida para empezar a explorar el catálogo.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
-            Ir al catalogo <i class="bi bi-arrow-right-short"></i>
+            Ir al catálogo <i class="bi bi-arrow-right-short"></i>
         </a>
     </div>
 
@@ -236,5 +236,4 @@
     </div>
 </section>
 @endsection
-
 

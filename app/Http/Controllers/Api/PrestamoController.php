@@ -17,7 +17,7 @@ class PrestamoController extends Controller
     public function listar(Request $request)
     {
         if (! auth()->check()) {
-            return response()->json(['error' => 'Debes iniciar sesion'], 401);
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
         $user = Auth::user();
@@ -128,7 +128,7 @@ class PrestamoController extends Controller
     public function nuevoPrestamo(Request $request)
     {
         if (! auth()->check()) {
-            return response()->json(['error' => 'Debes iniciar sesion'], 401);
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
         $request->validate([
@@ -144,7 +144,7 @@ class PrestamoController extends Controller
 
         if ($activos >= 3) {
             return response()->json([
-                'error' => 'Ya tienes 3 prestamos activos',
+                'error' => 'Ya tienes 3 préstamos activos',
             ]);
         }
 
@@ -184,13 +184,13 @@ class PrestamoController extends Controller
     public function devolver(Request $request, $id)
     {
         if (! auth()->check()) {
-            return response()->json(['error' => 'Debes iniciar sesion'], 401);
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
         $prestamo = Prestamo::with('ejemplar')->find($id);
 
         if (! $prestamo) {
-            return response()->json(['error' => 'No se encontro prestamo']);
+            return response()->json(['error' => 'No se encontró el préstamo']);
         }
 
         $now = Carbon::now();
@@ -225,13 +225,13 @@ class PrestamoController extends Controller
     public function previewSancion(Request $request, $id)
     {
         if (! auth()->check()) {
-            return response()->json(['error' => 'Debes iniciar sesion'], 401);
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
         $prestamo = Prestamo::find($id);
 
         if (! $prestamo) {
-            return response()->json(['error' => 'No se encontro prestamo'], 404);
+            return response()->json(['error' => 'No se encontró el préstamo'], 404);
         }
 
         $estadoLibro = (int) $request->input('estado_libro', 1);

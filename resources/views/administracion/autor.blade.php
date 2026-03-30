@@ -26,7 +26,7 @@
         <div class="admin-panel__header">
             <div>
                 <h2 class="admin-panel__title">Directorio de autores</h2>
-                <p class="admin-panel__copy">Registra autores, organiza procedencia y mantiene limpio el catalogo relacional de libros.</p>
+                <p class="admin-panel__copy">Registra autores, organiza procedencia y mantiene limpio el catálogo relacional de libros.</p>
             </div>
             <div class="admin-actions">
                 <button id="btnNuevo" class="admin-btn admin-btn--primary">Agregar autor</button>
@@ -60,7 +60,7 @@
                         Autoridad bibliografica
                     </span>
                     <h5 class="modal-title fw-semibold mb-1">Registro de autor</h5>
-                    <p class="author-modal__copy mb-0">Crea una ficha limpia del autor para mantener consistencia en el catalogo y evitar registros duplicados.</p>
+                    <p class="author-modal__copy mb-0">Crea una ficha limpia del autor para mantener consistencia en el catálogo y evitar registros duplicados.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

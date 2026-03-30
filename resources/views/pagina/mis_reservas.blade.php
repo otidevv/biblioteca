@@ -53,7 +53,7 @@
                     <i class="bi bi-hourglass-split"></i>
                 </span>
                 <div>
-                    <strong>Proxima reserva por vencer</strong>
+                    <strong>Próxima reserva por vencer</strong>
                     <span>
                         "{{ $proximaReserva->ejemplar->libro->titulo }}" debe recogerse hasta el
                         {{ $proximaReserva->fecha_limite_real->format('d/m/Y') }} a las 20:00.
@@ -68,9 +68,9 @@
             <div class="reservas-empty-icon">
                 <i class="bi bi-journal-x"></i>
             </div>
-            <h3>Aun no tienes reservas registradas</h3>
+            <h3>Aún no tienes reservas registradas</h3>
             <p>
-                Explora el catalogo, encuentra un libro disponible y solicita tu primera reserva desde la ficha del ejemplar.
+                Explora el catálogo, encuentra un libro disponible y solicita tu primera reserva desde la ficha del ejemplar.
             </p>
         </section>
     @else
@@ -78,7 +78,7 @@
             <div class="reservas-card-header">
                 <div>
                     <h2>Historial de reservas</h2>
-                    <p>Visualiza la biblioteca, el tipo de prestamo y el estado actualizado de cada solicitud.</p>
+                    <p>Visualiza la biblioteca, el tipo de préstamo y el estado actualizado de cada solicitud.</p>
                 </div>
                 <span class="reservas-time">
                     <i class="bi bi-collection"></i>
@@ -106,10 +106,10 @@
                                     <div>
                                         <div class="reservas-book-title">{{ $r->ejemplar->libro->titulo }}</div>
                                         <div class="reservas-book-meta">
-                                            {{ $r->ejemplar->codigo ?? 'Sin codigo' }}
+                                            {{ $r->ejemplar->codigo ?? 'Sin código' }}
                                         </div>
                                         <div class="reservas-book-subtitle">
-                                            Recoge tu reserva en {{ $r->ejemplar->biblioteca->nombre ?? 'biblioteca no disponible' }} antes de la hora limite.
+                                            Recoge tu reserva en {{ $r->ejemplar->biblioteca->nombre ?? 'biblioteca no disponible' }} antes de la hora límite.
                                         </div>
                                     </div>
                                 </div>
@@ -124,14 +124,14 @@
                                 </div>
                                 <div class="reservas-meta-card">
                                     <span>Tipo</span>
-                                    <strong>{{ $tipoPrestamo === 1 ? 'Prestamo a casa' : 'Prestamo en sala' }}</strong>
+                                    <strong>{{ $tipoPrestamo === 1 ? 'Préstamo a casa' : 'Préstamo en sala' }}</strong>
                                 </div>
                                 <div class="reservas-meta-card">
                                     <span>Reserva registrada</span>
                                     <strong>{{ $r->fecha_reservacion?->format('d/m/Y H:i') ?? '-' }}</strong>
                                 </div>
                                 <div class="reservas-meta-card">
-                                    <span>Fecha limite</span>
+                                    <span>Fecha límite</span>
                                     <strong>{{ $fechaLimiteReal->format('d/m/Y') }} a las 20:00</strong>
                                 </div>
                             </div>
@@ -197,9 +197,9 @@
             <div class="modal-header reservas-modal-header border-0">
                 <div>
                     <h5 class="modal-title reservas-modal-title" id="modalCancelarTitle">Cancelar reserva</h5>
-                    <small class="text-muted">Esta accion liberara el ejemplar y dejara la solicitud sin efecto.</small>
+                    <small class="text-muted">Esta acción liberará el ejemplar y dejará la solicitud sin efecto.</small>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar modal de cancelacion"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar modal de cancelación"></button>
             </div>
 
             <div class="modal-body reservas-modal-body text-center">
@@ -208,11 +208,11 @@
                 </div>
 
                 <p class="mb-2 fw-bold text-dark">
-                    Seguro que deseas cancelar esta reserva?
+                    ¿Seguro que deseas cancelar esta reserva?
                 </p>
 
                 <p class="mb-0 text-muted">
-                    Si confirmas, el sistema liberara el ejemplar automaticamente para que vuelva a estar disponible.
+                    Si confirmas, el sistema liberará el ejemplar automáticamente para que vuelva a estar disponible.
                 </p>
             </div>
 
@@ -222,12 +222,11 @@
                 </button>
 
                 <button type="button" class="btn btn-danger" id="confirmarCancelacion">
-                    Si, cancelar reserva
+                    Sí, cancelar reserva
                 </button>
             </div>
         </div>
     </div>
 </div>
 @endsection
-
 
