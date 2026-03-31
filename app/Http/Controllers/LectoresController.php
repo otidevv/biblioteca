@@ -13,9 +13,11 @@ use App\Models\Sancion;
 use App\Models\User;
 use App\Models\Usuario_rol_biblioteca;
 use App\Services\ReporteHistorialPrestamosService;
+use App\Services\LectorImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use function dispatch;
 
 class LectoresController extends Controller
@@ -26,6 +28,7 @@ class LectoresController extends Controller
             'registro' => $this->lectores(),
             'historial' => $this->historial(),
             'penalizaciones' => $this->penalizaciones(),
+            'importacion' => $this->importacion(),
             default => abort(404),
         };
     }
@@ -35,6 +38,14 @@ class LectoresController extends Controller
         $carreras = Carrera::latest()->get();
 
         return view('lectores.registro_lectores', compact('carreras'));
+    }
+
+    protected function importacion()
+    {
+        $carreras = Carrera::orderBy('nombre')->get(['id', 'nombre']);
+        $columnasPlantilla = app(LectorImportService::class)->templateColumns();
+
+        return view('lectores.importacion_lectores', compact('carreras', 'columnasPlantilla'));
     }
 
     protected function historial()
@@ -224,5 +235,16 @@ class LectoresController extends Controller
         ];
 
         return view('lectores.penalizaciones', compact('penalizaciones', 'resumen'));
+    }
+
+    public function descargarPlantillaImportacion(LectorImportService $service): StreamedResponse
+    {
+        $contenido = $service->templateXlsx();
+
+        return response()->streamDownload(function () use ($contenido) {
+            echo $contenido;
+        }, 'plantilla_lectores.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }

@@ -9,6 +9,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\User;
 use App\Models\Persona;
 use App\Models\Usuario_rol_biblioteca;
+use App\Services\LectorImportService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -473,6 +474,63 @@ class UsuarioController extends Controller
                 'success' => false,
                 'message' => 'Error al actualizar el lector: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function previewImportacionLectores(Request $request, LectorImportService $service)
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,csv,txt|max:5120',
+        ]);
+
+        try {
+            return response()->json([
+                'success' => true,
+                'message' => 'Archivo procesado correctamente. Revisa la vista previa antes de importar.',
+                'data' => $service->preview($request->file('archivo')),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function cargarImportacionLectores(Request $request, LectorImportService $service)
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'rows' => 'nullable|array',
+        ]);
+
+        try {
+            $preview = null;
+
+            if ($request->filled('rows')) {
+                $preview = $service->reviewTokenRows((string) $request->token, $request->input('rows', []));
+
+                if (!$preview['can_import']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Todavia hay filas con observaciones. Corrigelas antes de importar.',
+                        'data' => $preview,
+                    ], 422);
+                }
+            }
+
+            $resultado = $service->import((string) $request->token, $preview['rows'] ?? null);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Se importaron {$resultado['created']} lectores correctamente.",
+                'created' => $resultado['created'],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         }
     }
 }

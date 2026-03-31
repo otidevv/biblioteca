@@ -18,7 +18,7 @@
 
 <section class="home-hero">
     <span class="home-eyebrow">
-        <i class="bi bi-mortarboard-fill"></i>
+        <i class="bi bi-book-open-fill"></i>
         Universidad Nacional Amazónica de Madre de Dios
     </span>
 
@@ -50,21 +50,21 @@
     <div class="row g-3">
         <div class="col-12 col-md-4">
             <div class="home-stat-card">
-                <span><i class="bi bi-buildings-fill"></i></span>
+                <span><i class="bi bi-building-check"></i></span>
                 <h3>{{ $totalBibliotecas }}</h3>
                 <p>Bibliotecas disponibles para consulta y recorrido.</p>
             </div>
         </div>
         <div class="col-12 col-md-4">
             <div class="home-stat-card">
-                <span><i class="bi bi-journal-richtext"></i></span>
+                <span><i class="bi bi-bookmark-star-fill"></i></span>
                 <h3>{{ $totalLibrosRecientes }}</h3>
                 <p>Títulos recientes destacados en esta portada.</p>
             </div>
         </div>
         <div class="col-12 col-md-4">
             <div class="home-stat-card">
-                <span><i class="bi bi-calendar-event-fill"></i></span>
+                <span><i class="bi bi-calendar2-check"></i></span>
                 <h3>{{ $totalActividades }}</h3>
                 <p>Actividades activas o próximas dentro de la agenda de biblioteca.</p>
             </div>
@@ -79,7 +79,7 @@
             <p class="home-section-subtitle">Explora las 5 sedes y espacios de consulta disponibles en la universidad.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
-            Ver catálogo completo <i class="bi bi-arrow-right-short"></i>
+            Ver catálogo completo <i class="bi bi-chevron-right"></i>
         </a>
     </div>
 
@@ -98,7 +98,7 @@
 
                 <div class="home-library-body">
                     <span class="home-library-badge">
-                        <i class="bi bi-geo-alt-fill"></i>
+                        <i class="bi bi-geo-fill"></i>
                         Sede bibliotecaria
                     </span>
                     <h5>{{ $b->nombre }}</h5>
@@ -106,7 +106,7 @@
 
                     <div class="home-library-footer">
                         <span>Explorar biblioteca</span>
-                        <i class="bi bi-arrow-up-right-circle-fill"></i>
+                        <i class="bi bi-arrow-up-right"></i>
                     </div>
                 </div>
             </a>
@@ -128,7 +128,7 @@
             <p class="home-section-subtitle">Talleres, encuentros, capacitaciones y avisos activos para la comunidad universitaria.</p>
         </div>
         <a href="{{ route('evento') }}" class="home-link">
-            Ver agenda completa <i class="bi bi-arrow-right-short"></i>
+            Ver agenda completa <i class="bi bi-chevron-right"></i>
         </a>
     </div>
 
@@ -173,7 +173,7 @@
             <p class="home-section-subtitle">Una selección curada para empezar a explorar nuestro extenso catálogo.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
-            Ir al catálogo <i class="bi bi-arrow-right-short"></i>
+            Ir al catálogo <i class="bi bi-chevron-right"></i>
         </a>
     </div>
 

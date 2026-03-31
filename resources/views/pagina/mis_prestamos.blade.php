@@ -23,7 +23,7 @@
 <div class="prestamos-shell">
     <section class="prestamos-hero">
         <span class="prestamos-eyebrow">
-            <i class="bi bi-journal-bookmark-fill"></i>
+            <i class="bi bi-book-fill"></i>
             Seguimiento de préstamos
         </span>
 

@@ -61,14 +61,14 @@ window.libroPage = {
                     <div class="book-cover-stats">
                         <div class="book-stat-item">
                             <div class="book-stat-badge">
-                                <i class="bi bi-check-circle-fill"></i>
+                                <i class="bi bi-check2-circle"></i>
                             </div>
                             <small>Disponible</small>
                             <strong>{{ $ejemplaresDisponibles }}/{{ $ejemplaresTotales }}</strong>
                         </div>
                         <div class="book-stat-item">
                             <div class="book-stat-badge">
-                                <i class="bi bi-building"></i>
+                                <i class="bi bi-doorway"></i>
                             </div>
                             <small>En {{ $bibliotecasDisponibles }}</small>
                             <strong>Sede{{ $bibliotecasDisponibles === 1 ? '' : 's' }}</strong>
@@ -80,14 +80,14 @@ window.libroPage = {
             <div class="col-12 col-lg-8">
                 <div class="book-summary">
                     <span class="book-eyebrow">
-                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <i class="bi bi-book-fill"></i>
                         {{ $tipoRegistro }}
                     </span>
 
                     <h1 class="book-main-title">{{ $libro->titulo }}</h1>
 
                     <div class="book-authors">
-                        <i class="bi bi-pen-fill"></i>
+                        <i class="bi bi-quill"></i>
                         <span>{{ $autoresLibro !== '' ? $autoresLibro : 'Autor no disponible' }}</span>
                     </div>
 
@@ -104,11 +104,11 @@ window.libroPage = {
 
                     <div class="book-chip-row">
                         <span class="book-chip">
-                            <i class="bi bi-bookmark-star"></i>
+                            <i class="bi bi-star-fill"></i>
                             {{ $editorialNombre }}
                         </span>
                         <span class="book-chip">
-                            <i class="bi bi-translate"></i>
+                            <i class="bi bi-globe"></i>
                             {{ $idiomaNombre }}
                         </span>
                         @if($libro->edicion)
@@ -132,21 +132,21 @@ window.libroPage = {
 
                     <div class="book-quick-specs">
                         <div class="book-spec-item">
-                            <span class="book-spec-icon"><i class="bi bi-file-earmark-text"></i></span>
+                            <span class="book-spec-icon"><i class="bi bi-file-text-fill"></i></span>
                             <div>
                                 <small>Páginas</small>
                                 <strong>{{ $libro->paginas ?: 'N/D' }}</strong>
                             </div>
                         </div>
                         <div class="book-spec-item">
-                            <span class="book-spec-icon"><i class="bi bi-barcode"></i></span>
+                            <span class="book-spec-icon"><i class="bi bi-qr-code"></i></span>
                             <div>
                                 <small>ISBN</small>
                                 <strong>{{ $libro->isbn ?: 'Sin registro' }}</strong>
                             </div>
                         </div>
                         <div class="book-spec-item">
-                            <span class="book-spec-icon"><i class="bi bi-diagram-2"></i></span>
+                            <span class="book-spec-icon"><i class="bi bi-diagram-3-fill"></i></span>
                             <div>
                                 <small>Código Dewey</small>
                                 <strong>{{ $libro->codigo_dewey ?: 'Pendiente' }}</strong>
@@ -160,7 +160,7 @@ window.libroPage = {
                             <div class="book-topic-list">
                                 @foreach($materiasLibro as $materia)
                                     <span class="book-topic">
-                                        <i class="bi bi-bookmark-check-fill"></i>
+                                        <i class="bi bi-bookmark-heart-fill"></i>
                                         {{ $materia }}
                                     </span>
                                 @endforeach
@@ -174,19 +174,19 @@ window.libroPage = {
                             class="btn book-action-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#modalReserva">
-                            <i class="bi bi-journal-arrow-down"></i>
+                            <i class="bi bi-download"></i>
                             Solicitar préstamo
                         </button>
 
                         <a href="{{ route('catalogo') }}" class="btn book-action-secondary">
-                            <i class="bi bi-arrow-left-circle"></i>
+                            <i class="bi bi-arrow-left"></i>
                             Volver al catálogo
                         </a>
                     </div>
 
                     <div class="book-info-alert">
                         <div class="book-alert-icon">
-                            <i class="bi bi-info-circle"></i>
+                            <i class="bi bi-info-circle-fill"></i>
                         </div>
                         <div class="book-alert-content">
                             <strong>Disponibilidad en tiempo real</strong>
@@ -243,7 +243,7 @@ window.libroPage = {
                 <div class="book-section-heading">
                     <h2 class="book-section-title">Ejemplares registrados</h2>
                     <span class="book-section-badge">
-                        <i class="bi bi-collection"></i>
+                        <i class="bi bi-collection-fill"></i>
                         {{ $ejemplaresTotales }} ejemplar{{ $ejemplaresTotales === 1 ? '' : 'es' }}
                     </span>
                 </div>

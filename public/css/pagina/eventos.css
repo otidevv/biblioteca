@@ -4,6 +4,24 @@
 
 .events-shell { display: grid; gap: 1.6rem; }
 
+.events-icon-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.events-glyph {
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: none;
+}
+
 /* === HERO SECTION === */
 .events-hero {
     position: relative; overflow: hidden; padding: 2rem 1.6rem; border-radius: 2rem;
@@ -49,6 +67,54 @@
 .events-callout h2 { margin: 0; color: #173d2f; font-weight: 800; }
 .events-callout p { color: #647770; line-height: 1.7; }
 
+.events-callout-title,
+.events-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.events-title-icon {
+    width: 3rem;
+    height: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    color: #1d654c;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.86), transparent 52%),
+        linear-gradient(145deg, rgba(203,236,223,.96), rgba(240,247,244,.94));
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.65),
+        0 16px 26px rgba(24,77,59,.1);
+}
+
+.events-title-icon .events-glyph {
+    width: 1.35rem;
+    height: 1.35rem;
+    stroke-width: 2;
+}
+
+.events-title-icon--search {
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.88), transparent 52%),
+        linear-gradient(145deg, rgba(232,245,238,.98), rgba(245,249,247,.95));
+}
+
+.events-title-icon--insight {
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.84), transparent 48%),
+        linear-gradient(145deg, rgba(222,240,233,.98), rgba(248,250,249,.94));
+}
+
+.events-title-icon--star {
+    color: #ad7a22;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.84), transparent 48%),
+        linear-gradient(145deg, rgba(251,239,205,.98), rgba(255,248,233,.94));
+}
+
 .events-summary-stack { display: grid; gap: 0.85rem; }
 
 .events-summary-card {
@@ -61,6 +127,18 @@
 .events-summary-card span {
     display: block; color: #6f8179; font-size: 0.8rem;
     text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.events-summary-label {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.events-summary-label .events-glyph {
+    width: 0.95rem;
+    height: 0.95rem;
+    stroke-width: 2;
 }
 
 .events-summary-card strong {
@@ -147,7 +225,19 @@
 .events-insight-icon {
     width: 48px; height: 48px; display: inline-flex; align-items: center;
     justify-content: center; border-radius: 999px;
-    background: rgba(24,77,59,.08); color: #1d654c; font-size: 1.05rem;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.84), transparent 46%),
+        linear-gradient(145deg, rgba(210,237,226,.98), rgba(239,246,243,.94));
+    color: #1d654c;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.68),
+        0 12px 22px rgba(24,77,59,.08);
+}
+
+.events-insight-icon .events-glyph {
+    width: 1.15rem;
+    height: 1.15rem;
+    stroke-width: 2;
 }
 
 .events-insight-card strong {
@@ -189,13 +279,37 @@
 .events-card-icon {
     width: 52px; height: 52px; display: inline-flex; align-items: center;
     justify-content: center; border-radius: 999px;
-    background: rgba(24,77,59,.08); color: #1d654c; font-size: 1.15rem;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.84), transparent 46%),
+        linear-gradient(145deg, rgba(212,237,227,.98), rgba(244,248,246,.94));
+    color: #1d654c;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.68),
+        0 12px 24px rgba(24,77,59,.08);
+}
+
+.events-card-icon .events-glyph {
+    width: 1.2rem;
+    height: 1.2rem;
+    stroke-width: 2;
 }
 
 .events-card-badge {
     width: 32px; height: 32px; display: inline-flex; align-items: center;
     justify-content: center; border-radius: 50%;
-    background: rgba(216,177,92,.2); color: #f39c12; font-size: 0.85rem;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.78), transparent 42%),
+        linear-gradient(145deg, rgba(251,226,162,.92), rgba(255,241,206,.92));
+    color: #bf8620;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.62),
+        0 10px 18px rgba(216,177,92,.18);
+}
+
+.events-card-badge .events-glyph {
+    width: 0.92rem;
+    height: 0.92rem;
+    stroke-width: 2;
 }
 
 .events-card-body { flex: 1; }
@@ -427,8 +541,27 @@
     text-align: center; color: #61746d;
 }
 
-.events-empty i {
-    font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5;
+.events-empty-icon {
+    width: 4.4rem;
+    height: 4.4rem;
+    margin: 0 auto 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.4rem;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 45%),
+        linear-gradient(145deg, rgba(214,236,227,.96), rgba(242,247,245,.92));
+    color: #1b654d;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.68),
+        0 14px 24px rgba(24,77,59,.08);
+}
+
+.events-empty-icon .events-glyph {
+    width: 1.7rem;
+    height: 1.7rem;
+    stroke-width: 2;
 }
 
 .events-empty p { margin: 0.5rem 0 0.2rem; font-weight: 600; }
@@ -553,8 +686,13 @@ body.library-dark .events-insight-featured {
 }
 
 body.library-dark .events-insight-icon {
-    background: rgba(78,181,145,.12);
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.06), transparent 45%),
+        linear-gradient(145deg, rgba(35,66,58,.94), rgba(16,28,25,.92));
     color: #86e2c0;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 16px 28px rgba(0,0,0,.24);
 }
 
 body.library-dark .events-insight-card strong {
@@ -732,8 +870,51 @@ body.library-dark .events-empty {
     color: #aebdca;
 }
 
-body.library-dark .events-empty i {
-    color: #8fa4b4;
+body.library-dark .events-title-icon {
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 46%),
+        linear-gradient(145deg, rgba(28,49,45,.94), rgba(15,24,23,.92));
+    color: #86e2c0;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 18px 30px rgba(0,0,0,.24);
+}
+
+body.library-dark .events-title-icon--star {
+    color: #f1c979;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 46%),
+        linear-gradient(145deg, rgba(69,55,26,.94), rgba(30,24,14,.92));
+}
+
+body.library-dark .events-card-icon {
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 46%),
+        linear-gradient(145deg, rgba(34,64,57,.94), rgba(15,27,24,.92));
+    color: #86e2c0;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 16px 28px rgba(0,0,0,.24);
+}
+
+body.library-dark .events-card-badge {
+    color: #f1c979;
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 46%),
+        linear-gradient(145deg, rgba(89,66,24,.92), rgba(44,33,16,.9));
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 14px 22px rgba(0,0,0,.22);
+}
+
+body.library-dark .events-empty-icon {
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 46%),
+        linear-gradient(145deg, rgba(34,64,57,.94), rgba(15,27,24,.92));
+    color: #86e2c0;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 16px 28px rgba(0,0,0,.24);
 }
 
 /* === DARK MODE - FORCE CSS FOR ALL INPUTS === */

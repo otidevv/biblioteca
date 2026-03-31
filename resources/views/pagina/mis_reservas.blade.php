@@ -23,7 +23,7 @@
 <div class="reservas-shell">
     <section class="reservas-hero">
         <span class="reservas-eyebrow">
-            <i class="bi bi-journal-check"></i>
+            <i class="bi bi-bookmark-heart-fill"></i>
             Seguimiento de reservas
         </span>
 

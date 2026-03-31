@@ -119,6 +119,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 
     // LECTORES
     Route::prefix('lectores')->group(function () {
+        Route::get('importacion/plantilla', [LectoresController::class, 'descargarPlantillaImportacion'])
+            ->name('lectores.importacion.plantilla');
         Route::post('historial/reportes/solicitar', [LectoresController::class, 'solicitarReporteHistorial']);
         Route::get('historial/reportes/{reporte}/descargar', [LectoresController::class, 'descargarReporteHistorial']);
         Route::get('{modulo}', [LectoresController::class, 'index'])
@@ -138,6 +140,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/lectores/listar', [ApiUsuarioController::class, 'listarLectores'])->name('lectores.listar');
             Route::post('/lectores/nuevo', [ApiUsuarioController::class, 'nuevoLector'])->name('lectores.nuevo');
             Route::post('/lectores/edit', [ApiUsuarioController::class, 'editLector'])->name('lectores.edit');
+            Route::post('/lectores/importacion/preview', [ApiUsuarioController::class, 'previewImportacionLectores'])->name('lectores.importacion.preview');
+            Route::post('/lectores/importacion/cargar', [ApiUsuarioController::class, 'cargarImportacionLectores'])->name('lectores.importacion.cargar');
             //busqueda de dni en api externa
 
         });

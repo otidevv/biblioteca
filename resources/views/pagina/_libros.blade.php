@@ -15,7 +15,7 @@
 
                 <div class="catalog-grid-body">
                     <span class="catalog-grid-tag">
-                        <i class="bi bi-book-half"></i>
+                        <i class="bi bi-bookmark-star-fill"></i>
                         Catalogo
                     </span>
 
@@ -37,7 +37,7 @@
 
                     <div class="catalog-grid-meta">
                         <small>
-                            <i class="bi bi-journal-text me-1"></i>
+                            <i class="bi bi-file-text-fill me-1"></i>
                             Disponible en catalogo
                         </small>
                         <span class="catalog-grid-button">Ver detalle</span>

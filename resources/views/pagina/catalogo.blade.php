@@ -19,7 +19,7 @@
 
 <section class="catalog-hero">
     <span class="catalog-hero-badge">
-        <i class="bi bi-collection-fill"></i>
+        <i class="bi bi-books"></i>
         Catalogo institucional
     </span>
 
@@ -41,7 +41,7 @@
         <div class="catalog-filter-header">
             <div>
                 <span class="catalog-filter-kicker">
-                    <i class="bi bi-sliders2"></i>
+                    <i class="bi bi-funnel-fill"></i>
                     Filtrar catalogo
                 </span>
                 <h2 class="catalog-filter-title">Encuentra el libro que necesitas</h2>
@@ -92,7 +92,7 @@
                             Aplicar
                         </button>
                         <a href="{{ route('catalogo') }}" class="btn btn-clear">
-                            <i class="bi bi-arrow-counterclockwise"></i>
+                            <i class="bi bi-arrow-clockwise"></i>
                             Limpiar
                         </a>
                     </div>
@@ -109,7 +109,7 @@
     </div>
 
     <span class="catalog-chip">
-        <i class="bi bi-journal-text"></i>
+        <i class="bi bi-file-text-fill"></i>
         {{ $libros->total() }} resultados
     </span>
 </section>
