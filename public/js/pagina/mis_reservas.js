@@ -23,10 +23,20 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(`/pagina/reserva/${reservaId}/cancelar`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(res => res.json())
+            .then(async (res) => {
+                const payload = await res.json().catch(() => null);
+
+                if (!res.ok || !payload) {
+                    throw new Error(resolveReservationError(payload, 'No se pudo cancelar la reserva.'));
+                }
+
+                return payload;
+            })
             .then(res => {
                 if (res.error) {
                     alerta(res.error, false);
@@ -41,10 +51,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 setTimeout(() => {
                     location.reload();
                 }, 800);
+            })
+            .catch((error) => {
+                alerta(error?.message || 'No se pudo cancelar la reserva.', false);
             });
         });
     }
 });
+
+function resolveReservationError(payload, fallbackMessage) {
+    if (!payload) {
+        return fallbackMessage;
+    }
+
+    if (payload.errors && typeof payload.errors === 'object') {
+        const firstGroup = Object.values(payload.errors)[0];
+        const firstMessage = Array.isArray(firstGroup) ? firstGroup[0] : firstGroup;
+
+        if (typeof firstMessage === 'string' && firstMessage.trim() !== '') {
+            return firstMessage;
+        }
+    }
+
+    if (typeof payload.error === 'string' && payload.error.trim() !== '') {
+        return payload.error;
+    }
+
+    if (typeof payload.message === 'string' && payload.message.trim() !== '') {
+        return payload.message;
+    }
+
+    return fallbackMessage;
+}
 
 function iniciarCountdown() {
     const elementos = document.querySelectorAll('.countdown');

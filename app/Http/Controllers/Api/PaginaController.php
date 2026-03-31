@@ -109,7 +109,24 @@ class PaginaController extends Controller
             ->latest()
             ->get();
 
-        return view('pagina._comentarios', compact('comentarios'));
+        $libro = Libro::query()
+            ->withAvg('comentarios as rating_promedio', 'calificacion')
+            ->withCount('comentarios')
+            ->findOrFail($request->libro_id);
+
+        return response()->json([
+            'ok' => true,
+            'comentariosHtml' => view('pagina._comentarios', compact('comentarios'))->render(),
+            'ratingHtml' => view('pagina._rating_summary', [
+                'libro' => $libro,
+                'ratingSize' => '1rem',
+            ])->render(),
+            'mainRatingHtml' => view('pagina._rating_summary', [
+                'libro' => $libro,
+                'ratingClass' => 'book-main-rating-stars',
+                'ratingSize' => '1rem',
+            ])->render(),
+        ]);
     }
     public function listarLibros(Request $request)
     {

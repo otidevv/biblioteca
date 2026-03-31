@@ -22,10 +22,9 @@
         Universidad Nacional Amazónica de Madre de Dios
     </span>
 
-    <h2>Biblioteca UNAMAD para descubrir, consultar y reservar conocimiento.</h2>
+    <h2>📚 Descubre, consulta y reserva el conocimiento</h2>
     <p>
-        Accede al catálogo institucional, revisa disponibilidad por biblioteca y encuentra publicaciones recientes
-        desde una portada más clara, rápida y orientada a la consulta.
+        Accede al catálogo institucional con miles de títulos, revisa disponibilidad en tiempo real por biblioteca y encuentra publicaciones recientes. Una plataforma moderna y orientada a tu búsqueda de información.
     </p>
 
     <div class="home-search-card">
@@ -76,8 +75,8 @@
 <section class="home-section">
     <div class="home-section-header">
         <div>
-            <h3 class="home-section-title">Bibliotecas</h3>
-            <p class="home-section-subtitle">Explora las sedes y espacios de consulta disponibles.</p>
+            <h3 class="home-section-title">🏛️ Nuestras Bibliotecas</h3>
+            <p class="home-section-subtitle">Explora las 5 sedes y espacios de consulta disponibles en la universidad.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
             Ver catálogo completo <i class="bi bi-arrow-right-short"></i>
@@ -90,9 +89,10 @@
             <a href="{{ route('biblioteca.show', $b->id) }}"
                class="home-library-card"
                aria-label="Explorar biblioteca {{ $b->nombre }}">
-                <img src="{{ $b->imagen ?: asset('img/banner.png') }}"
+                <img src="{{ $b->imagen_url }}"
                      alt="{{ $b->nombre }}"
                      class="home-library-cover"
+                     onerror="this.onerror=null;this.src='{{ asset('img/biblioteca-placeholder.svg') }}';"
                      loading="lazy"
                      decoding="async">
 
@@ -124,8 +124,8 @@
 <section class="home-section">
     <div class="home-section-header">
         <div>
-            <h3 class="home-section-title">Actividades en curso</h3>
-            <p class="home-section-subtitle">Talleres, encuentros y avisos activos para la comunidad universitaria.</p>
+            <h3 class="home-section-title">📅 Actividades en Curso</h3>
+            <p class="home-section-subtitle">Talleres, encuentros, capacitaciones y avisos activos para la comunidad universitaria.</p>
         </div>
         <a href="{{ route('evento') }}" class="home-link">
             Ver agenda completa <i class="bi bi-arrow-right-short"></i>
@@ -169,8 +169,8 @@
 <section class="home-section">
     <div class="home-section-header">
         <div>
-            <h3 class="home-section-title">Libros recientes</h3>
-            <p class="home-section-subtitle">Una selección rápida para empezar a explorar el catálogo.</p>
+            <h3 class="home-section-title">✨ Títulos Recientes</h3>
+            <p class="home-section-subtitle">Una selección curada para empezar a explorar nuestro extenso catálogo.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
             Ir al catálogo <i class="bi bi-arrow-right-short"></i>
@@ -236,4 +236,3 @@
     </div>
 </section>
 @endsection
-

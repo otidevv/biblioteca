@@ -26,6 +26,9 @@ class PaginaController extends Controller
         $libros = Libro::with(['autores', 'editorial'])
             ->withAvg('comentarios as rating_promedio', 'calificacion')
             ->withCount('comentarios')
+            ->whereHas('ejemplares', function ($query) {
+                $query->whereNotNull('biblioteca_id');
+            })
             ->latest()
             ->take(8)
             ->get();

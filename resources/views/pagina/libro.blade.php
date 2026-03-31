@@ -58,14 +58,20 @@ window.libroPage = {
                             onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';">
                     </div>
 
-                    <div class="book-cover-meta">
-                        <div class="book-cover-meta-card">
-                            <strong>Disponibilidad</strong>
-                            <span>{{ $ejemplaresDisponibles }} de {{ $ejemplaresTotales }} ejemplares disponibles</span>
+                    <div class="book-cover-stats">
+                        <div class="book-stat-item">
+                            <div class="book-stat-badge">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <small>Disponible</small>
+                            <strong>{{ $ejemplaresDisponibles }}/{{ $ejemplaresTotales }}</strong>
                         </div>
-                        <div class="book-cover-meta-card">
-                            <strong>Bibliotecas</strong>
-                            <span>{{ $bibliotecasDisponibles }} sede{{ $bibliotecasDisponibles === 1 ? '' : 's' }} con este libro</span>
+                        <div class="book-stat-item">
+                            <div class="book-stat-badge">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <small>En {{ $bibliotecasDisponibles }}</small>
+                            <strong>Sede{{ $bibliotecasDisponibles === 1 ? '' : 's' }}</strong>
                         </div>
                     </div>
                 </div>
@@ -81,22 +87,24 @@ window.libroPage = {
                     <h1 class="book-main-title">{{ $libro->titulo }}</h1>
 
                     <div class="book-authors">
-                        <i class="bi bi-pen-fill me-2 text-success"></i>
-                        {{ $autoresLibro !== '' ? $autoresLibro : 'Autor no disponible' }}
+                        <i class="bi bi-pen-fill"></i>
+                        <span>{{ $autoresLibro !== '' ? $autoresLibro : 'Autor no disponible' }}</span>
                     </div>
 
                     <div class="book-main-rating">
-                        <span class="book-main-rating-label">Calificacion</span>
-                        <x-rating-stars
-                            :rating="$libro->rating_promedio"
-                            :count="$libro->comentarios_count"
-                            size="1rem"
-                            class="book-main-rating-stars" />
+                        <span class="book-main-rating-label">⭐ Calificación</span>
+                        <div id="bookMainRatingValue">
+                            @include('pagina._rating_summary', [
+                                'libro' => $libro,
+                                'ratingClass' => 'book-main-rating-stars',
+                                'ratingSize' => '1rem',
+                            ])
+                        </div>
                     </div>
 
                     <div class="book-chip-row">
                         <span class="book-chip">
-                            <i class="bi bi-building"></i>
+                            <i class="bi bi-bookmark-star"></i>
                             {{ $editorialNombre }}
                         </span>
                         <span class="book-chip">
@@ -106,40 +114,49 @@ window.libroPage = {
                         @if($libro->edicion)
                             <span class="book-chip">
                                 <i class="bi bi-book-half"></i>
-                                Edicion {{ $libro->edicion }}
+                                Edición {{ $libro->edicion }}
                             </span>
                         @endif
                         @if($libro->anio_edicion)
                             <span class="book-chip">
-                                <i class="bi bi-calendar3"></i>
+                                <i class="bi bi-calendar-event"></i>
                                 {{ $libro->anio_edicion }}
                             </span>
                         @endif
                     </div>
 
-                    <div class="book-stat-grid">
-                        <div class="book-stat-card">
-                            <span>Paginas</span>
-                            <strong>{{ $libro->paginas ?: 'N/D' }}</strong>
-                        </div>
-                        <div class="book-stat-card">
-                            <span>ISBN</span>
-                            <strong>{{ $libro->isbn ?: 'Sin registro' }}</strong>
-                        </div>
-                        <div class="book-stat-card">
-                            <span>Codigo Dewey</span>
-                            <strong>{{ $libro->codigo_dewey ?: 'Pendiente' }}</strong>
-                        </div>
+                    <div class="book-description-card">
+                        <h2 class="book-section-title">📖 Resumen</h2>
+                        <p class="book-description-text">{{ $descripcionLibro }}</p>
                     </div>
 
-                    <div class="book-description-card">
-                        <h2 class="book-section-title">Resumen</h2>
-                        <p class="book-description-text">{{ $descripcionLibro }}</p>
+                    <div class="book-quick-specs">
+                        <div class="book-spec-item">
+                            <span class="book-spec-icon"><i class="bi bi-file-earmark-text"></i></span>
+                            <div>
+                                <small>Páginas</small>
+                                <strong>{{ $libro->paginas ?: 'N/D' }}</strong>
+                            </div>
+                        </div>
+                        <div class="book-spec-item">
+                            <span class="book-spec-icon"><i class="bi bi-barcode"></i></span>
+                            <div>
+                                <small>ISBN</small>
+                                <strong>{{ $libro->isbn ?: 'Sin registro' }}</strong>
+                            </div>
+                        </div>
+                        <div class="book-spec-item">
+                            <span class="book-spec-icon"><i class="bi bi-diagram-2"></i></span>
+                            <div>
+                                <small>Código Dewey</small>
+                                <strong>{{ $libro->codigo_dewey ?: 'Pendiente' }}</strong>
+                            </div>
+                        </div>
                     </div>
 
                     @if($materiasLibro->isNotEmpty())
                         <div class="book-info-card">
-                            <h2 class="book-section-title">Materias relacionadas</h2>
+                            <h2 class="book-section-title">🏷️ Materias y temas</h2>
                             <div class="book-topic-list">
                                 @foreach($materiasLibro as $materia)
                                     <span class="book-topic">
@@ -157,23 +174,23 @@ window.libroPage = {
                             class="btn book-action-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#modalReserva">
-                            <i class="bi bi-journal-arrow-down me-2"></i>
-                            Solicitar prestamo
+                            <i class="bi bi-journal-arrow-down"></i>
+                            Solicitar préstamo
                         </button>
 
                         <a href="{{ route('catalogo') }}" class="btn book-action-secondary">
-                            <i class="bi bi-arrow-left-circle me-2"></i>
-                            Volver al catalogo
+                            <i class="bi bi-arrow-left-circle"></i>
+                            Volver al catálogo
                         </a>
                     </div>
 
-                    <div class="book-note-card">
-                        <span class="book-note-icon">
-                            <i class="bi bi-info-circle-fill"></i>
-                        </span>
-                        <div>
-                            <strong>Consulta disponibilidad en tiempo real</strong>
-                            <span>Revisa las sedes con ejemplares disponibles y solicita tu prestamo desde esta misma pagina.</span>
+                    <div class="book-info-alert">
+                        <div class="book-alert-icon">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <div class="book-alert-content">
+                            <strong>Disponibilidad en tiempo real</strong>
+                            <p class="mb-0">Revisa las sedes con ejemplares disponibles y solicita tu préstamo desde esta misma página.</p>
                         </div>
                     </div>
                 </div>
@@ -301,12 +318,17 @@ window.libroPage = {
         <h2 class="book-section-title">Comentarios y valoraciones</h2>
 
         <div class="book-comments-layout">
-            <div id="listaComentarios">
+            <div>
                 <div class="book-rating-panel" id="bookRatingSummary">
-                    @include('pagina._rating_summary', ['libro' => $libro])
+                    @include('pagina._rating_summary', [
+                        'libro' => $libro,
+                        'ratingSize' => '1rem',
+                    ])
                 </div>
 
-                @include('pagina._comentarios', ['comentarios' => $libro->comentarios])
+                <div id="bookCommentsList">
+                    @include('pagina._comentarios', ['comentarios' => $libro->comentarios])
+                </div>
             </div>
 
             <div>
