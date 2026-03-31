@@ -18,10 +18,9 @@
 
             <div style="margin:20px 0; padding:18px 20px; border-radius:16px; background:#f8fafc; border:1px solid #e2e8f0;">
                 <div style="font-size:13px; color:#64748b; margin-bottom:6px;">Usuario</div>
-                <div style="font-size:16px; font-weight:700; margin-bottom:14px;">{{ $correo }}</div>
+                <div style="font-size:16px; font-weight:700;">{{ $correo }}</div>
 
                 <div style="font-size:13px; color:#64748b; margin-bottom:6px;">Contraseña temporal</div>
-                <div style="font-size:16px; font-weight:700;">{{ $passwordTemporal }}</div>
             </div>
 
             <p style="margin:0 0 14px; font-size:14px; line-height:1.7; color:#475569;">

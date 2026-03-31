@@ -282,7 +282,7 @@ Route::get('/libro', [PaginaController::class, '_libro']);
 Route::get('/{id}/libro', [PaginaController::class, 'libro'])->name('pagina.libro');
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     Route::get('/sincronizar', [SincronizarController::class, 'sincronizar']);
     Route::get('/clasificarLibrosMasivos', [SincronizarController::class, 'clasificarLibrosMasivos']);
     Route::get('/actualizarCodigosTopograficos', [SincronizarController::class, 'actualizarCodigosTopograficos']);
@@ -290,7 +290,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/sincronizarCirculacion', [SincronizarController::class, 'sincronizarCirculacion']);
     Route::get('/obtenerDeweyPorTitulo', [SincronizarController::class, 'obtenerDeweyPorTitulo']);
 });
-
 
 
 

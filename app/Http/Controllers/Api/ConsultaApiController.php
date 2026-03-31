@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\DomCrawler\Crawler;
 
 class ConsultaApiController extends Controller
 {
@@ -31,8 +30,14 @@ class ConsultaApiController extends Controller
     }
     public function consultarTeacher($dni)
     {
-        $token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3MjE4NzM0OC02OWQ1LTRjOGEtOTA2MC0zNzJiOTc3NzZiOTEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiZWhvbGdhZG8iLCJuYW1lIjoiZWhvbGdhZG8iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBcGlDb25zdW1lciIsImV4cCI6MTc1Mjc4MjY5MSwiaXNzIjoiYzk4NGRmYjFhMDE3YTNlZjhiOTdlMjUzOWY3ZWNhYWEifQ.LI1iiBp3_aO25ab6qIGqeki-knEz-WgOfuiN8j8P4vY';
+        $token = config('services.unamad_integrations.teacher_token');
         $url = "https://daa-documentos.unamad.edu.pe:8081/api/data/teacher/{$dni}";
+
+        if (!$token) {
+            return response()->json([
+                'message' => 'La integracion institucional de docentes no esta configurada.',
+            ], 503);
+        }
 
         try {
             $response = Http::timeout(10)
@@ -70,7 +75,7 @@ class ConsultaApiController extends Controller
                 'message' => 'Datos encontrados',
                 'respuesta' => $respuesta,
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error de conexión: ' . $e->getMessage()
             ], 500);
@@ -107,7 +112,7 @@ class ConsultaApiController extends Controller
                     'codigo_http' => $response->status()
                 ], 500);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error de conexión: ' . $e->getMessage()
             ], 500);
@@ -115,8 +120,14 @@ class ConsultaApiController extends Controller
     }
     public function consultarEstudiante($dni)
     {
-        $token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3MjE4NzM0OC02OWQ1LTRjOGEtOTA2MC0zNzJiOTc3NzZiOTEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiZWhvbGdhZG8iLCJuYW1lIjoiZWhvbGdhZG8iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBcGlDb25zdW1lciIsImV4cCI6MTc1Mjc4MjY5MSwiaXNzIjoiYzk4NGRmYjFhMDE3YTNlZjhiOTdlMjUzOWY3ZWNhYWEifQ.LI1iiBp3_aO25ab6qIGqeki-knEz-WgOfuiN8j8P4vY';
+        $token = config('services.unamad_integrations.student_token');
         $url = "https://daa-documentos.unamad.edu.pe:8081/api/data/student/{$dni}";
+
+        if (!$token) {
+            return response()->json([
+                'message' => 'La integracion institucional de estudiantes no esta configurada.',
+            ], 503);
+        }
 
         try {
             $response = Http::timeout(30)
@@ -163,7 +174,7 @@ class ConsultaApiController extends Controller
                 'message' => 'Datos encontrados',
                 'respuesta' => $respuesta,
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error de conexión: ' . $e->getMessage()
             ], 500);

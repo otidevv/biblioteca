@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'allow_public_registration' => (bool) env('APP_ALLOW_PUBLIC_REGISTRATION', false),
+
 ];

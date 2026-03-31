@@ -36,7 +36,7 @@ class BibliotecaController extends Controller
             'nombre'        => 'required|string|max:150',
             'direccion'     => 'nullable|string|max:255',
             'descripcion'   => 'nullable|string|max:500',
-            'imagen'        => 'nullable',
+            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -54,7 +54,7 @@ class BibliotecaController extends Controller
                 'nombre'        => $request->nombre,
                 'direccion'     => $request->direccion,
                 'descripcion'   => $request->descripcion,
-                'imagen'        => 'storage/'.$rutaImagen,
+                'imagen'        => $rutaImagen ? 'storage/'.$rutaImagen : null,
             ]);
 
             DB::commit();
@@ -66,14 +66,11 @@ class BibliotecaController extends Controller
             ], 201);
 
         } catch (\Throwable $e) {
-
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al registrar la biblioteca.', $e, 500, [
+                'action' => 'biblioteca.nuevo',
+            ]);
         }
     }
     public function edit(Request $request)
@@ -96,14 +93,15 @@ class BibliotecaController extends Controller
             if ($request->hasFile('imagen')) {
 
                 // eliminar anterior
-                if ($biblioteca->imagen && Storage::disk('public')->exists($biblioteca->imagen)) {
-                    Storage::disk('public')->delete($biblioteca->imagen);
+                $imagenAnterior = ltrim(str_replace('storage/', '', (string) $biblioteca->imagen), '/');
+                if ($imagenAnterior !== '' && Storage::disk('public')->exists($imagenAnterior)) {
+                    Storage::disk('public')->delete($imagenAnterior);
                 }
 
                 $rutaImagen = $request->file('imagen')->store('bibliotecas', 'public');
 
             } else {
-                $rutaImagen = $biblioteca->imagen;
+                $rutaImagen = ltrim(str_replace('storage/', '', (string) $biblioteca->imagen), '/');
             }
 
             $biblioteca->update([
@@ -111,7 +109,7 @@ class BibliotecaController extends Controller
                 'nombre'        => $request->nombre,
                 'direccion'     => $request->direccion,
                 'descripcion'   => $request->descripcion,
-                'imagen'        => 'storage/'.$rutaImagen,
+                'imagen'        => $rutaImagen ? 'storage/'.$rutaImagen : null,
             ]);
 
             DB::commit();
@@ -123,14 +121,12 @@ class BibliotecaController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al actualizar la biblioteca.', $e, 500, [
+                'action' => 'biblioteca.edit',
+                'biblioteca_id' => $request->id,
+            ]);
         }
     }
 

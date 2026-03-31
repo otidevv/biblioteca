@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'unamad_integrations' => [
+        'student_token' => env('UNAMAD_STUDENT_API_TOKEN'),
+        'teacher_token' => env('UNAMAD_TEACHER_API_TOKEN', env('UNAMAD_STUDENT_API_TOKEN')),
+        'verify_ssl' => (bool) env('UNAMAD_API_VERIFY_SSL', true),
+    ],
+
 ];

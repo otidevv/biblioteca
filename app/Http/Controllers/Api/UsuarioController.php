@@ -308,7 +308,7 @@ class UsuarioController extends Controller
             ],
 
             // USUARIO
-            'password'          => 'required|confirmed|min:6',
+            'password'          => 'required|confirmed|min:8',
         ]);
         //return $request;    
         DB::beginTransaction();
@@ -384,12 +384,11 @@ class UsuarioController extends Controller
             ], 201);
 
         } catch (\Throwable $e) {
-
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar el lector: ' . $e->getMessage()
-            ], 500);
+
+            return $this->jsonServerError('Error al registrar el lector.', $e, 500, [
+                'action' => 'nuevoLector',
+            ]);
         }
     }
     public function editLector(Request $request)
@@ -470,10 +469,10 @@ class UsuarioController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar el lector: ' . $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al actualizar el lector.', $e, 500, [
+                'action' => 'editLector',
+                'user_id' => $request->id,
+            ]);
         }
     }
 
@@ -490,9 +489,14 @@ class UsuarioController extends Controller
                 'data' => $service->preview($request->file('archivo')),
             ]);
         } catch (\Throwable $e) {
+            Log::warning('Error al previsualizar importacion de lectores.', [
+                'exception' => get_class($e),
+                'exception_message' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'No se pudo procesar la previsualizacion del archivo.',
             ], 422);
         }
     }
@@ -527,9 +531,14 @@ class UsuarioController extends Controller
                 'created' => $resultado['created'],
             ]);
         } catch (\Throwable $e) {
+            Log::warning('Error al cargar importacion de lectores.', [
+                'exception' => get_class($e),
+                'exception_message' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'No se pudo completar la importacion de lectores.',
             ], 422);
         }
     }

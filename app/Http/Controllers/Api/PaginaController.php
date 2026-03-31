@@ -92,8 +92,8 @@ class PaginaController extends Controller
         }
 
         $request->validate([
-            'libro_id' => 'required',
-            'comentario' => 'required',
+            'libro_id' => 'required|exists:libros,id',
+            'comentario' => 'required|string|max:2000',
             'rating' => 'required|integer|min:1|max:5'
         ]);
 

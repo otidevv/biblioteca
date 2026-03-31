@@ -125,7 +125,9 @@ class LibroController extends Controller
             'titulo' => 'required',
             'tipo_registro_id' => 'required',
             'codigo' => 'required',
-            'codigo_dewey' => 'required'
+            'codigo_dewey' => 'required',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
+            'archivo_indice' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
         DB::beginTransaction();
@@ -188,14 +190,12 @@ class LibroController extends Controller
                 'success'=>true
             ]);
 
-        } catch (\Exception $e) {
-
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            return response()->json([
-                'success'=>false,
-                'mensaje'=>$e->getMessage()
-            ],500);
+            return $this->jsonServerError('Error al registrar el libro.', $e, 500, [
+                'action' => 'libro.nuevo',
+            ]);
         }
     }
     public function actualizar(Request $request)
@@ -205,7 +205,9 @@ class LibroController extends Controller
             'titulo' => 'required',
             'tipo_registro_id' => 'required',
             'codigo' => 'required',
-            'codigo_dewey' => 'required'
+            'codigo_dewey' => 'required',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
+            'archivo_indice' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
         $libro = Libro::find($request->id);
@@ -237,30 +239,33 @@ class LibroController extends Controller
         $libro->resumen = $request->resumen;
         $libro->anotaciones = $request->anotaciones;
 
+        DB::beginTransaction();
+
+        try {
         // ================= IMAGEN =================
         if($request->hasFile('imagen')){
             if($libro->imagen){
-                Storage::delete('public/libros/'.$libro->imagen);
+                Storage::disk('public')->delete(ltrim(str_replace('storage/', '', (string) $libro->imagen), '/'));
             }
 
             $archivo = $request->file('imagen');
             $nombre = time().'_'.$archivo->getClientOriginalName();
-            $archivo->storeAs('public/libros',$nombre);
+            $archivo->storeAs('libros',$nombre,'public');
 
-            $libro->imagen = $nombre;
+            $libro->imagen = 'storage/libros/'.$nombre;
         }
 
         // ================= PDF =================
         if($request->hasFile('archivo_indice')){
             if($libro->archivo_indice){
-                Storage::delete('public/indices/'.$libro->archivo_indice);
+                Storage::disk('public')->delete(ltrim(str_replace('storage/', '', (string) $libro->archivo_indice), '/'));
             }
 
             $archivo = $request->file('archivo_indice');
             $nombre = time().'_'.$archivo->getClientOriginalName();
-            $archivo->storeAs('public/indices',$nombre);
+            $archivo->storeAs('indices',$nombre,'public');
 
-            $libro->archivo_indice = $nombre;
+            $libro->archivo_indice = 'storage/indices/'.$nombre;
         }
 
         $libro->save();
@@ -283,10 +288,20 @@ class LibroController extends Controller
         );
         $this->guardarAprendizajeCutter($request->autor_id, $request->codigo);
 
-        return response()->json([
-            'success'=>true,
-            'message'=>'Libro actualizado correctamente'
-        ]);
+            DB::commit();
+
+            return response()->json([
+                'success'=>true,
+                'message'=>'Libro actualizado correctamente'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return $this->jsonServerError('Error al actualizar el libro.', $e, 500, [
+                'action' => 'libro.actualizar',
+                'libro_id' => $request->id,
+            ]);
+        }
     }
 
     public function sugerirDewey(Request $request)
