@@ -53,7 +53,7 @@
                 <div>
                     <span class="book-form__eyebrow">Catalogacion guiada</span>
                     <h3 class="book-form__headline">{{ $libroActual ? 'Ajusta la ficha del libro con una vista mas clara' : 'Registra un libro con todos sus datos clave en una sola vista' }}</h3>
-                    <p class="book-form__summary">La pagina sugiere el Dewey por titulo, relaciona autores y materias, y deja lista la portada e indice para consulta posterior.</p>
+                    <p class="book-form__summary">La pagina sugiere el Dewey por titulo, genera el codigo Cutter segun el autor principal y aprende de las correcciones guardadas para mejorar futuras clasificaciones.</p>
                 </div>
                 <div class="book-form__status">
                     <span class="book-form__status-label">Modo</span>

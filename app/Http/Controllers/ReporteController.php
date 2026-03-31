@@ -13,16 +13,19 @@ use App\Models\ReporteGenerado;
 use App\Models\Reservacion;
 use App\Models\Sancion;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use function dispatch;
 
 class ReporteController extends Controller
 {
     public function grafico()
     {
+        $sancionesActivas = Schema::hasTable('sanciones') ? Sancion::where('estado', 1)->count() : 0;
+
         $resumen = [
             'libros' => Schema::hasTable('libros') ? Libro::count() : 0,
             'ejemplares' => Schema::hasTable('ejemplares') ? Ejemplar::count() : 0,
@@ -32,7 +35,7 @@ class ReporteController extends Controller
                         $query->where('tipo_usuario', 'lector')
                             ->orWhereHas('roles', function ($rolesQuery) {
                                 $rolesQuery->where('roles.nombre', 'LECTOR')
-                                    ->wherePivot('estado', 1);
+                                    ->where('usuario_rol_bibliotecas.estado', 1);
                             });
                     })
                     ->distinct()
@@ -42,6 +45,7 @@ class ReporteController extends Controller
             'reservas_pendientes' => Schema::hasTable('reservaciones') ? Reservacion::where('estado', 0)->count() : 0,
             'compras' => Schema::hasTable('compras') ? Compra::count() : 0,
             'actividades_activas' => Schema::hasTable('actividades') ? Actividad::where('estado', 1)->count() : 0,
+            'sanciones_activas' => $sancionesActivas,
             'notificaciones_activas' => Schema::hasTable('notificaciones')
                 ? \App\Models\Notificacion::query()
                     ->where('estado', 1)
@@ -65,7 +69,7 @@ class ReporteController extends Controller
                 'metricas' => [
                     ['etiqueta' => 'Prestamos activos', 'valor' => $resumen['prestamos_activos']],
                     ['etiqueta' => 'Reservas pendientes', 'valor' => $resumen['reservas_pendientes']],
-                    ['etiqueta' => 'Sanciones activas', 'valor' => Schema::hasTable('sanciones') ? Sancion::where('estado', 1)->count() : 0],
+                    ['etiqueta' => 'Sanciones activas', 'valor' => $resumen['sanciones_activas']],
                 ],
                 'acciones' => [
                     ['texto' => 'Ver historial', 'url' => url('/lectores/historial')],
@@ -115,7 +119,29 @@ class ReporteController extends Controller
             ],
         ];
 
-        return view('reportes.grafico', compact('resumen', 'modulos'));
+        $graficos = [
+            'circulacion' => $this->buildDonutChart([
+                ['label' => 'Prestamos activos', 'value' => $resumen['prestamos_activos'], 'color' => '#0f766e', 'descripcion' => 'Prestamos que siguen en circulacion.'],
+                ['label' => 'Reservas pendientes', 'value' => $resumen['reservas_pendientes'], 'color' => '#f59e0b', 'descripcion' => 'Solicitudes en espera de atencion.'],
+                ['label' => 'Sanciones activas', 'value' => $resumen['sanciones_activas'], 'color' => '#dc2626', 'descripcion' => 'Casos vigentes con restriccion.'],
+            ]),
+            'inventario' => $this->buildComparisonChart([
+                ['label' => 'Disponibles', 'value' => Schema::hasTable('ejemplares') ? Ejemplar::where('estado', 1)->count() : 0, 'color' => '#059669', 'descripcion' => 'Ejemplares listos para prestamo.'],
+                ['label' => 'Prestados', 'value' => Schema::hasTable('ejemplares') ? Ejemplar::where('estado', 0)->count() : 0, 'color' => '#0284c7', 'descripcion' => 'Ejemplares fuera en circulacion.'],
+                ['label' => 'Reservados', 'value' => Schema::hasTable('ejemplares') ? Ejemplar::where('estado', 2)->count() : 0, 'color' => '#d97706', 'descripcion' => 'Ejemplares apartados para entrega.'],
+                ['label' => 'Otros estados', 'value' => $this->countOtherInventoryStates(), 'color' => '#7c3aed', 'descripcion' => 'Registros fuera de los estados principales.'],
+            ]),
+            'comunidad' => $this->buildComparisonChart([
+                ['label' => 'Lectores', 'value' => $resumen['lectores'], 'color' => '#2563eb', 'descripcion' => 'Usuarios identificados como lectores.'],
+                ['label' => 'Actividades activas', 'value' => $resumen['actividades_activas'], 'color' => '#0d9488', 'descripcion' => 'Agenda vigente en la biblioteca.'],
+                ['label' => 'Notificaciones vigentes', 'value' => $resumen['notificaciones_activas'], 'color' => '#7c3aed', 'descripcion' => 'Mensajes activos para usuarios.'],
+                ['label' => 'Compras registradas', 'value' => $resumen['compras'], 'color' => '#ea580c', 'descripcion' => 'Procesos de adquisicion almacenados.'],
+            ]),
+            'tendencia' => $this->buildMonthlyTrendChart(),
+            'bibliotecas' => $this->buildLibrariesChart(),
+        ];
+
+        return view('reportes.grafico', compact('resumen', 'modulos', 'graficos'));
     }
 
     public function index(Request $request)
@@ -207,5 +233,177 @@ class ReporteController extends Controller
         }
 
         dispatch($job);
+    }
+
+    protected function buildDonutChart(array $items): array
+    {
+        $chart = $this->normalizeChartItems($items);
+        $total = $chart['total'];
+
+        if ($total <= 0) {
+            $chart['style'] = 'conic-gradient(#e2e8f0 0% 100%)';
+
+            return $chart;
+        }
+
+        $start = 0;
+        $segments = [];
+
+        foreach ($chart['items'] as $item) {
+            if ($item['value'] <= 0) {
+                continue;
+            }
+
+            $end = $start + (($item['value'] / $total) * 100);
+            $segments[] = sprintf('%s %.4f%% %.4f%%', $item['color'], $start, $end);
+            $start = $end;
+        }
+
+        $chart['style'] = 'conic-gradient(' . implode(', ', $segments ?: ['#e2e8f0 0% 100%']) . ')';
+
+        return $chart;
+    }
+
+    protected function buildComparisonChart(array $items): array
+    {
+        return $this->normalizeChartItems($items);
+    }
+
+    protected function buildMonthlyTrendChart(): array
+    {
+        $months = collect(range(5, 0))
+            ->map(fn (int $offset) => now()->startOfMonth()->subMonths($offset));
+
+        $labels = [];
+        $series = [
+            ['label' => 'Prestamos', 'color' => '#0f766e', 'values' => []],
+            ['label' => 'Reservas', 'color' => '#f59e0b', 'values' => []],
+            ['label' => 'Compras', 'color' => '#2563eb', 'values' => []],
+        ];
+
+        foreach ($months as $month) {
+            $start = $month->copy()->startOfMonth();
+            $end = $month->copy()->endOfMonth();
+
+            $labels[] = $this->formatMonthLabel($month);
+            $series[0]['values'][] = $this->countRecordsBetween('prestamos', 'fecha_prestamo', Prestamo::class, $start, $end);
+            $series[1]['values'][] = $this->countRecordsBetween('reservaciones', 'fecha_reservacion', Reservacion::class, $start, $end);
+            $series[2]['values'][] = $this->countRecordsBetween('compras', 'fecha_compra', Compra::class, $start, $end);
+        }
+
+        $max = collect($series)
+            ->flatMap(fn (array $serie) => $serie['values'])
+            ->max() ?: 0;
+
+        return [
+            'labels' => $labels,
+            'series' => $series,
+            'max' => $max,
+            'empty' => $max === 0,
+        ];
+    }
+
+    protected function buildLibrariesChart(): array
+    {
+        if (!Schema::hasTable('bibliotecas') || !Schema::hasTable('ejemplares')) {
+            return [
+                'items' => [],
+                'max' => 0,
+                'empty' => true,
+            ];
+        }
+
+        $items = \App\Models\Biblioteca::query()
+            ->withCount('ejemplares')
+            ->orderByDesc('ejemplares_count')
+            ->limit(5)
+            ->get()
+            ->map(function ($biblioteca) {
+                return [
+                    'label' => $biblioteca->nombre,
+                    'value' => (int) $biblioteca->ejemplares_count,
+                    'color' => '#0f766e',
+                    'descripcion' => 'Ejemplares registrados en esta biblioteca.',
+                ];
+            })
+            ->filter(fn (array $item) => $item['value'] > 0)
+            ->values()
+            ->all();
+
+        $chart = $this->normalizeChartItems($items);
+        $chart['empty'] = $chart['max'] === 0;
+
+        return $chart;
+    }
+
+    protected function normalizeChartItems(array $items): array
+    {
+        $items = array_map(function (array $item) {
+            return [
+                'label' => $item['label'],
+                'value' => (int) ($item['value'] ?? 0),
+                'color' => $item['color'] ?? '#0f766e',
+                'descripcion' => $item['descripcion'] ?? null,
+            ];
+        }, $items);
+
+        $total = collect($items)->sum('value');
+        $max = collect($items)->max('value') ?: 0;
+
+        $items = array_map(function (array $item) use ($total, $max) {
+            $item['percentage'] = $total > 0 ? round(($item['value'] / $total) * 100, 1) : 0;
+            $item['relative'] = $max > 0 ? round(($item['value'] / $max) * 100, 2) : 0;
+
+            return $item;
+        }, $items);
+
+        return [
+            'items' => $items,
+            'total' => $total,
+            'max' => $max,
+            'empty' => $total === 0,
+        ];
+    }
+
+    protected function countOtherInventoryStates(): int
+    {
+        if (!Schema::hasTable('ejemplares')) {
+            return 0;
+        }
+
+        return Ejemplar::query()
+            ->whereNotIn('estado', [0, 1, 2])
+            ->count();
+    }
+
+    protected function countRecordsBetween(string $table, string $column, string $modelClass, Carbon $start, Carbon $end): int
+    {
+        if (!Schema::hasTable($table) || !Schema::hasColumn($table, $column)) {
+            return 0;
+        }
+
+        return $modelClass::query()
+            ->whereBetween($column, [$start, $end])
+            ->count();
+    }
+
+    protected function formatMonthLabel(Carbon $month): string
+    {
+        $months = [
+            1 => 'Ene',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Abr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Ago',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dic',
+        ];
+
+        return ($months[(int) $month->format('n')] ?? $month->format('m')) . ' ' . $month->format('y');
     }
 }

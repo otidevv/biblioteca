@@ -1,0 +1,417 @@
+.learning-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+    gap: 22px;
+    padding: 28px;
+    background:
+        radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.12), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+}
+
+.learning-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.82rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.learning-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.learning-hero__grid {
+    display: grid;
+    gap: 14px;
+}
+
+.learning-mini-card {
+    display: grid;
+    gap: 6px;
+    min-height: 118px;
+    padding: 18px 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.learning-mini-card__label,
+.learning-compare__label {
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0f766e;
+}
+
+.learning-mini-card strong,
+.learning-compare__item strong,
+.learning-step strong,
+.learning-example__item strong,
+.learning-timeline__step strong {
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+.learning-mini-card small,
+.learning-step p,
+.learning-example__item p,
+.learning-card__copy,
+.learning-timeline__step p,
+.learning-compare__item p,
+.learning-list li {
+    color: #475569;
+    line-height: 1.7;
+}
+
+.learning-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.learning-grid--comparison {
+    align-items: stretch;
+}
+
+.learning-grid--diagram {
+    margin-top: 20px;
+}
+
+.learning-card {
+    display: grid;
+    gap: 18px;
+}
+
+.learning-card--diagram {
+    grid-column: 1 / -1;
+}
+
+.learning-card__head {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.learning-card__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(6, 182, 212, 0.14));
+    color: #0f766e;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.learning-card__title {
+    margin: 0;
+    color: #0f172a;
+    font-size: 1.12rem;
+    font-weight: 800;
+}
+
+.learning-card__copy {
+    margin: 0.45rem 0 0;
+}
+
+.learning-steps {
+    display: grid;
+    gap: 12px;
+}
+
+.learning-diagram {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.learning-diagram__lane {
+    display: grid;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+}
+
+.learning-diagram__lane--dewey {
+    background:
+        radial-gradient(circle at top right, rgba(13, 148, 136, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+}
+
+.learning-diagram__lane--cutter {
+    background:
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+}
+
+.learning-diagram__header {
+    display: grid;
+    gap: 6px;
+}
+
+.learning-diagram__header strong {
+    color: #0f172a;
+    font-size: 1.02rem;
+}
+
+.learning-diagram__badge {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    padding: 0.32rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.learning-diagram__lane--cutter .learning-diagram__badge {
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+}
+
+.learning-diagram__flow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.learning-diagram__node {
+    display: grid;
+    gap: 6px;
+    min-height: 140px;
+    padding: 18px 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
+}
+
+.learning-diagram__node-label,
+.learning-diagram__result-label {
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0f766e;
+}
+
+.learning-diagram__lane--cutter .learning-diagram__node-label,
+.learning-diagram__lane--cutter .learning-diagram__result-label {
+    color: #1d4ed8;
+}
+
+.learning-diagram__node strong {
+    color: #0f172a;
+    font-size: 0.98rem;
+}
+
+.learning-diagram__node small,
+.learning-diagram__result p {
+    color: #475569;
+    line-height: 1.65;
+}
+
+.learning-diagram__arrow {
+    display: inline-flex;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(148, 163, 184, 0.12);
+    color: #0f766e;
+    font-size: 1rem;
+}
+
+.learning-diagram__lane--cutter .learning-diagram__arrow {
+    color: #1d4ed8;
+}
+
+.learning-diagram__result {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(15, 118, 110, 0.06);
+    border: 1px dashed rgba(15, 118, 110, 0.2);
+}
+
+.learning-diagram__lane--cutter .learning-diagram__result {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.learning-diagram__result p {
+    margin: 0.4rem 0 0;
+}
+
+.learning-step,
+.learning-example__item,
+.learning-compare__item,
+.learning-timeline__step {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.learning-step p,
+.learning-example__item p,
+.learning-compare__item p,
+.learning-timeline__step p {
+    margin: 0.45rem 0 0;
+}
+
+.learning-compare,
+.learning-example {
+    display: grid;
+    gap: 12px;
+}
+
+.learning-timeline {
+    margin-top: 20px;
+    display: grid;
+    gap: 20px;
+}
+
+.learning-timeline__steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.learning-timeline__step span {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.learning-list {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.learning-list li + li {
+    margin-top: 0.55rem;
+}
+
+.admin-shell.admin-dark .learning-hero,
+.admin-shell.admin-dark .learning-mini-card,
+.admin-shell.admin-dark .learning-diagram__lane,
+.admin-shell.admin-dark .learning-diagram__node,
+.admin-shell.admin-dark .learning-step,
+.admin-shell.admin-dark .learning-example__item,
+.admin-shell.admin-dark .learning-compare__item,
+.admin-shell.admin-dark .learning-timeline__step {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(148, 163, 184, 0.14);
+}
+
+.admin-shell.admin-dark .learning-mini-card strong,
+.admin-shell.admin-dark .learning-diagram__header strong,
+.admin-shell.admin-dark .learning-diagram__node strong,
+.admin-shell.admin-dark .learning-compare__item strong,
+.admin-shell.admin-dark .learning-step strong,
+.admin-shell.admin-dark .learning-example__item strong,
+.admin-shell.admin-dark .learning-timeline__step strong,
+.admin-shell.admin-dark .learning-card__title {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .learning-mini-card small,
+.admin-shell.admin-dark .learning-diagram__node small,
+.admin-shell.admin-dark .learning-diagram__result p,
+.admin-shell.admin-dark .learning-step p,
+.admin-shell.admin-dark .learning-example__item p,
+.admin-shell.admin-dark .learning-card__copy,
+.admin-shell.admin-dark .learning-timeline__step p,
+.admin-shell.admin-dark .learning-compare__item p,
+.admin-shell.admin-dark .learning-list li {
+    color: #cbd5e1;
+}
+
+.admin-shell.admin-dark .learning-hero__eyebrow,
+.admin-shell.admin-dark .learning-mini-card__label,
+.admin-shell.admin-dark .learning-compare__label,
+.admin-shell.admin-dark .learning-timeline__step span,
+.admin-shell.admin-dark .learning-diagram__badge,
+.admin-shell.admin-dark .learning-diagram__node-label,
+.admin-shell.admin-dark .learning-diagram__result-label {
+    color: #99f6e4;
+    background: rgba(94, 234, 212, 0.12);
+}
+
+.admin-shell.admin-dark .learning-diagram__lane--cutter .learning-diagram__badge,
+.admin-shell.admin-dark .learning-diagram__lane--cutter .learning-diagram__node-label,
+.admin-shell.admin-dark .learning-diagram__lane--cutter .learning-diagram__result-label,
+.admin-shell.admin-dark .learning-diagram__lane--cutter .learning-diagram__arrow {
+    color: #93c5fd;
+}
+
+.admin-shell.admin-dark .learning-diagram__arrow {
+    background: rgba(148, 163, 184, 0.12);
+}
+
+.admin-shell.admin-dark .learning-diagram__result {
+    background: rgba(15, 118, 110, 0.08);
+    border-color: rgba(94, 234, 212, 0.18);
+}
+
+.admin-shell.admin-dark .learning-diagram__lane--cutter .learning-diagram__result {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: rgba(147, 197, 253, 0.18);
+}
+
+@media (max-width: 1199.98px) {
+    .learning-hero,
+    .learning-grid,
+    .learning-diagram,
+    .learning-timeline__steps {
+        grid-template-columns: 1fr;
+    }
+
+    .learning-diagram__flow {
+        grid-template-columns: 1fr;
+    }
+
+    .learning-diagram__arrow {
+        justify-self: center;
+        transform: rotate(90deg);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .learning-hero {
+        padding: 22px;
+    }
+
+    .learning-hero__actions {
+        flex-direction: column;
+    }
+}

@@ -67,6 +67,17 @@ Route::middleware('auth')
     ->name('manual.codificacion');
 
 Route::middleware('auth')
+    ->get('/dashboard/aprendizaje-clasificacion', function () {
+        return view('administracion.aprendizaje_clasificacion');
+    })
+    ->name('manual.aprendizaje.clasificacion');
+
+Route::middleware('auth')
+    ->get('/manuales/aprendizaje-clasificacion', function () {
+        return redirect()->route('manual.aprendizaje.clasificacion');
+    });
+
+Route::middleware('auth')
     ->get('/perfil', [AuthProfileController::class, 'edit'])
     ->name('perfil.edit');
 

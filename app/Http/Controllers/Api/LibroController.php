@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
+use App\Models\CutterAprendizaje;
 use App\Models\Dewey;
 use App\Models\Dewey_aprendizaje;
 use App\Models\Libro;
@@ -179,6 +180,7 @@ class LibroController extends Controller
             }
 
             self::guardarAprendizaje($request->titulo, $codigoDewey);
+            $this->guardarAprendizajeCutter($request->autor_id, $request->codigo);
 
             DB::commit();
 
@@ -279,6 +281,7 @@ class LibroController extends Controller
             $request->codigo_dewey,
             $codigoAnterior
         );
+        $this->guardarAprendizajeCutter($request->autor_id, $request->codigo);
 
         return response()->json([
             'success'=>true,
@@ -628,6 +631,50 @@ class LibroController extends Controller
 
     private function buscarCodigoCutterPorApellido(?string $apellido): string
     {
+        $aprendido = $this->buscarCodigoCutterAprendidoPorApellido($apellido);
+
+        if ($aprendido !== null && $aprendido !== '') {
+            return $aprendido;
+        }
+
+        return $this->buscarCodigoCutterBasePorApellido($apellido);
+    }
+
+    private function buscarCodigoCutterAprendidoPorApellido(?string $apellido): ?string
+    {
+        if (!Schema::hasTable('cutter_aprendizajes')) {
+            return null;
+        }
+
+        $apellidoNormalizado = $this->normalizarClave($apellido);
+
+        if ($apellidoNormalizado === '') {
+            return null;
+        }
+
+        $raiz = substr($apellidoNormalizado, 0, 3);
+
+        return CutterAprendizaje::query()
+            ->where(function ($query) use ($apellidoNormalizado, $raiz) {
+                $query->where('clave_autor', $apellidoNormalizado)
+                    ->orWhere('clave_autor', 'like', $raiz . '%');
+            })
+            ->get()
+            ->sortByDesc(function ($aprendizaje) use ($apellidoNormalizado) {
+                return [
+                    $aprendizaje->clave_autor === $apellidoNormalizado ? 1 : 0,
+                    (int) $aprendizaje->peso,
+                    strlen((string) $aprendizaje->clave_autor),
+                ];
+            })
+            ->pluck('codigo_cutter')
+            ->filter()
+            ->map(fn ($codigo) => strtoupper((string) $codigo))
+            ->first();
+    }
+
+    private function buscarCodigoCutterBasePorApellido(?string $apellido): string
+    {
         $apellidoNormalizado = $this->normalizarClave($apellido);
 
         if ($apellidoNormalizado === '') {
@@ -657,5 +704,83 @@ class LibroController extends Controller
         }
 
         return $raiz;
+    }
+
+    private function guardarAprendizajeCutter($autorIds, ?string $codigoLibro): void
+    {
+        if (!Schema::hasTable('cutter_aprendizajes')) {
+            return;
+        }
+
+        $autorId = collect((array) $autorIds)->filter()->first();
+
+        if (!$autorId || !$codigoLibro) {
+            return;
+        }
+
+        $autor = DB::table('autores')
+            ->select('apellidos')
+            ->where('id', $autorId)
+            ->first();
+
+        if (!$autor) {
+            return;
+        }
+
+        $apellido = trim((string) ($autor->apellidos ?? ''));
+        $apellidoBase = trim(strtok($apellido, ' ') ?: $apellido);
+        $claveAutor = $this->normalizarClave($apellidoBase);
+        $codigoCutter = $this->extraerCodigoCutterDesdeCodigo($codigoLibro, $apellidoBase);
+
+        if ($claveAutor === '' || $codigoCutter === '') {
+            return;
+        }
+
+        $aprendizaje = CutterAprendizaje::query()
+            ->where('clave_autor', $claveAutor)
+            ->where('codigo_cutter', $codigoCutter)
+            ->first();
+
+        if ($aprendizaje) {
+            $aprendizaje->increment('peso');
+            return;
+        }
+
+        CutterAprendizaje::create([
+            'clave_autor' => $claveAutor,
+            'codigo_cutter' => $codigoCutter,
+            'peso' => 1,
+        ]);
+    }
+
+    private function extraerCodigoCutterDesdeCodigo(?string $codigoLibro, ?string $apellido): string
+    {
+        $codigoNormalizado = $this->normalizarClave($codigoLibro);
+
+        if ($codigoNormalizado === '') {
+            return '';
+        }
+
+        $candidatos = collect([
+            $this->buscarCodigoCutterAprendidoPorApellido($apellido),
+            $this->buscarCodigoCutterBasePorApellido($apellido),
+        ])
+            ->filter()
+            ->map(fn ($codigo) => strtoupper((string) $codigo))
+            ->unique()
+            ->sortByDesc(fn ($codigo) => strlen($codigo))
+            ->values();
+
+        foreach ($candidatos as $candidato) {
+            if (str_starts_with($codigoNormalizado, $candidato)) {
+                return $candidato;
+            }
+        }
+
+        if (preg_match('/^\d+/', $codigoNormalizado, $coincidencias)) {
+            return $coincidencias[0];
+        }
+
+        return substr($codigoNormalizado, 0, min(3, strlen($codigoNormalizado)));
     }
 }

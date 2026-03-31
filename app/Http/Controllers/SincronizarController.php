@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
+use App\Models\CutterAprendizaje;
 use App\Models\Libro;
 use App\Models\Dewey;
 use App\Models\Dewey_aprendizaje;
@@ -541,6 +542,50 @@ class SincronizarController extends Controller
     }
 
     private function buscarCodigoCutterPorApellido(?string $apellido): string
+    {
+        $aprendido = $this->buscarCodigoCutterAprendidoPorApellido($apellido);
+
+        if ($aprendido !== null && $aprendido !== '') {
+            return $aprendido;
+        }
+
+        return $this->buscarCodigoCutterBasePorApellido($apellido);
+    }
+
+    private function buscarCodigoCutterAprendidoPorApellido(?string $apellido): ?string
+    {
+        if (!Schema::hasTable('cutter_aprendizajes')) {
+            return null;
+        }
+
+        $apellidoNormalizado = $this->normalizarClave($apellido);
+
+        if ($apellidoNormalizado === '') {
+            return null;
+        }
+
+        $raiz = substr($apellidoNormalizado, 0, 3);
+
+        return CutterAprendizaje::query()
+            ->where(function ($query) use ($apellidoNormalizado, $raiz) {
+                $query->where('clave_autor', $apellidoNormalizado)
+                    ->orWhere('clave_autor', 'like', $raiz . '%');
+            })
+            ->get()
+            ->sortByDesc(function ($aprendizaje) use ($apellidoNormalizado) {
+                return [
+                    $aprendizaje->clave_autor === $apellidoNormalizado ? 1 : 0,
+                    (int) $aprendizaje->peso,
+                    strlen((string) $aprendizaje->clave_autor),
+                ];
+            })
+            ->pluck('codigo_cutter')
+            ->filter()
+            ->map(fn ($codigo) => strtoupper((string) $codigo))
+            ->first();
+    }
+
+    private function buscarCodigoCutterBasePorApellido(?string $apellido): string
     {
         $apellidoNormalizado = $this->normalizarClave($apellido);
 

@@ -15,99 +15,178 @@
 @endphp
 
 <div class="events-shell">
+    <!-- SECCIÓN HERO -->
     <section class="events-hero">
-        <span class="events-eyebrow"><i class="bi bi-stars"></i> Agenda cultural</span>
-        <h1 class="events-title">Eventos y actividades de biblioteca</h1>
-        <p class="events-subtitle">Descubre actividades reales registradas por la biblioteca: talleres, encuentros, sesiones de formacion y avisos de participacion para la comunidad universitaria.</p>
+        <span class="events-eyebrow"><i class="bi bi-star-fill"></i> Agenda Cultural</span>
+        <h1 class="events-title">Eventos y Actividades</h1>
+        <p class="events-subtitle">Participa en talleres, encuentros, sesiones de formación y actividades especiales organizadas por la biblioteca para la comunidad universitaria</p>
 
         <div class="events-hero-grid">
             <div class="events-callout">
-                <h2>Una agenda conectada con la vida universitaria</h2>
-                <p>Esta seccion reune las actividades publicadas por la biblioteca y las organiza para que los usuarios encuentren con facilidad proximos eventos, categorias activas y espacios de participacion.</p>
+                <h2>📚 Tu espacio de aprendizaje y participación</h2>
+                <p>Aquí encontrarás todas las actividades que organiza la biblioteca. Filtra por categoría, modalidad o fecha para descubrir los eventos que más te interesen.</p>
             </div>
             <div class="events-summary-stack">
-                <div class="events-summary-card"><span>Eventos activos</span><strong>{{ $eventosActivos }}</strong></div>
-                <div class="events-summary-card"><span>Categorias</span><strong>{{ $categoriasActivas }}</strong></div>
-                <div class="events-summary-card"><span>Proximo evento</span><strong>{{ $proximoEvento ? $proximoEvento->fecha_inicio->format('d/m/Y') : 'Sin programacion' }}</strong></div>
+                <div class="events-summary-card events-summary-primary">
+                    <span>🎯 Próximo evento</span>
+                    <strong>{{ $proximoEvento ? $proximoEvento->fecha_inicio->format('d M') : 'Por definir' }}</strong>
+                </div>
+                <div class="events-summary-card">
+                    <span>📋 Eventos disponibles</span>
+                    <strong>{{ $eventosActivos }}</strong>
+                </div>
+                <div class="events-summary-card">
+                    <span>🏷️ Categorías</span>
+                    <strong>{{ $categoriasActivas }}</strong>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="events-section">
+    <!-- SECCIÓN DE FILTROS -->
+    <section class="events-section events-filters-section">
+        <div class="events-filters-container">
+            <h3>🔍 Buscar y filtrar eventos</h3>
+            <div class="events-filters-grid">
+                <div class="events-filter-group">
+                    <label for="filter-category">Categoría</label>
+                    <select id="filter-category" class="events-filter-select">
+                        <option value="">Todas las categorías</option>
+                        @foreach($categorias as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @if($modalidadesActivas > 0)
+                <div class="events-filter-group">
+                    <label for="filter-modality">Modalidad</label>
+                    <select id="filter-modality" class="events-filter-select">
+                        <option value="">Todas las modalidades</option>
+                        @php
+                            $modalidades = $agenda->pluck('modalidad')->filter()->map(fn($item) => trim((string) $item))->filter()->unique()->sort();
+                        @endphp
+                        @foreach($modalidades as $mod)
+                            <option value="{{ $mod }}">{{ $mod }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+                <div class="events-filter-group">
+                    <label for="filter-search">Buscar</label>
+                    <input type="text" id="filter-search" class="events-filter-input" placeholder="Búsqueda rápida...">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN DE ESTADÍSTICAS & INSIGHTS -->
+    <section class="events-section events-insights-section">
         <div class="events-section-header">
             <div>
-                <h3>Panorama de la agenda</h3>
-                <p>Una lectura rapida del movimiento actual de actividades para la comunidad universitaria.</p>
+                <h3>📊 Información de la agenda</h3>
+                <p>Un vistazo rápido a lo que está sucediendo en la biblioteca</p>
             </div>
         </div>
 
         <div class="events-insight-grid">
-            <article class="events-insight-card">
-                <span class="events-insight-icon"><i class="bi bi-megaphone-fill"></i></span>
+            <article class="events-insight-card events-insight-featured">
+                <span class="events-insight-icon"><i class="bi bi-pin-angle-fill"></i></span>
                 <strong>{{ $eventosDestacadosActivos }}</strong>
-                <p>actividad{{ $eventosDestacadosActivos === 1 ? '' : 'es' }} marcada{{ $eventosDestacadosActivos === 1 ? '' : 's' }} como destacada{{ $eventosDestacadosActivos === 1 ? '' : 's' }} dentro de la agenda visible.</p>
-            </article>
-
-            <article class="events-insight-card">
-                <span class="events-insight-icon"><i class="bi bi-easel2-fill"></i></span>
-                <strong>{{ $modalidadesActivas }}</strong>
-                <p>modalidad{{ $modalidadesActivas === 1 ? '' : 'es' }} activa{{ $modalidadesActivas === 1 ? '' : 's' }} entre las publicaciones programadas por la biblioteca.</p>
-            </article>
-
-            <article class="events-insight-card">
-                <span class="events-insight-icon"><i class="bi bi-bookmarks-fill"></i></span>
-                <strong>{{ $categoriaLider?->nombre ?? 'Sin categoria lider' }}</strong>
                 <p>
-                    {{ $categoriaLider ? 'Es la categoria con mayor presencia actual, con ' . $categoriaLider->actividades_count . ' actividad' . ($categoriaLider->actividades_count === 1 ? '' : 'es') . ' activas.' : 'La agenda aun no tiene suficiente informacion para destacar una categoria principal.' }}
+                    @if($eventosDestacadosActivos === 1)
+                        Actividad destacada de especial interés
+                    @else
+                        {{ $eventosDestacadosActivos }} actividades destacadas para no perder
+                    @endif
+                </p>
+            </article>
+
+            <article class="events-insight-card">
+                <span class="events-insight-icon"><i class="bi bi-tv"></i></span>
+                <strong>{{ $modalidadesActivas }}</strong>
+                <p>
+                    Forma{{ $modalidadesActivas === 1 ? '' : 's' }} de participación: presencial, virtual o híbrida
+                </p>
+            </article>
+
+            <article class="events-insight-card">
+                <span class="events-insight-icon"><i class="bi bi-fire"></i></span>
+                <strong>{{ $categoriaLider?->nombre ?? '—' }}</strong>
+                <p>
+                    @if($categoriaLider)
+                        Categoría con más actividades actualmente ({{ $categoriaLider->actividades_count }})
+                    @else
+                        Categoría en tendencia
+                    @endif
                 </p>
             </article>
         </div>
     </section>
 
-    <section class="events-section">
+
+    <!-- SECCIÓN DE EVENTOS DESTACADOS -->
+    <section class="events-section events-featured-section">
         <div class="events-section-header">
             <div>
-                <h3>Eventos destacados</h3>
-                <p>Actividades publicadas actualmente por la biblioteca.</p>
+                <h3>⭐ Eventos destacados</h3>
+                <p>Las actividades más importantes que no deberías perder</p>
             </div>
         </div>
 
         @if($eventosDestacados->isEmpty())
-            <div class="events-empty">No hay actividades publicadas por el momento.</div>
+            <div class="events-empty">
+                <i class="bi bi-calendar-x"></i>
+                <p>No hay eventos destacados en este momento</p>
+                <small>Vuelve pronto para conocer nuevas actividades</small>
+            </div>
         @else
             <div class="events-grid">
                 @foreach($eventosDestacados as $evento)
-                    <article class="events-card">
-                        <span class="events-card-icon"><i class="bi bi-calendar-event"></i></span>
-                        <div class="events-card-head">
-                            <span class="events-card-tag">
-                                <i class="bi bi-bookmark-star"></i>
-                                {{ $evento->categoria->nombre ?? 'Actividad' }}
-                            </span>
+                    <article class="events-card events-card-featured" data-category="{{ $evento->categoria->id ?? '' }}" data-modality="{{ $evento->modalidad ?? '' }}">
+                        <div class="events-card-header">
+                            <span class="events-card-icon"><i class="bi bi-calendar-event"></i></span>
                             @if($evento->destacado)
-                                <span class="events-card-pill">
-                                    <i class="bi bi-pin-angle-fill"></i>
-                                    Destacado
+                                <span class="events-card-badge">
+                                    <i class="bi bi-star-fill"></i>
                                 </span>
                             @endif
                         </div>
-                        <div class="events-card-date">
-                            <strong>{{ $evento->fecha_inicio?->format('d M') ?? '--' }}</strong>
-                            <span>{{ $evento->fecha_inicio?->format('Y') ?? '' }}</span>
+
+                        <div class="events-card-body">
+                            <span class="events-card-category">
+                                <i class="bi bi-tag"></i>
+                                {{ $evento->categoria->nombre ?? 'Evento' }}
+                            </span>
+
+                            <div class="events-card-date-block">
+                                <strong>{{ $evento->fecha_inicio?->format('d M') ?? '--' }}</strong>
+                                <span>{{ $evento->fecha_inicio?->format('Y') ?? '' }}</span>
+                            </div>
+
+                            <h4 class="events-card-title">{{ $evento->titulo }}</h4>
+                            <p class="events-card-description">{{ $evento->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $evento->contenido), 160) }}</p>
+
+                            <div class="events-card-tags">
+                                @if($evento->modalidad)
+                                    <span class="events-tag"><i class="bi bi-laptop"></i>{{ $evento->modalidad }}</span>
+                                @endif
+                                @if($evento->lugar)
+                                    <span class="events-tag"><i class="bi bi-geo-alt"></i>{{ $evento->lugar }}</span>
+                                @endif
+                            </div>
+
+                            <div class="events-card-meta">
+                                @if($evento->hora_inicio)
+                                    <span><i class="bi bi-clock"></i>{{ \Carbon\Carbon::parse($evento->hora_inicio)->format('H:i') }}@if($evento->hora_fin) - {{ \Carbon\Carbon::parse($evento->hora_fin)->format('H:i') }}@endif</span>
+                                @endif
+                                @if($evento->fecha_fin && !$evento->fecha_fin->isSameDay($evento->fecha_inicio))
+                                    <span><i class="bi bi-calendar3"></i>Hasta {{ $evento->fecha_fin->format('d/m/Y') }}</span>
+                                @endif
+                            </div>
                         </div>
-                        <h4>{{ $evento->titulo }}</h4>
-                        <p>{{ $evento->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $evento->contenido), 160) }}</p>
-                        <div class="events-card-meta">
-                            <span><i class="bi bi-calendar3"></i>{{ $evento->fecha_inicio?->format('d/m/Y') }}@if($evento->fecha_fin && !$evento->fecha_fin->isSameDay($evento->fecha_inicio)) al {{ $evento->fecha_fin->format('d/m/Y') }}@endif</span>
-                            @if($evento->hora_inicio)
-                                <span><i class="bi bi-clock"></i>{{ \Carbon\Carbon::parse($evento->hora_inicio)->format('H:i') }}@if($evento->hora_fin) - {{ \Carbon\Carbon::parse($evento->hora_fin)->format('H:i') }}@endif</span>
-                            @endif
-                            @if($evento->lugar)
-                                <span><i class="bi bi-geo-alt"></i>{{ $evento->lugar }}</span>
-                            @endif
-                            @if($evento->modalidad)
-                                <span><i class="bi bi-easel2"></i>{{ $evento->modalidad }}</span>
-                            @endif
+
+                        <div class="events-card-footer">
+                            <button class="events-btn-primary">Ver detalles</button>
                         </div>
                     </article>
                 @endforeach
@@ -115,68 +194,103 @@
         @endif
     </section>
 
-    <section class="events-section">
+
+    <!-- SECCIÓN DE CATEGORÍAS -->
+    <section class="events-section events-categories-section">
         <div class="events-section-header">
             <div>
-                <h3>Categorias activas</h3>
-                <p>Una vista rapida de las lineas de actividad que hoy tiene la biblioteca.</p>
+                <h3>🏷️ Categorías de actividades</h3>
+                <p>Explora los diferentes tipos de eventos que organiza la biblioteca</p>
             </div>
         </div>
 
         @if($categorias->isEmpty())
-            <div class="events-empty">No hay categorias de actividades registradas.</div>
+            <div class="events-empty">
+                <i class="bi bi-inbox"></i>
+                <p>No hay categorías registradas</p>
+            </div>
         @else
             <div class="events-category-grid">
                 @foreach($categorias as $categoria)
-                    <article class="events-category-card">
-                        <small>{{ $categoria->abreviatura }}</small>
-                        <strong>{{ $categoria->nombre }}</strong>
-                        <span>{{ $categoria->descripcion ?: 'Categoria disponible para actividades y noticias de la biblioteca.' }}</span>
-                        <span class="mt-2 d-inline-flex align-items-center gap-2 text-success fw-semibold">
-                            <i class="bi bi-collection"></i>{{ $categoria->actividades_count }} actividad{{ $categoria->actividades_count === 1 ? '' : 'es' }}
-                        </span>
+                    <article class="events-category-card" data-category-id="{{ $categoria->id }}">
+                        <div class="events-category-header">
+                            <small class="events-category-code">{{ $categoria->abreviatura }}</small>
+                            <span class="events-category-count">
+                                <i class="bi bi-collection"></i>
+                                {{ $categoria->actividades_count }}
+                            </span>
+                        </div>
+                        <h4 class="events-category-name">{{ $categoria->nombre }}</h4>
+                        <p class="events-category-description">{{ $categoria->descripcion ?: 'Categoría disponible para actividades y eventos de la biblioteca.' }}</p>
+                        <button class="events-btn-secondary" data-category="{{ $categoria->id }}">
+                            Ver actividades
+                        </button>
                     </article>
                 @endforeach
             </div>
         @endif
     </section>
 
-    <section class="events-section">
+
+    <!-- SECCIÓN DE CRONOGRAMA -->
+    <section class="events-section events-timeline-section">
         <div class="events-section-header">
             <div>
-                <h3>Proximas fechas</h3>
-                <p>Orden cronologico de las publicaciones activas para ayudar a planificar la participacion.</p>
+                <h3>📅 Próximos eventos (Cronograma)</h3>
+                <p>Todas las actividades ordenadas por fecha para planificar tu participación</p>
             </div>
         </div>
 
         @if($agenda->isEmpty())
-            <div class="events-empty">No hay fechas programadas en este momento.</div>
+            <div class="events-empty">
+                <i class="bi bi-calendar-event"></i>
+                <p>No hay eventos programados en este momento</p>
+                <small>La agenda se actualizará con nuevas actividades próximamente</small>
+            </div>
         @else
             <div class="events-agenda">
                 @foreach($agenda as $item)
-                    <article class="events-agenda-item">
-                        <div class="events-agenda-day">{{ $item->fecha_inicio?->format('d M') ?? '--' }}</div>
-                        <div class="events-agenda-copy">
-                            <div class="events-agenda-top">
-                                <span class="events-card-pill">
+                    <article class="events-agenda-item" data-category="{{ $item->categoria->id ?? '' }}" data-modality="{{ $item->modalidad ?? '' }}">
+                        <div class="events-agenda-date">
+                            <div class="events-agenda-day">{{ $item->fecha_inicio?->format('d') ?? '--' }}</div>
+                            <div class="events-agenda-month">{{ $item->fecha_inicio?->format('M') ?? '--' }}</div>
+                        </div>
+
+                        <div class="events-agenda-content">
+                            <div class="events-agenda-badges">
+                                <span class="events-badge-category">
                                     <i class="bi bi-bookmark"></i>
                                     {{ $item->categoria->nombre ?? 'Actividad' }}
                                 </span>
                                 @if($item->modalidad)
-                                    <span class="events-agenda-mode">{{ $item->modalidad }}</span>
+                                    <span class="events-badge-modality">
+                                        <i class="bi bi-broadcast"></i>
+                                        {{ $item->modalidad }}
+                                    </span>
                                 @endif
                             </div>
-                            <h5>{{ $item->titulo }}</h5>
-                            <p>{{ $item->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $item->contenido), 140) }}</p>
-                            <div class="events-agenda-detail">
+
+                            <h5 class="events-agenda-title">{{ $item->titulo }}</h5>
+                            <p class="events-agenda-description">{{ $item->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $item->contenido), 140) }}</p>
+
+                            <div class="events-agenda-details">
                                 @if($item->hora_inicio)
-                                    <span><i class="bi bi-clock"></i>{{ \Carbon\Carbon::parse($item->hora_inicio)->format('H:i') }}@if($item->hora_fin) - {{ \Carbon\Carbon::parse($item->hora_fin)->format('H:i') }}@endif</span>
+                                    <span class="events-detail-item">
+                                        <i class="bi bi-clock-history"></i>
+                                        {{ \Carbon\Carbon::parse($item->hora_inicio)->format('H:i') }}@if($item->hora_fin) - {{ \Carbon\Carbon::parse($item->hora_fin)->format('H:i') }}@endif
+                                    </span>
                                 @endif
                                 @if($item->lugar)
-                                    <span><i class="bi bi-geo-alt"></i>{{ $item->lugar }}</span>
+                                    <span class="events-detail-item">
+                                        <i class="bi bi-geo-alt"></i>
+                                        {{ $item->lugar }}
+                                    </span>
                                 @endif
                                 @if($item->referencia)
-                                    <span><i class="bi bi-link-45deg"></i>{{ $item->referencia }}</span>
+                                    <span class="events-detail-item">
+                                        <i class="bi bi-link-45deg"></i>
+                                        <a href="{{ $item->referencia }}" target="_blank">Más información</a>
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -186,25 +300,6 @@
         @endif
     </section>
 
-    <section class="events-cta">
-        <div class="events-participation-card">
-            <h3>Como aprovechar esta agenda</h3>
-            <div class="events-participation-list">
-                <div>
-                    <i class="bi bi-search-heart"></i>
-                    <span>Revisa categorias para identificar talleres, concursos, avisos o encuentros activos.</span>
-                </div>
-                <div>
-                    <i class="bi bi-calendar2-check"></i>
-                    <span>Consulta fechas y modalidad para organizar tu participacion con tiempo.</span>
-                </div>
-                <div>
-                    <i class="bi bi-bell"></i>
-                    <span>Las actividades activas pueden integrarse al centro de mensajes para avisar a la comunidad.</span>
-                </div>
-            </div>
-        </div>
-    </section>
 </div>
 @endsection
 
