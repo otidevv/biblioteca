@@ -13,6 +13,7 @@
 
         <div class="admin-dashboard__actions">
             <a href="{{ url('/administracion/libros') }}" class="admin-cta admin-cta--primary">Gestionar libros</a>
+            <a href="{{ route('administracion.libros.importar') }}" class="admin-cta admin-cta--secondary">Importar libros Excel</a>
             <a href="{{ url('/prestamos/registro') }}" class="admin-cta admin-cta--secondary">Ir a prestamos</a>
             <a href="{{ route('manual.aprendizaje.clasificacion') }}" class="admin-cta admin-cta--secondary">Aprendizaje Dewey y Cutter</a>
         </div>
@@ -64,6 +65,12 @@
                     <div class="admin-quick-link__icon">+</div>
                     <div class="admin-quick-link__title">Nuevo libro</div>
                     <div class="admin-quick-link__copy">Registra material nuevo y completa sus datos tecnicos.</div>
+                </a>
+
+                <a href="{{ route('administracion.libros.importar') }}" class="admin-quick-link">
+                    <div class="admin-quick-link__icon">XL</div>
+                    <div class="admin-quick-link__title">Importar libros</div>
+                    <div class="admin-quick-link__copy">Carga archivos Excel en un modulo aislado para registrar libros sin tocar el flujo actual.</div>
                 </a>
 
                 <a href="{{ url('/lectores/registro') }}" class="admin-quick-link">

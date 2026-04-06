@@ -12,6 +12,7 @@ use App\Http\Controllers\PaginaController;
 use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\SincronizarController;
+use App\Http\Controllers\LibroImportController;
 use App\Http\Controllers\ProfileController as AuthProfileController;
 
 //controllers de JS en Api
@@ -95,6 +96,11 @@ Route::middleware('auth')
 Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     Route::get('/reportes/grafico', [ReporteController::class, 'grafico'])
         ->name('reportes.grafico');
+
+    Route::get('/administracion/libros/importar', [LibroImportController::class, 'create'])
+        ->name('administracion.libros.importar');
+    Route::post('/administracion/libros/importar', [LibroImportController::class, 'store'])
+        ->name('administracion.libros.importar');
 
     Route::get('/inicio', [AdministracionController::class, 'inicio'])->name('administracion.index');
 // ADMINISTRACIÓN
@@ -284,12 +290,11 @@ Route::get('/{id}/libro', [PaginaController::class, 'libro'])->name('pagina.libr
 
 Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     Route::get('/sincronizar', [SincronizarController::class, 'sincronizar']);
+    Route::get('/sincronizarImagenesLibrosPorIsbn', [SincronizarController::class, 'sincronizarImagenesLibrosPorIsbn']);
     Route::get('/clasificarLibrosMasivos', [SincronizarController::class, 'clasificarLibrosMasivos']);
     Route::get('/actualizarCodigosTopograficos', [SincronizarController::class, 'actualizarCodigosTopograficos']);
     
     Route::get('/sincronizarCirculacion', [SincronizarController::class, 'sincronizarCirculacion']);
     Route::get('/obtenerDeweyPorTitulo', [SincronizarController::class, 'obtenerDeweyPorTitulo']);
 });
-
-
 

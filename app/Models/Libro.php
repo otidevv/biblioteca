@@ -12,7 +12,8 @@ class Libro extends Model
         'codigo_ant','codigo','codigo_dewey','isbn','titulo','paginas',
         'fecha_publicacion','lugar_publicacion','resumen',
         'archivo_indice','imagen','edicion','anio_edicion',
-        'idioma','anotaciones','editorial_id','tipo_registro_id','estado'
+        'idioma','anotaciones','editorial_id','tipo_registro_id','estado',
+        'numero','cod_materia'
     ];
 
     protected $appends = [
@@ -74,5 +75,20 @@ class Libro extends Model
     public function editorial()
     {
         return $this->belongsTo(Editorial::class,'editorial_id');
+    }
+
+    public static function siguienteNumeroParaMateria(?string $codMateria): int
+    {
+        $query = static::query();
+
+        if ($codMateria === null) {
+            $query->whereNull('cod_materia');
+        } else {
+            $query->where('cod_materia', $codMateria);
+        }
+
+        $maxNumero = $query->max('numero');
+
+        return $maxNumero ? $maxNumero + 1 : 1;
     }
 }

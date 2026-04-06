@@ -1,0 +1,145 @@
+.book-import {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.book-import__panel {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.book-import__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.book-import__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0f766e;
+}
+
+.book-import__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.book-import__card {
+    background: #f8fafc;
+    border: 1px solid #dbe4ee;
+    border-radius: 1rem;
+    padding: 1.25rem;
+}
+
+.book-import__card h3,
+.book-import__results h3,
+.book-import__errors h4 {
+    margin: 0 0 0.75rem;
+}
+
+.book-import__form {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.book-import__rules {
+    display: grid;
+    gap: 0.75rem;
+    color: #334155;
+}
+
+.book-import__alert {
+    border-radius: 0.9rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid transparent;
+}
+
+.book-import__alert--success {
+    background: #ecfdf5;
+    border-color: #86efac;
+    color: #166534;
+}
+
+.book-import__alert--error {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.book-import__summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.book-import__summary-card {
+    background: #fff;
+    border: 1px solid #dbe4ee;
+    border-radius: 1rem;
+    padding: 1rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.book-import__summary-card span {
+    color: #64748b;
+    font-size: 0.92rem;
+}
+
+.book-import__summary-card strong {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.book-import__summary-card.is-success strong { color: #15803d; }
+.book-import__summary-card.is-warning strong { color: #b45309; }
+.book-import__summary-card.is-danger strong { color: #b91c1c; }
+.book-import__summary-card.is-info strong { color: #1d4ed8; }
+
+.book-import__errors {
+    margin-top: 1rem;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-radius: 1rem;
+    padding: 1rem 1.1rem;
+}
+
+.book-import__table-wrap {
+    max-height: 24rem;
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.book-import__table-wrap table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    z-index: 1;
+}
+
+.book-import__errors ul,
+.book-import__alert ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+}
+
+@media (max-width: 900px) {
+    .book-import__grid,
+    .book-import__summary {
+        grid-template-columns: 1fr;
+    }
+
+    .book-import__header {
+        flex-direction: column;
+    }
+}

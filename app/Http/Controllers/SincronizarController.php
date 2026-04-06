@@ -823,13 +823,14 @@ class SincronizarController extends Controller
             $this->ejecutarPaso('usuarios', fn() => $this->usuarios());
             $this->ejecutarPaso('actividad_categorias', fn() => $this->actividadCategorias());
             $this->ejecutarPaso('actividades', fn() => $this->actividades());
-            $this->ejecutarPaso('libros', fn() => $this->libros());
+            /*$this->ejecutarPaso('libros', fn() => $this->libros());
             $this->ejecutarPaso('relaciones', fn() => $this->libro_relaciones());
             $this->ejecutarPaso('compras', fn() => $this->compras());
             $this->ejecutarPaso('ejemplares', fn() => $this->ejemplares());
             $this->ejecutarPaso('prestamos', fn() => $this->prestamos());
             $this->ejecutarPaso('reservaciones', fn() => $this->reservaciones());
             $this->ejecutarPaso('sanciones', fn() => $this->sanciones());
+            */
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             DB::commit();
@@ -901,6 +902,81 @@ class SincronizarController extends Controller
                 'linea' => $e->getLine(),
             ], 500);
         }
+    }
+
+    public function sincronizarImagenesLibrosPorIsbn()
+    {
+        ini_set('max_execution_time', '0');
+        set_time_limit(0);
+
+        $actualizados = 0;
+        $sinCoincidencia = 0;
+        $sinRuta = 0;
+        $isbnProcesados = [];
+
+        DB::connection('mysql2')
+            ->table('registro_archivos as ra')
+            ->join('registros as r', 'r.id', '=', 'ra.registro_id')
+            ->join('archivos as a', 'a.id', '=', 'ra.archivo_id')
+            ->select([
+                'r.id as registro_id',
+                'r.isbn',
+                'a.ruta',
+            ])
+            ->whereNotNull('r.isbn')
+            ->orderBy('r.id')
+            ->chunk(500, function ($rows) use (&$actualizados, &$sinCoincidencia, &$sinRuta, &$isbnProcesados) {
+                foreach ($rows as $row) {
+                    $isbn = trim((string) ($row->isbn ?? ''));
+
+                    if ($isbn === '') {
+                        continue;
+                    }
+
+                    $isbnKey = mb_strtolower($isbn, 'UTF-8');
+
+                    if (isset($isbnProcesados[$isbnKey])) {
+                        continue;
+                    }
+
+                    $ruta = trim((string) ($row->ruta ?? ''));
+
+                    if ($ruta === '') {
+                        $sinRuta++;
+                        $isbnProcesados[$isbnKey] = true;
+                        continue;
+                    }
+
+                    $rutaImagen = 'storage/libros/' . ltrim(str_replace('archivos/', '', $ruta), '/');
+
+                    $affected = DB::table('libros')
+                        ->whereNotNull('isbn')
+                        ->whereRaw('LOWER(TRIM(isbn)) = ?', [$isbnKey])
+                        ->update([
+                            'imagen' => $rutaImagen,
+                            'updated_at' => now(),
+                        ]);
+
+                    if ($affected > 0) {
+                        $actualizados += $affected;
+                    } else {
+                        $sinCoincidencia++;
+                    }
+
+                    $isbnProcesados[$isbnKey] = true;
+                }
+            });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sincronizacion de imagenes completada.',
+            'stats' => [
+                'actualizados' => $actualizados,
+                'sin_coincidencia' => $sinCoincidencia,
+                'sin_ruta' => $sinRuta,
+                'isbn_procesados' => count($isbnProcesados),
+            ],
+        ]);
     }
 
     protected function ejecutarPaso($nombre, $callback)
@@ -1236,7 +1312,7 @@ class SincronizarController extends Controller
 
     /* ========================= 
      * LIBROS
-     * ========================= */
+     * ========================= 
     protected function libros()
     {
         DB::connection('mysql2')->table('registros')
@@ -1349,9 +1425,9 @@ class SincronizarController extends Controller
 
             }, 'registro_id'); // ðŸ”¥ IMPORTANTE
     }
-    /* =========================
+     =========================
      * COMPRAS + EJEMPLARES
-     * ========================= */
+     * ========================= 
 
     protected function compras()
     {
@@ -1702,4 +1778,5 @@ class SincronizarController extends Controller
                 $this->addSyncStat('sanciones', count($data), $omitidos, $motivos);
             });
     }
+    */
 }

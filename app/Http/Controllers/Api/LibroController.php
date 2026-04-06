@@ -44,12 +44,13 @@ class LibroController extends Controller
 
                     //  AUTORES (RELACIÓN)
                     ->orWhereHas('autores', function ($q2) use ($search) {
-                        $q2->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"]);
+                        $q2->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(apellidos) LIKE ?', ["%{$search}%"]);
                     })
 
                     //  TIPO REGISTRO
                     ->orWhereHas('tipo_registro', function ($q3) use ($search) {
-                        $q3->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"]);
+                        $q3->whereRaw('LOWER(nombre) LIKE ?', ["%{$search}%"]);
                     });
 
                 });

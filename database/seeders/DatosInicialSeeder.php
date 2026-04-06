@@ -220,6 +220,55 @@ class DatosInicialSeeder extends Seeder
                 'descripcion' => null,
                 'estado' => 1,
             ],
+            [
+                'codigo' => 'BEED',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE EDUCACION',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
+            [
+                'codigo' => 'BMHV',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE MEDICINA HUMANA, VETERINARIA',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
+            [
+                'codigo' => 'BAGI',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE ING AGRO INDUSTRIAL',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
+            [
+                'codigo' => 'BFMA',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE ING FORESTAL MEDIO AMBIENTE',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
+            [
+                'codigo' => 'BANI',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE ADMINISTRACION Y NEGOCIOS INTERNACIONALES',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
+            [
+                'codigo' => 'BCONT',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE CONTABILIDAD',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
+            [
+                'codigo' => 'BDCP',
+                'nombre' => 'BIBLIOTECA DE ESCUELA DE DERECHO Y CIENCIAS POLITICAS',
+                'direccion' => null,
+                'descripcion' => null,
+                'estado' => 1,
+            ],
         ];
         foreach ($bibliotecas as $data) {
             Biblioteca::updateOrCreate(
@@ -433,4 +482,3 @@ class DatosInicialSeeder extends Seeder
         }
     }
 }
-
