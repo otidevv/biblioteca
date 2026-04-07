@@ -15,6 +15,8 @@
                         <span class="badge rounded-pill text-bg-success">Disponible</span>
                     @elseif($e->estado == '0')
                         <span class="badge rounded-pill text-bg-danger">Prestado</span>
+                    @elseif($e->estado == '3')
+                        <span class="badge rounded-pill text-bg-secondary">Traslado pendiente</span>
                     @else
                         <span class="badge rounded-pill text-bg-warning text-dark">Reservado</span>
                     @endif

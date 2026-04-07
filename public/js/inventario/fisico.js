@@ -8,6 +8,7 @@ $(document).ready(function () {
         serverSide: true,
         pageLength: 25,
         order: [],
+        scrollX: true,
         ajax: {
             url: '/api/inventario/fisico/listar',
             type: 'GET',
@@ -35,6 +36,7 @@ $(document).ready(function () {
         },
         drawCallback: function () {
             decorateTableActionButtons('#tabla-inventario-fisico');
+            $('#tabla-inventario-fisico').css('width', '100%');
         },
     });
 
@@ -74,4 +76,3 @@ function solicitarReporteFisico(formato, config) {
         }
     });
 }
-

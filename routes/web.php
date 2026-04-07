@@ -101,13 +101,15 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         ->name('administracion.libros.importar');
     Route::post('/administracion/libros/importar', [LibroImportController::class, 'store'])
         ->name('administracion.libros.importar');
+    Route::get('/administracion/libros/traslados', [AdministracionController::class, 'trasladosEjemplares'])
+        ->name('administracion.libros.traslados');
 
     Route::get('/inicio', [AdministracionController::class, 'inicio'])->name('administracion.index');
 // ADMINISTRACIÓN
-    Route::prefix('administracion')->group(function () {
-        Route::get('{modulo}/{id?}', [AdministracionController::class, 'index'])
-            ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras|libros|libros_editar|libros_nuevo|ejemplares|sanciones|notificaciones|actividades');
-    }); 
+        Route::prefix('administracion')->group(function () {
+            Route::get('{modulo}/{id?}', [AdministracionController::class, 'index'])
+                ->where('modulo', 'usuarios|roles_permisos|backups|bibliotecas|proveedores|editoriales|tipo_registros|autores|compras|libros|traslados_ejemplares|libros_editar|libros_nuevo|ejemplares|sanciones|notificaciones|actividades');
+        }); 
 
     // INVENTARIO
     Route::prefix('inventario')->group(function () {
@@ -240,6 +242,11 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::post('/ejemplares/guardar', [ApiEjemplarController::class, 'guardar']);
             Route::post('/ejemplares/actualizar', [ApiEjemplarController::class, 'actualizar']);
             Route::post('/ejemplares/enviar-biblioteca', [ApiEjemplarController::class, 'enviarBiblioteca']);
+            Route::post('/ejemplares/resolver-traslado', [ApiEjemplarController::class, 'resolverTraslado']);
+            Route::get('/ejemplares/movimientos/listar', [ApiEjemplarController::class, 'listarMovimientos']);
+            Route::get('/ejemplares/traslados/pendientes', [ApiEjemplarController::class, 'listarTrasladosPendientes']);
+            Route::get('/ejemplares/traslados/enviados', [ApiEjemplarController::class, 'listarTrasladosEnviados']);
+            Route::post('/ejemplares/traslados/accion', [ApiEjemplarController::class, 'procesarAccionTraslados']);
             Route::post('/compras/guardar', [ApiCompraController::class, 'guardarCompra']);
         });
         //NUEVOS LIBROS EJEMPLARES  RESERVADOS
@@ -277,6 +284,7 @@ Route::get('/', [PaginaController::class, 'index'])->name('home');
 Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->name('biblioteca.show');
 Route::get('/{id}/libro', [PaginaController::class, 'showLibro'])->name('libro.show');
 Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
+Route::get('/otras-bibliotecas', [PaginaController::class, 'otrasBibliotecas'])->name('otras.bibliotecas');
 Route::get('/evento', [PaginaController::class, 'eventos'])->name('evento');
 Route::middleware('auth')
     ->get('/prestamos', [PaginaController::class, 'misPrestamos'])
@@ -297,4 +305,3 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     Route::get('/sincronizarCirculacion', [SincronizarController::class, 'sincronizarCirculacion']);
     Route::get('/obtenerDeweyPorTitulo', [SincronizarController::class, 'obtenerDeweyPorTitulo']);
 });
-

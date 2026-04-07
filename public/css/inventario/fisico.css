@@ -57,7 +57,8 @@
 }
 
 .physical-inventory__table-shell {
-    overflow: hidden;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
 }
 
 .physical-inventory__cover,

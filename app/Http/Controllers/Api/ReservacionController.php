@@ -147,6 +147,13 @@ class ReservacionController extends Controller
                 ];
             }
 
+            if ((int) $ejemplar->estado_traslado === Ejemplar::TRASLADO_PENDIENTE) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'El ejemplar tiene un traslado pendiente y no puede reservarse.'],
+                ];
+            }
+
             $fechaReserva = now();
             $fechaLimite = Carbon::tomorrow()->setTime(20, 0, 0);
 

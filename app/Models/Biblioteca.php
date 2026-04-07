@@ -46,4 +46,14 @@ class Biblioteca extends Model
     public function ejemplares(){
         return $this->hasMany(Ejemplar::class);
     }
+
+    public function movimientosOrigen()
+    {
+        return $this->hasMany(MovimientoEjemplar::class, 'biblioteca_origen_id');
+    }
+
+    public function movimientosDestino()
+    {
+        return $this->hasMany(MovimientoEjemplar::class, 'biblioteca_destino_id');
+    }
 }

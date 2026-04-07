@@ -1,0 +1,40 @@
+.books-table-shell {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+.books-table-shell #tabla-libros {
+    min-width: 1120px;
+}
+
+.books-table-shell .dataTables_wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+
+.books-table-shell .dataTables_scroll {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+
+.books-table-shell .dataTables_scrollHead,
+.books-table-shell .dataTables_scrollBody {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+
+.books-table-shell .dataTables_scrollHeadInner,
+.books-table-shell .dataTables_scrollHeadInner table,
+.books-table-shell .dataTables_scrollBody table {
+    min-width: 1120px !important;
+    width: 1120px !important;
+}
+
+.books-table-shell .table-responsive,
+.books-table-shell .dataTables_scroll,
+.books-table-shell .table-bordered,
+.books-table-shell .datatable {
+    overflow: auto !important;
+}

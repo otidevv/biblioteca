@@ -1,6 +1,13 @@
 let tabla;
+let tablaMovimientos;
 let ejemplar_id=0;
 let ejemplaresCache = {};
+const ejemplarContexto = window.ejemplarContexto || {
+    bibliotecaFijaId: null,
+    puedeFiltrarBiblioteca: true,
+    accesoGlobal: false,
+    bibliotecasUsuarioIds: [],
+};
 $(document).ready(function () {
     $('#barraSeleccion').hide();
 
@@ -44,7 +51,7 @@ $(document).ready(function () {
                 orderable:false,
                 searchable:false,
                 render: function(data, type, row, meta){
-                    let disabled = Number(row.estado_value) !== 1 ? 'disabled' : '';
+                    let disabled = row.can_move ? '' : 'disabled';
                     return '<input type="checkbox" class="check-ejemplar" value="'+data+'" '+disabled+'>';
                 }
             },
@@ -115,6 +122,36 @@ $(document).ready(function () {
             actualizarSeleccion();
         }
 
+    });
+
+    tablaMovimientos = $('#tabla-movimientos-ejemplares').DataTable({
+        processing:true,
+        serverSide:true,
+        pageLength:25,
+        order:[[3, 'desc']],
+        autoWidth:false,
+        scrollX:true,
+        responsive:false,
+        ajax:{
+            url:'/api/inventario/ejemplares/movimientos/listar',
+            type:'GET',
+            data:function(d){
+                d.id = id;
+            }
+        },
+        columns:[
+            { data:'codigo', name:'ejemplar_id', orderable:false, searchable:false },
+            { data:'origen', name:'bibliotecaOrigen.nombre', orderable:false, searchable:false },
+            { data:'destino', name:'bibliotecaDestino.nombre', orderable:false, searchable:false },
+            { data:'solicitado_por', name:'solicitadoPor.name', orderable:false, searchable:false },
+            { data:'resuelto_por', name:'resueltoPor.name', orderable:false, searchable:false },
+            { data:'estado_label', name:'estado' }
+        ],
+        dom:default_datatable_dom,
+        language:default_datatable_language,
+        initComplete:function(){
+            default_datatable_buttons.call(this);
+        }
     });
 
 
@@ -198,6 +235,9 @@ $(document).ready(function () {
             return;
         }
         let checkbox = $(this).find('.check-ejemplar');
+        if (!checkbox.length || checkbox.is(':disabled')) {
+            return;
+        }
         checkbox.prop('checked', !checkbox.prop('checked'));
         actualizarSeleccion();
     });
@@ -211,7 +251,7 @@ $(document).ready(function () {
        CHECK TODOS
     ===============================*/
     $('#checkAll').change(function(){
-        $('.check-ejemplar').prop('checked',this.checked);
+        $('.check-ejemplar:not(:disabled)').prop('checked',this.checked);
         actualizarSeleccion();
     });
 
@@ -248,6 +288,7 @@ $(document).ready(function () {
                 alerta(respuesta.message,true);
                 ocultarBarra();
                 tabla.ajax.reload();
+                tablaMovimientos.ajax.reload();
             },
             error: function(xhr) {
                 const message = xhr.responseJSON?.error || xhr.responseJSON?.message || 'No se pudo mover los ejemplares seleccionados.';
@@ -273,6 +314,38 @@ function ocultarBarra(){
     $('#barraSeleccion').hide();
     $('#contadorSeleccion').text(0);
     $('#checkAll').prop('checked',false);
+}
+
+function resolverTraslado(id, accion) {
+    const etiqueta = accion === 'aceptar' ? 'aceptar' : 'rechazar';
+    const mensaje = accion === 'aceptar'
+        ? '¿Aceptar el traslado del ejemplar a tu biblioteca?'
+        : '¿Rechazar el traslado del ejemplar y devolverlo a su biblioteca de origen?';
+
+    if (!confirm(mensaje)) {
+        return;
+    }
+
+    $.ajax({
+        url:'/api/inventario/ejemplares/resolver-traslado',
+        type:'POST',
+        data:{
+            id:id,
+            accion:etiqueta
+        },
+        headers:{
+            'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')
+        },
+        success:function(response){
+            alerta(response.message, true);
+            tabla.ajax.reload();
+            tablaMovimientos.ajax.reload();
+        },
+        error:function(xhr){
+            const message = xhr.responseJSON?.message || 'No se pudo responder el traslado.';
+            alerta(message, false);
+        }
+    });
 }
 function actualizarEjemplar(id) {
     ejemplar_id=id;

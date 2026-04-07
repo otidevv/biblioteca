@@ -2,6 +2,10 @@
 
 @section('page-title', 'Gestion de libros')
 
+@section('css')
+    <link href="{{ asset('css/administracion/libros.css') }}?v={{ filemtime(public_path('css/administracion/libros.css')) }}" rel="stylesheet" />
+@endsection
+
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('/js/administracion/libros.js') }}?v={{ filemtime(public_path('js/administracion/libros.js')) }}"></script>
@@ -29,7 +33,7 @@
             </div>
         </div>
 
-        <div class="admin-table-shell table-responsive">
+        <div class="admin-table-shell table-responsive books-table-shell">
             <table id="tabla-libros" class="table table-hover table-bordered align-middle datatable w-100">
                 <thead>
                     <tr>

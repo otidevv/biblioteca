@@ -14,6 +14,7 @@ use App\Models\Ejemplar;
 use App\Models\Tipo_registro;
 use App\Models\Comentario;
 use App\Models\Libro;
+
 class PaginaController extends Controller
 {
     // metodos para select2 
@@ -149,7 +150,8 @@ public function ejemplarBiblioteca(Request $request, $biblioteca_id)
 
     $ejemplares = Ejemplar::where('biblioteca_id', $biblioteca_id)
         ->where('libro_id', $libro_id)
-        ->where('estado', 1)
+        ->where('estado', Ejemplar::ESTADO_DISPONIBLE)
+        ->where('estado_traslado', Ejemplar::TRASLADO_NINGUNO)
         ->select(
             'id',
             DB::raw("
@@ -167,13 +169,23 @@ public function ejemplarBiblioteca(Request $request, $biblioteca_id)
 //disponibilidad
 public function disponibilidad($id)
 {
-    $libro = Libro::with('ejemplares.biblioteca')->findOrFail($id);
+    $libro = Libro::with([
+        'ejemplares' => function ($query) {
+            $query->where('estado_traslado', Ejemplar::TRASLADO_NINGUNO);
+        },
+        'ejemplares.biblioteca',
+    ])->findOrFail($id);
 
     return view('pagina._disponibilidad', compact('libro'))->render();
 }
 public function ejemplares($id)
 {
-    $libro = Libro::with('ejemplares.biblioteca')->findOrFail($id);
+    $libro = Libro::with([
+        'ejemplares' => function ($query) {
+            $query->where('estado_traslado', Ejemplar::TRASLADO_NINGUNO);
+        },
+        'ejemplares.biblioteca',
+    ])->findOrFail($id);
 
     return view('pagina._ejemplares', compact('libro'))->render();
 }

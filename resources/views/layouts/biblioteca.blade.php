@@ -202,6 +202,10 @@ body {
     background: linear-gradient(135deg, rgba(223, 150, 63, 0.95), rgba(180, 90, 28, 0.95));
 }
 
+.library-nav-link.nav-libraries .library-nav-icon {
+    background: linear-gradient(135deg, rgba(26, 127, 110, 0.95), rgba(17, 94, 89, 0.95));
+}
+
 .library-nav-link.nav-reservations .library-nav-icon {
     background: linear-gradient(135deg, rgba(167, 92, 214, 0.95), rgba(108, 47, 149, 0.95));
 }
@@ -255,6 +259,11 @@ body {
 .library-nav-link.nav-events:hover .library-nav-icon,
 .library-nav-link.nav-events.is-active .library-nav-icon {
     background: linear-gradient(135deg, #ffd37a, #d97a25);
+}
+
+.library-nav-link.nav-libraries:hover .library-nav-icon,
+.library-nav-link.nav-libraries.is-active .library-nav-icon {
+    background: linear-gradient(135deg, #59d0c1, #16796f);
 }
 
 .library-nav-link.nav-reservations:hover .library-nav-icon,
@@ -1109,6 +1118,13 @@ body.library-dark .overlay.active {
             'title' => 'Eventos y actividades',
             'subtitle' => 'Accede a novedades, actividades y espacios de participacion de la biblioteca.',
         ];
+    } elseif (request()->routeIs('otras.bibliotecas')) {
+        $topbarMeta = [
+            'kicker' => 'Consulta externa',
+            'icon' => 'bi-link-45deg',
+            'title' => 'Otras bibliotecas',
+            'subtitle' => 'Explora enlaces oficiales de otras bibliotecas para ampliar tu consulta.',
+        ];
     }
 ?>
 
@@ -1157,6 +1173,15 @@ body.library-dark .overlay.active {
                 <span class="library-nav-text">
                     <strong>Eventos</strong>
                     <small>Novedades y agenda</small>
+                </span>
+            </a>
+            <a href="{{ route('otras.bibliotecas') }}" class="library-nav-link nav-libraries {{ request()->routeIs('otras.bibliotecas') ? 'is-active' : '' }}">
+                <span class="library-nav-icon">
+                    <i class="bi bi-link-45deg"></i>
+                </span>
+                <span class="library-nav-text">
+                    <strong>Otras bibliotecas</strong>
+                    <small>Links de consulta</small>
                 </span>
             </a>
             @auth
@@ -1319,6 +1344,7 @@ body.library-dark .overlay.active {
                         <a href="{{ route('home') }}">Inicio</a>
                         <a href="{{ route('catalogo') }}">Catálogo</a>
                         <a href="{{ route('evento') }}">Eventos</a>
+                        <a href="{{ route('otras.bibliotecas') }}">Otras bibliotecas</a>
                         @auth
                         <a href="{{ route('mis.reservas') }}">Mis reservas</a>
                         @endauth

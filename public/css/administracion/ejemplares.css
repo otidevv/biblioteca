@@ -295,6 +295,25 @@
     font-weight: 700;
 }
 
+.exemplars-history__code {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.exemplars-history__user {
+    display: grid;
+    gap: 0.18rem;
+}
+
+.exemplars-history__user strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.exemplars-history__user small {
+    color: #64748b;
+}
+
 .exemplars-table__library {
     color: #0f172a;
     font-weight: 700;
@@ -402,6 +421,11 @@ body.dark-mode .exemplars-table__library {
     color: #f8fafc;
 }
 
+body.dark-mode .exemplars-history__code,
+body.dark-mode .exemplars-history__user strong {
+    color: #f8fafc;
+}
+
 body.dark-mode .exemplars-hero__back {
     background: linear-gradient(135deg, #0f766e 0%, #22c55e 100%);
     color: #ffffff;
@@ -415,6 +439,10 @@ body.dark-mode .exemplars-table__code-meta,
 body.dark-mode .exemplars-filter__label,
 body.dark-mode .exemplars-modal__copy,
 body.dark-mode .exemplars-modal__book-label {
+    color: #cbd5e1;
+}
+
+body.dark-mode .exemplars-history__user small {
     color: #cbd5e1;
 }
 

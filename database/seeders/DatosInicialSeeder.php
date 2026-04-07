@@ -341,7 +341,7 @@ class DatosInicialSeeder extends Seeder
             [
                 'user_id' => $usuarioAdmin->id,
                 'rol_id' => $rolAdmin->id,
-                'biblioteca_id' => null, // 👈 acceso a TODAS
+                'biblioteca_id' => null, // acceso a TODAS
             ],
             [
                 'estado' => 1,
@@ -374,6 +374,7 @@ class DatosInicialSeeder extends Seeder
             ['administracion.autores', 'Gestión de autores'],
             ['administracion.sanciones', 'Gestión de sanciones'],
             ['administracion.libros', 'Gestión de Libros'],
+            ['administracion.libros.traslados', 'Traslados de ejemplares'],
             ['administracion.notificaciones', 'Gestión de notificaciones'],
             ['administracion.actividades', 'Gestión de actividades'],
         ], $permisoAdmin->id);

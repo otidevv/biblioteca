@@ -1,0 +1,77 @@
+.transfer-dashboard {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.transfer-dashboard__hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.transfer-dashboard__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.82rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.transfer-dashboard__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.transfer-dashboard__panel {
+    width: 100%;
+}
+
+.transfer-dashboard__bulkbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.95rem 1.1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(14, 165, 233, 0.16);
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(224, 242, 254, 0.95));
+}
+
+.transfer-dashboard__bulkbar-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.transfer-dashboard__table-shell {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+}
+
+.transfer-dashboard__table-shell .dataTables_wrapper,
+.transfer-dashboard__table-shell .dataTables_scroll,
+.transfer-dashboard__table-shell .dataTables_scrollHead,
+.transfer-dashboard__table-shell .dataTables_scrollBody {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+}
+
+.transfer-dashboard__table-shell table {
+    min-width: 980px;
+}
+
+@media (max-width: 991.98px) {
+    .transfer-dashboard__hero,
+    .transfer-dashboard__bulkbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

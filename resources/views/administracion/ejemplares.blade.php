@@ -13,6 +13,14 @@
     <script src="{{ asset('/lib/select2/js/i18n/es.js') }}"></script>
     <script src="{{ asset('/js/administracion/ejemplar.js') }}?v={{ filemtime(public_path('js/administracion/ejemplar.js')) }}"></script>
     <script>let id = @json($id);</script>
+    <script>
+        window.ejemplarContexto = {
+            bibliotecaFijaId: @json($bibliotecaFijaId),
+            puedeFiltrarBiblioteca: @json($puedeFiltrarBiblioteca),
+            accesoGlobal: @json($accesoGlobalBibliotecas),
+            bibliotecasUsuarioIds: @json($bibliotecasUsuarioIds),
+        };
+    </script>
 @endsection
 
 @section('content')
@@ -95,6 +103,9 @@
                         <div>
                             <h3 class="admin-card__title mb-0">Ejemplares registrados</h3>
                             <p class="admin-panel__copy">Administra ubicacion, estado y movimiento interno de cada ejemplar.</p>
+                            @if(!$accesoGlobalBibliotecas && !empty($bibliotecasUsuarioIds))
+                                <p class="admin-panel__copy mb-0">Solo podras mover ejemplares que hoy pertenezcan a tu biblioteca asignada. Los traslados quedaran pendientes hasta que la biblioteca destino los acepte o rechace.</p>
+                            @endif
                         </div>
                         <div class="admin-actions exemplars-toolbar">
                             <label class="exemplars-filter">
@@ -119,7 +130,7 @@
                         <div class="exemplars-bulk-bar__actions">
                             <select id="biblioteca_destino" class="form-select form-select-sm exemplars-bulk-bar__select">
                                 <option value="">Mover a biblioteca</option>
-                                @foreach($bibliotecas as $b)
+                                @foreach($bibliotecasDestino as $b)
                                     <option value="{{$b->id}}">{{$b->nombre}}</option>
                                 @endforeach
                             </select>
@@ -141,6 +152,32 @@
                             </thead>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="admin-panel exemplars-table-panel">
+                <div class="admin-panel__header">
+                    <div>
+                        <h3 class="admin-card__title mb-0">Historial de movimientos</h3>
+                        <p class="admin-panel__copy">Consulta quién solicitó el traslado de un ejemplar, qué biblioteca estuvo involucrada y qué usuario lo aceptó o rechazó.</p>
+                    </div>
+                </div>
+
+                <div class="admin-table-shell table-responsive exemplars-table-shell">
+                    <table id="tabla-movimientos-ejemplares" class="table table-hover table-bordered align-middle w-100">
+                        <thead>
+                            <tr>
+                                <th>Ejemplar</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Solicitado por</th>
+                                <th>Resuelto por</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                    </table>
                 </div>
             </div>
         </div>

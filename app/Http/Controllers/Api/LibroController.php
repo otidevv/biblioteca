@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\ReporteInventarioFisicoService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,11 @@ use App\Models\Dewey_aprendizaje;
 use App\Models\Libro;
 class LibroController extends Controller
 {
+    public function __construct(
+        protected ReporteInventarioFisicoService $bibliotecaService
+    ) {
+    }
+
     private array $stopwords = [
         'de', 'la', 'el', 'y', 'en', 'los', 'las', 'un', 'una', 'por', 'para',
         'con', 'del', 'al', 'a', 'o', 'u', 'que', 'se', 'su', 'sus', 'como',
@@ -22,8 +28,30 @@ class LibroController extends Controller
     //
     public function listar(Request $request)
     {
+        $contexto = $this->bibliotecaService->resolverContextoBibliotecas($request->user());
+
         $query = Libro::with(['autores','tipo_registro'])
                     ->withCount('ejemplares');
+
+        if ($contexto['accesoGlobal']) {
+            $query->withCount([
+                'ejemplares as ejemplares_usuario_count'
+            ]);
+        } elseif ($contexto['bibliotecasAsignadas']->isNotEmpty()) {
+            $bibliotecasIds = $contexto['bibliotecasAsignadas']->all();
+
+            $query->withCount([
+                'ejemplares as ejemplares_usuario_count' => function ($ejemplaresQuery) use ($bibliotecasIds) {
+                    $ejemplaresQuery->whereIn('biblioteca_id', $bibliotecasIds);
+                }
+            ]);
+        } else {
+            $query->withCount([
+                'ejemplares as ejemplares_usuario_count' => function ($ejemplaresQuery) {
+                    $ejemplaresQuery->whereRaw('1 = 0');
+                }
+            ]);
+        }
 
         return DataTables::of($query)
 

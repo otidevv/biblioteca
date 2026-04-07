@@ -14,6 +14,8 @@ use App\Models\Idioma;
 use App\Models\Dewey;
 use App\Models\Prestamo;
 use App\Models\ActividadCategoria;
+use App\Services\ReporteInventarioFisicoService;
+use Illuminate\Support\Facades\Auth;
 class AdministracionController extends Controller
 {
     public function inicio()
@@ -55,6 +57,7 @@ class AdministracionController extends Controller
             'actividades' => $this->actividades(),
             'compras' => $this->compras(),
             'libros' => $this->libros(),
+            'traslados_ejemplares' => $this->trasladosEjemplares(),
             'libros_nuevo' => $this->libros_nuevo(),
             'libros_editar' => $this->libros_editar($id),
             'ejemplares'=>$this->ejemplares($id),
@@ -117,12 +120,40 @@ class AdministracionController extends Controller
     {
         return view('administracion.libros');
     }
+
+    public function trasladosEjemplares()
+    {
+        $service = app(ReporteInventarioFisicoService::class);
+        $contexto = $service->resolverContextoBibliotecas(Auth::user());
+        $bibliotecas = Biblioteca::query()->orderBy('nombre')->get(['id', 'nombre']);
+
+        return view('administracion.traslados_ejemplares', [
+            'bibliotecas' => $bibliotecas,
+            'bibliotecaFijaId' => $contexto['bibliotecaFijaId'],
+            'puedeFiltrarBiblioteca' => $contexto['puedeFiltrarBiblioteca'],
+            'bibliotecasUsuarioIds' => $contexto['bibliotecasAsignadas']->all(),
+            'accesoGlobalBibliotecas' => $contexto['accesoGlobal'],
+        ]);
+    }
     protected function ejemplares($id)
     {
         $libro=Libro::with(['autores','tipo_registro','editorial'])
                     ->withCount('ejemplares')->find($id);
-        $bibliotecas=Biblioteca::get();
-        return view('administracion.ejemplares' ,compact('id','libro','bibliotecas'));
+        $service = app(ReporteInventarioFisicoService::class);
+        $contexto = $service->resolverContextoBibliotecas(Auth::user());
+
+        $bibliotecas = Biblioteca::query()->orderBy('nombre')->get(['id', 'nombre']);
+
+        return view('administracion.ejemplares' ,[
+            'id' => $id,
+            'libro' => $libro,
+            'bibliotecas' => $bibliotecas,
+            'bibliotecasDestino' => $bibliotecas,
+            'bibliotecaFijaId' => $contexto['bibliotecaFijaId'],
+            'puedeFiltrarBiblioteca' => $contexto['puedeFiltrarBiblioteca'],
+            'bibliotecasUsuarioIds' => $contexto['bibliotecasAsignadas']->all(),
+            'accesoGlobalBibliotecas' => $contexto['accesoGlobal'],
+        ]);
     }   
     protected function libros_nuevo()
     {

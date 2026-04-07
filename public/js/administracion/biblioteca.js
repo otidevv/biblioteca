@@ -5,6 +5,8 @@ $(document).ready(function () {
         serverSide: true,
         pageLength: 50,
         order: [],
+        autoWidth: false,
+        scrollX: true,
         ajax: {
             url:  "/api/bibliotecas/listar",
             type: "GET",
@@ -34,6 +36,7 @@ $(document).ready(function () {
         },
         drawCallback: function () {
             decorateTableActionButtons('#tabla-biblioteca');
+            $('#tabla-biblioteca').css('width', '100%');
         }
     });
 

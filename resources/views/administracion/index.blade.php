@@ -73,6 +73,12 @@
                     <div class="admin-quick-link__copy">Carga archivos Excel en un modulo aislado para registrar libros sin tocar el flujo actual.</div>
                 </a>
 
+                <a href="{{ url('/administracion/traslados_ejemplares') }}" class="admin-quick-link">
+                    <div class="admin-quick-link__icon">TR</div>
+                    <div class="admin-quick-link__title">Traslados de ejemplares</div>
+                    <div class="admin-quick-link__copy">Acepta, rechaza o cancela movimientos de ejemplares desde una vista separada.</div>
+                </a>
+
                 <a href="{{ url('/lectores/registro') }}" class="admin-quick-link">
                     <div class="admin-quick-link__icon">U</div>
                     <div class="admin-quick-link__title">Lectores</div>

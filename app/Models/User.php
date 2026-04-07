@@ -100,4 +100,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(HistorialBusquedaLibro::class, 'user_id');
     }
+
+    public function movimientosEjemplaresSolicitados()
+    {
+        return $this->hasMany(MovimientoEjemplar::class, 'solicitado_por_user_id');
+    }
+
+    public function movimientosEjemplaresResueltos()
+    {
+        return $this->hasMany(MovimientoEjemplar::class, 'resuelto_por_user_id');
+    }
 }
