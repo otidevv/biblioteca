@@ -375,6 +375,7 @@ class DatosInicialSeeder extends Seeder
             ['administracion.sanciones', 'Gestión de sanciones'],
             ['administracion.libros', 'Gestión de Libros'],
             ['administracion.libros.traslados', 'Traslados de ejemplares'],
+            ['administracion.libros.importar', 'Importar libros'],
             ['administracion.notificaciones', 'Gestión de notificaciones'],
             ['administracion.actividades', 'Gestión de actividades'],
         ], $permisoAdmin->id);

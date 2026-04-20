@@ -89,7 +89,7 @@
             <a href="{{ route('biblioteca.show', $b->id) }}"
                class="home-library-card"
                aria-label="Explorar biblioteca {{ $b->nombre }}">
-                <img src="{{ $b->imagen_url }}"
+                <img src="{{ asset($b->imagen) }}"
                      alt="{{ $b->nombre }}"
                      class="home-library-cover"
                      onerror="this.onerror=null;this.src='{{ asset('img/biblioteca-placeholder.svg') }}';"
@@ -117,7 +117,33 @@
                 No hay bibliotecas registradas todavía.
             </div>
         </div>
-        @endforelse
+        @endforelse        
+        <div class="col-12 col-sm-6 col-xl-4">
+            <a href="https://repositorio.unamad.edu.pe/"
+               class="home-library-card"
+               aria-label="Explorar biblioteca {{ $b->nombre }}">
+                <img src="{{ asset('img/biblioteca-placeholder.svg') }}"
+                     alt="Repositorio Institucional Digital"
+                     class="home-library-cover"
+                     onerror="this.onerror=null;this.src='{{ asset('img/biblioteca-placeholder.svg') }}';"
+                     loading="lazy"
+                     decoding="async">
+
+                <div class="home-library-body">
+                    <span class="home-library-badge">
+                        <i class="bi bi-geo-fill"></i>
+                        Sede bibliotecaria
+                    </span>
+                    <h5>Repositorio Institucional Digital</h5>
+                    <p>Repositorio Institucional Digital, cuyo objetivo es facilitar y mejorar la visibilidad de la producción cientifica y académica</p>
+
+                    <div class="home-library-footer">
+                        <span>Explorar Repositorio</span>
+                        <i class="bi bi-arrow-up-right"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 </section>
 
@@ -190,7 +216,7 @@
                class="home-book-card"
                aria-label="Ver detalle del libro {{ $libro->titulo }}">
                 <div class="home-book-cover-wrap">
-                    <img src="{{ $libro->imagen_url }}"
+                    <img src="{{ $libro->imagen }}"
                          alt="{{ $libro->titulo }}"
                          class="home-book-cover"
                          onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';"

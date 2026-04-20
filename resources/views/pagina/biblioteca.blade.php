@@ -14,7 +14,7 @@
     <div class="card card-hover"
          onclick="window.location='{{ route('libro.show',$libro->id) }}'">
 
-        <img src="{{ $libro->portada }}" height="180">
+        <img src="{{ $libro->imagen }}" height="180">
 
         <div class="p-2">
             <h6>{{ $libro->titulo }}</h6>

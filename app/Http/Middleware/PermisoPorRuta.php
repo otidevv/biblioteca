@@ -25,6 +25,7 @@ class PermisoPorRuta
         'administracion/libros_editar' => 'administracion.libros',
         'administracion/libros_nuevo' => 'administracion.libros',
         'administracion/ejemplares' => 'administracion.libros',
+        'inventario/compras' => 'administracion.libros',
         'inventario/compras' => 'inventario.compras',
         'inventario/fisico' => 'inventario.fisico',
         'prestamos/reservas' => 'prestamos.reservas',
@@ -34,12 +35,12 @@ class PermisoPorRuta
         'lectores/importacion' => 'lectores.importacion',
         'reportes/grafico' => 'reportes.grafico',
         'reportes/descargas' => 'reportes.descargas',
-        'sincronizar' => 'administracion',
-        'sincronizarImagenesLibrosPorIsbn' => 'administracion',
-        'clasificarLibrosMasivos' => 'administracion',
-        'actualizarCodigosTopograficos' => 'administracion',
-        'sincronizarCirculacion' => 'administracion',
-        'obtenerDeweyPorTitulo' => 'administracion',
+        'sincronizar' => 'administracion.libros',
+        'sincronizarImagenesLibrosPorIsbn' => 'administracion.libros',
+        'clasificarLibrosMasivos' => 'administracion.libros',
+        'actualizarCodigosTopograficos' => 'administracion.libros',
+        'sincronizarCirculacion' => 'administracion.libros',
+        'obtenerDeweyPorTitulo' => 'administracion.libros',
         // api
         'api/roles' => 'administracion.roles_permisos',
         'api/bibliotecas' => 'administracion.bibliotecas',
@@ -77,6 +78,7 @@ class PermisoPorRuta
         'api/prestamos/reservas' => 'prestamos.reservas',
         'api/prestamos/reserva' => 'prestamos.reservas',
         'api/inventario/compras' => 'inventario.compras',
+        'api/sincronizarImagenesLibrosPorIsbn' => 'administracion',
     ];
 
     protected $submoduloPermisos = [

@@ -1445,14 +1445,18 @@
     text-align: justify;
 }
 
+
 #mensaje_container
 {
     position: fixed;
+    top: auto;
+    left: auto;
     bottom: 25px;
     right: 25px;
     z-index: 1205;
     width: min(420px, calc(100vw - 24px));
     max-width: calc(100vw - 24px);
+    height: auto;
     display: grid;
     gap: 0.75rem;
     pointer-events: none;
