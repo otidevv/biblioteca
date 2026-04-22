@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PermisoPorRuta
 {
@@ -30,6 +31,7 @@ class PermisoPorRuta
         'inventario/fisico' => 'inventario.fisico',
         'prestamos/reservas' => 'prestamos.reservas',
         'prestamos/registro' => 'prestamos.registro',
+        'prestamos/multas*' => 'prestamos.multas', 
         'lectores/registro' => 'lectores.registro',
         'lectores/historial' => 'lectores.historial',
         'lectores/importacion' => 'lectores.importacion',
@@ -72,11 +74,12 @@ class PermisoPorRuta
         //'api/inventario/actualizar' => 'administracion.libros',
         'api/administracion' => 'administracion.libros',
         'api/inventario/fisico' => 'inventario.fisico',
-        'api/prestamos' => 'prestamos.registro',
         'api/externo' => 'lectores.registro',
         'api/usuarios/lectores' => 'lectores.registro',
-        'api/prestamos/reservas' => 'prestamos.reservas',
-        'api/prestamos/reserva' => 'prestamos.reservas',
+        'api/prestamos/multas*' => 'prestamos.multas',
+        'api/prestamos/reservas*' => 'prestamos.reservas',
+        'api/prestamos/reserva*' => 'prestamos.reservas',
+        'api/prestamos*' => 'prestamos.registro',
         'api/inventario/compras' => 'inventario.compras',
         'api/sincronizarImagenesLibrosPorIsbn' => 'administracion',
     ];
@@ -86,6 +89,9 @@ class PermisoPorRuta
         'usuarios.' => 'administracion.usuarios',
         'roles.' => 'administracion.roles_permisos',
         'lectores.' => 'lectores.registro',
+        'prestamos.multas.' => 'prestamos.multas',
+        'prestamos.reservas.' => 'prestamos.reservas',
+        'prestamos.registro.' => 'prestamos.registro',
         // Agrega más submódulos aquí
     ];
 
@@ -111,8 +117,8 @@ class PermisoPorRuta
         } else {
             $path = trim($request->path(), '/');
 
-            foreach ($this->pathPermissionMap as $prefix => $permission) {
-                if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
+            foreach ($this->pathPermissionMap as $pattern => $permission) {
+                if (Str::is($pattern, $path) || Str::is($pattern . '/*', $path)) {
                     $permiso = $permission;
                     break;
                 }

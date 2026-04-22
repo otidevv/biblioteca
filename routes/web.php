@@ -121,8 +121,12 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 
     // PRESTAMO
     Route::prefix('prestamos')->group(function () {
+        Route::post('multas/nueva', [PrestamoController::class, 'guardarSancion'])
+            ->name('prestamos.multas.nueva');
+        Route::post('multas/{sancion}/levantar', [PrestamoController::class, 'levantarSancion'])
+            ->name('prestamos.multas.levantar');
         Route::get('{modulo}', [PrestamoController::class, 'index'])
-            ->where('modulo', 'reservas|registro|historial|reportes|compra_nuevo');
+            ->where('modulo', 'reservas|registro|historial|multas|reportes|compra_nuevo');
     });
 
     // LECTORES
@@ -251,6 +255,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         });
         //NUEVOS LIBROS EJEMPLARES  RESERVADOS
         Route::prefix('prestamos')->group(function () {
+            Route::get('multas/lectores', [PrestamoController::class, 'buscarLectoresSancion'])
+                ->name('prestamos.multas.lectores');
             Route::get('reservas/listar', [ApiReservacionController::class, 'listar']);
             Route::post('reserva/{id}/entregar', [ApiReservacionController::class, 'entregar']);
             Route::get('prestamos/listar', [ApiPrestamoController::class, 'listar']);

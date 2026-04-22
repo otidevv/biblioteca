@@ -94,32 +94,55 @@ class PaginaController extends Controller
     }
     public function catalogo(Request $request)
     {
-        $query = Libro::with(['autores','editorial'])
+        $query = Libro::query()
+            ->select('libros.*')
+            ->with(['autores', 'editorial', 'materias', 'idioma'])
             ->withAvg('comentarios as rating_promedio', 'calificacion')
             ->withCount('comentarios')
             ->whereHas('ejemplares', function ($q) {
                 $q->whereNotNull('biblioteca_id');
             });
 
-        if ($request->titulo) {
-            $query->where('titulo','like','%'.$request->titulo.'%');
+        if ($request->filled('titulo')) {
+            $termino = trim((string) $request->titulo);
+
+            $query->where(function ($q) use ($termino) {
+                $q->where('titulo', 'like', '%' . $termino . '%')
+                    ->orWhere('palabras_clave', 'like', '%' . $termino . '%')
+                    ->orWhereHas('autores', function ($autorQuery) use ($termino) {
+                        $autorQuery->where('nombres', 'like', '%' . $termino . '%')
+                            ->orWhere('apellidos', 'like', '%' . $termino . '%');
+                    })
+                    ->orWhereHas('idioma', function ($idiomaQuery) use ($termino) {
+                        $idiomaQuery->where('nombre', 'like', '%' . $termino . '%');
+                    })
+                    ->orWhereHas('materias', function ($materiaQuery) use ($termino) {
+                        $materiaQuery->where('materias.nombre', 'like', '%' . $termino . '%');
+                    });
+            });
         }
 
-        if ($request->autor_id) {
+        if ($request->filled('autor_id')) {
             $query->whereHas('autores', function($q) use ($request){
                 $q->where('autores.id', $request->autor_id);
             });
         }
 
-        if ($request->editorial_id) {
+        if ($request->filled('editorial_id')) {
             $query->where('editorial_id',$request->editorial_id);
         }
 
-        if ($request->materia) {
-            $query->where('materia',$request->materia);
+        if ($request->filled('idioma_id')) {
+            $query->where('idioma', $request->idioma_id);
         }
 
-        $libros = $query->paginate(8)->withQueryString();
+        if ($request->filled('materia_id')) {
+            $query->whereHas('materias', function ($q) use ($request) {
+                $q->where('materias.id', $request->materia_id);
+            });
+        }
+
+        $libros = $query->distinct('libros.id')->paginate(8)->withQueryString();
 
         // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
         if ($request->ajax()) {
@@ -127,7 +150,17 @@ class PaginaController extends Controller
         }
 
 
-        return view('pagina.catalogo', compact('libros'));
+        $autorSeleccionado = $request->filled('autor_id')
+            ? Autor::find($request->autor_id)
+            : null;
+        $idiomaSeleccionado = $request->filled('idioma_id')
+            ? Idioma::find($request->idioma_id)
+            : null;
+        $materiaSeleccionada = $request->filled('materia_id')
+            ? Materia::find($request->materia_id)
+            : null;
+
+        return view('pagina.catalogo', compact('libros', 'autorSeleccionado', 'idiomaSeleccionado', 'materiaSeleccionada'));
     }
 
 

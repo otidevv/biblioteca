@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ejemplar;
 use App\Models\Prestamo;
 use App\Models\Reservacion;
+use App\Models\Sancion;
 use App\Models\Usuario_rol_biblioteca;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -117,6 +118,18 @@ class ReservacionController extends Controller
         ]);
 
         $resultado = DB::transaction(function () use ($request) {
+            $tieneSancionVigente = Sancion::where('user_id', auth()->id())
+                ->where('estado', 1)
+                ->whereDate('fecha_fin', '>=', now()->toDateString())
+                ->exists();
+
+            if ($tieneSancionVigente) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'No puedes realizar reservas porque tienes una sancion vigente.'],
+                ];
+            }
+
             $ejemplar = Ejemplar::with('libro')
                 ->lockForUpdate()
                 ->find($request->ejemplar_id);

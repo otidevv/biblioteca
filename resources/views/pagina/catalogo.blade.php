@@ -73,17 +73,31 @@
                 <div class="catalog-filter-secondary">
                     <div class="catalog-filter-box">
                         <label for="autor_id">Autor</label>
-                        <select name="autor_id" id="autor_id" class="form-control select2" aria-label="Filtrar por autor"></select>
+                        <select name="autor_id" id="autor_id" class="form-control select2" aria-label="Filtrar por autor">
+                            @if($autorSeleccionado ?? null)
+                                <option value="{{ $autorSeleccionado->id }}" selected>
+                                    {{ trim($autorSeleccionado->nombres . ' ' . $autorSeleccionado->apellidos) }}
+                                </option>
+                            @endif
+                        </select>
                     </div>
 
                     <div class="catalog-filter-box">
                         <label for="idioma_id">Idioma</label>
-                        <select name="idioma_id" id="idioma_id" class="form-control select2" aria-label="Filtrar por idioma"></select>
+                        <select name="idioma_id" id="idioma_id" class="form-control select2" aria-label="Filtrar por idioma">
+                            @if($idiomaSeleccionado ?? null)
+                                <option value="{{ $idiomaSeleccionado->id }}" selected>{{ $idiomaSeleccionado->nombre }}</option>
+                            @endif
+                        </select>
                     </div>
 
                     <div class="catalog-filter-box">
                         <label for="materia_id">Materia</label>
-                        <select name="materia_id" id="materia_id" class="form-control select2" aria-label="Filtrar por materia"></select>
+                        <select name="materia_id" id="materia_id" class="form-control select2" aria-label="Filtrar por materia">
+                            @if($materiaSeleccionada ?? null)
+                                <option value="{{ $materiaSeleccionada->id }}" selected>{{ $materiaSeleccionada->nombre }}</option>
+                            @endif
+                        </select>
                     </div>
 
                     <div class="catalog-filter-actions">

@@ -21,14 +21,17 @@ class PrestamoController extends Controller
         }
 
         $user = Auth::user();
-        $permiso = Usuario_rol_biblioteca::where('rol_id', 19)
-            ->where('user_id', $user->id)
-            ->first();
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
         $query = Prestamo::with(['ejemplar.libro', 'lector'])
-            ->when($permiso && $permiso->biblioteca_id, function ($q) use ($permiso) {
-                $q->whereHas('ejemplar', function ($sub) use ($permiso) {
-                    $sub->where('biblioteca_id', $permiso->biblioteca_id);
+            ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
+                if ($bibliotecasAsignadas->isEmpty()) {
+                    $q->whereRaw('1 = 0');
+                    return;
+                }
+
+                $q->whereHas('ejemplar', function ($sub) use ($bibliotecasAsignadas) {
+                    $sub->whereIn('biblioteca_id', $bibliotecasAsignadas->all());
                 });
             })
             ->orderByRaw("
@@ -187,10 +190,17 @@ class PrestamoController extends Controller
             return response()->json(['error' => 'Debes iniciar sesión'], 401);
         }
 
+        $user = Auth::user();
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
+
         $prestamo = Prestamo::with('ejemplar')->find($id);
 
         if (! $prestamo) {
             return response()->json(['error' => 'No se encontró el préstamo']);
+        }
+
+        if (! $accesoGlobal && ! $bibliotecasAsignadas->contains((int) optional($prestamo->ejemplar)->biblioteca_id)) {
+            return response()->json(['error' => 'No puedes devolver prestamos de otra biblioteca'], 403);
         }
 
         $now = Carbon::now();
@@ -240,5 +250,24 @@ class PrestamoController extends Controller
         return response()->json(
             app(SancionAutomaticaService::class)->previsualizarPorPrestamo($prestamo, $estadoLibro, $diasRetraso)
         );
+    }
+
+    private function resolverBibliotecasUsuario(int $userId): array
+    {
+        $asignaciones = Usuario_rol_biblioteca::query()
+            ->where('user_id', $userId)
+            ->get(['biblioteca_id', 'estado']);
+
+        $bibliotecasAsignadas = $asignaciones
+            ->pluck('biblioteca_id')
+            ->filter(fn ($id) => ! is_null($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $accesoGlobal = $bibliotecasAsignadas->isEmpty()
+            && $asignaciones->contains(fn ($asignacion) => is_null($asignacion->biblioteca_id) && (int) $asignacion->estado === 1);
+
+        return [$bibliotecasAsignadas, $accesoGlobal];
     }
 }

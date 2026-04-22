@@ -34,4 +34,5 @@ class Sancion extends Model
     public function bibliotecario() { return $this->belongsTo(User::class, 'bibliotecario_id'); }
     public function prestamo() { return $this->belongsTo(Prestamo::class); }
     public function reservacion() { return $this->belongsTo(Reservacion::class); }
+    public function tipoSancion() { return $this->belongsTo(TipoSancion::class); }
 }
