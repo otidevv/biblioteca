@@ -156,7 +156,7 @@ public function ejemplarBiblioteca(Request $request, $biblioteca_id)
             'id',
             DB::raw("
                 CONCAT(
-                    COALESCE(codigo_dewey, ''),
+                    COALESCE(codigo_ant, ''),
                     COALESCE(tipo, ''),
                     COALESCE(codigo_interno, '')
                 ) as codigo
