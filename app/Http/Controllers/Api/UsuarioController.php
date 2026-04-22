@@ -50,6 +50,19 @@ class UsuarioController extends Controller
 
 
         return DataTables::of($query)
+            ->orderColumn('rol', function ($query, $order) {
+                $direction = strtolower($order) === 'desc' ? 'desc' : 'asc';
+
+                $query->orderByRaw("
+                    (
+                        select min(roles.nombre)
+                        from roles
+                        inner join usuario_rol_bibliotecas
+                            on roles.id = usuario_rol_bibliotecas.rol_id
+                        where usuario_rol_bibliotecas.user_id = users.id
+                    ) {$direction}
+                ");
+            })
             ->filterColumn('rol', function ($query, $keyword) {
                 $search = mb_strtolower(trim($keyword));
 
