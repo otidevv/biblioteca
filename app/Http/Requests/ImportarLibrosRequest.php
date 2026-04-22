@@ -15,6 +15,7 @@ class ImportarLibrosRequest extends FormRequest
     {
         return [
             'biblioteca_id' => ['required', 'integer', 'exists:bibliotecas,id'],
+            'tipo_registro_id' => ['required', 'integer', 'exists:tipo_registros,id'],
             'archivo' => ['required', 'file', 'mimes:xlsx,xls'],
         ];
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Imports\LibrosImport;
 use App\Models\Biblioteca;
+use App\Models\Tipo_registro;
 use App\Http\Requests\ImportarLibrosRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,11 @@ class LibroImportController extends Controller
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
 
-        return view('administracion.libros_importar', compact('bibliotecas'));
+        $tipoRegistros = Tipo_registro::query()
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+
+        return view('administracion.libros_importar', compact('bibliotecas', 'tipoRegistros'));
     }
 
     public function store(ImportarLibrosRequest $request): RedirectResponse|JsonResponse
@@ -52,7 +57,10 @@ class LibroImportController extends Controller
 
             File::copy($uploadedFile->getRealPath(), $temporaryFilePath);
 
-            $import = new LibrosImport((int) $validated['biblioteca_id']);
+            $import = new LibrosImport(
+                (int) $validated['biblioteca_id'],
+                (int) $validated['tipo_registro_id']
+            );
             $this->processSpreadsheetInBatches($temporaryFilePath, $import);
         } catch (\Throwable $e) {
             if ($temporaryFilePath && File::exists($temporaryFilePath)) {
@@ -91,6 +99,7 @@ class LibroImportController extends Controller
             'success' => true,
             'message' => 'La importacion de libros finalizo.',
             'biblioteca_importada_id' => (int) $validated['biblioteca_id'],
+            'tipo_registro_importado_id' => (int) $validated['tipo_registro_id'],
             'summary' => $import->getSummary(),
             'errors' => $import->getErrors(),
             'inserted_books' => $import->getInsertedBooks(),
@@ -104,6 +113,7 @@ class LibroImportController extends Controller
         return redirect()->route('administracion.libros.importar')->with([
             'success' => $payload['message'],
             'biblioteca_importada_id' => $payload['biblioteca_importada_id'],
+            'tipo_registro_importado_id' => $payload['tipo_registro_importado_id'],
             'import_summary' => $payload['summary'],
             'import_errors' => $payload['errors'],
             'inserted_books' => $payload['inserted_books'],

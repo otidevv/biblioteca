@@ -18,7 +18,8 @@ class LibrosImport implements ToCollection, WithHeadingRow
     protected int $previewLimit = 300;
 
     public function __construct(
-        protected int $bibliotecaId
+        protected int $bibliotecaId,
+        protected int $tipoRegistroId
     ) {
     }
 
@@ -96,6 +97,7 @@ class LibrosImport implements ToCollection, WithHeadingRow
                         'lugar_publicacion' => $this->cleanString($data['lugar_publicacion']),
                         'paginas' => $this->cleanInteger($data['paginas']),
                         'editorial_id' => $editorialId,
+                        'tipo_registro_id' => $this->tipoRegistroId,
                         'estado' => 1,
                     ]);
 

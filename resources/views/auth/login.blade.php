@@ -89,14 +89,6 @@
                     </div>
 
                     <div>
-                        <div class="mb-2 flex items-center justify-between gap-3">
-                            <x-input-label for="password" :value="'Contrasena'" class="!text-sm !font-semibold !text-slate-700" />
-                            @if (Route::has('password.request'))
-                                <a class="text-sm font-medium text-emerald-800 transition hover:text-emerald-600" href="{{ route('password.request') }}">
-                                    Recuperar acceso
-                                </a>
-                            @endif
-                        </div>
 
                         <x-text-input
                             id="password"

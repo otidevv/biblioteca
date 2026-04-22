@@ -72,6 +72,17 @@
                             @endforeach
                         </select>
                     </div>
+                    <div>
+                        <label for="tipo_registro_id" class="form-label">Tipo de registro para los libros</label>
+                        <select name="tipo_registro_id" id="tipo_registro_id" class="form-select" required>
+                            <option value="">Selecciona un tipo de registro</option>
+                            @foreach ($tipoRegistros as $tipoRegistro)
+                                <option value="{{ $tipoRegistro->id }}" @selected(old('tipo_registro_id', session('tipo_registro_importado_id')) == $tipoRegistro->id)>
+                                    {{ $tipoRegistro->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <input type="file" name="archivo" accept=".xlsx,.xls" class="form-control" required>
                     <button id="bookImportSubmit" type="submit" class="admin-btn admin-btn--primary">
                         <i class="bi bi-cloud-arrow-up"></i>
