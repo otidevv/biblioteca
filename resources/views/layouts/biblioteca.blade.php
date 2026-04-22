@@ -749,7 +749,30 @@ body {
     position: fixed;
     top: 1rem;
     right: 1rem;
+    bottom: auto;
+    left: auto;
     z-index: 1060;
+    width: min(420px, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+    height: auto;
+    display: grid;
+    gap: 0.75rem;
+    pointer-events: none;
+}
+
+#mensaje_container .notificacion {
+    max-height: calc(100vh - 2rem);
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+@media (max-width: 576px) {
+    #mensaje_container {
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+        max-width: none;
+    }
 }
 
 body.library-dark {

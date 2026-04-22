@@ -106,6 +106,12 @@
                         <span>Mantener sesion iniciada en este dispositivo</span>
                     </label>
 
+                    <div class="flex justify-end">
+                        <a href="{{ route('password.request') }}" class="text-sm font-semibold text-emerald-800 transition hover:text-emerald-950 hover:underline">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+
                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,_#1f6b4f,_#103428)] px-5 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_18px_40px_rgba(16,52,40,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_rgba(16,52,40,0.22)]">
                         Iniciar sesion
                     </button>
