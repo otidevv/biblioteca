@@ -33,8 +33,8 @@
             </div>
         </div>
 
-        <div class="admin-table-shell table-responsive books-table-shell">
-            <table id="tabla-libros" class="table table-hover table-bordered align-middle datatable w-100">
+        <div class="admin-table-shell table-responsive">
+            <table id="tabla-libros" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
                 <thead>
                     <tr>
                         <th>Codigo Dewey</th>
