@@ -95,7 +95,7 @@ class UsuarioController extends Controller
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
-            'biblioteca'        => 'nullable|string|max:20',
+            'biblioteca'        => 'nullable|integer|exists:bibliotecas,id',
             'telefono'          => 'required|string|max:20',
             'direccion'         => 'required|string|max:255',
             'correo'            => 'required|email|unique:users,email',
@@ -122,7 +122,7 @@ class UsuarioController extends Controller
                 'telefono'          => $request->telefono,
                 'email_personal'    => $request->correo,
                 'direccion'         => $request->direccion,
-                'estado'           =>1,
+                'activo'           =>1,
             ]);
 
             /** =========================
@@ -143,6 +143,18 @@ class UsuarioController extends Controller
 
             // 👉 OPCIÓN A: tabla pivote rol_usuarios
             $user->roles()->sync($request->roles);
+
+            Usuario_rol_biblioteca::where('user_id', $user->id)->delete();
+            foreach ($request->roles as $rolId) {
+                DB::table('usuario_rol_bibliotecas')->insert([
+                    'user_id'       => $user->id,
+                    'rol_id'        => $rolId,
+                    'biblioteca_id'=> $request->biblioteca,
+                    'estado'        => 1,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]);
+            }
 
             // 👉 OPCIÓN B: usuario_rol_bibliotecas
             /*

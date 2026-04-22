@@ -21,15 +21,18 @@ class ReservacionController extends Controller
         }
 
         $user = auth()->user();
-        $permiso = Usuario_rol_biblioteca::where('rol_id', 19)
-            ->where('user_id', $user->id)
-            ->first();
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
         $query = Reservacion::with(['ejemplar.libro', 'lector'])
             ->where('estado', 0)
-            ->when($permiso && $permiso->biblioteca_id, function ($q) use ($permiso) {
-                $q->whereHas('ejemplar', function ($sub) use ($permiso) {
-                    $sub->where('biblioteca_id', $permiso->biblioteca_id);
+            ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
+                if ($bibliotecasAsignadas->isEmpty()) {
+                    $q->whereRaw('1 = 0');
+                    return;
+                }
+
+                $q->whereHas('ejemplar', function ($sub) use ($bibliotecasAsignadas) {
+                    $sub->whereIn('biblioteca_id', $bibliotecasAsignadas->all());
                 });
             })
             ->orderByRaw("
@@ -233,7 +236,16 @@ class ReservacionController extends Controller
         $dias = (int) $request->dias;
 
         $resultado = DB::transaction(function () use ($id, $user, $dias, $request) {
-            $reserva = Reservacion::lockForUpdate()->findOrFail($id);
+            [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
+
+            $reserva = Reservacion::with('ejemplar')->lockForUpdate()->findOrFail($id);
+
+            if (! $accesoGlobal && ! $bibliotecasAsignadas->contains((int) optional($reserva->ejemplar)->biblioteca_id)) {
+                return [
+                    'status' => 403,
+                    'payload' => ['error' => 'No puedes entregar reservas de otra biblioteca'],
+                ];
+            }
 
             if ((int) $reserva->estado !== 0) {
                 return [
@@ -270,5 +282,24 @@ class ReservacionController extends Controller
         });
 
         return response()->json($resultado['payload'], $resultado['status']);
+    }
+
+    private function resolverBibliotecasUsuario(int $userId): array
+    {
+        $asignaciones = Usuario_rol_biblioteca::query()
+            ->where('user_id', $userId)
+            ->get(['biblioteca_id', 'estado']);
+
+        $bibliotecasAsignadas = $asignaciones
+            ->pluck('biblioteca_id')
+            ->filter(fn ($id) => ! is_null($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $accesoGlobal = $bibliotecasAsignadas->isEmpty()
+            && $asignaciones->contains(fn ($asignacion) => is_null($asignacion->biblioteca_id) && (int) $asignacion->estado === 1);
+
+        return [$bibliotecasAsignadas, $accesoGlobal];
     }
 }
