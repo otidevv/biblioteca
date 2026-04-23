@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Panel de Biblioteca</title>
 
+    <link rel="icon" type="image/png" href="{{ asset('img/logo_unamad.png') }}">
     <link href="{{ asset('lib/tabler/css/tabler.min.css') }}" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}" rel="stylesheet" />

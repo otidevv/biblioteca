@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="@yield('meta_description', 'Biblioteca UNAMAD: consulta catálogos, revisa disponibilidad de libros y gestiona reservas y préstamos en línea.')">
 
+<link rel="icon" type="image/png" href="{{ asset('img/logo_unamad.png') }}">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <link href="{{ asset('lib/select2/css/select2.css') }}" rel="stylesheet">
