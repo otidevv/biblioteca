@@ -1,7 +1,7 @@
 ﻿@extends('layouts.biblioteca')
 
-@section('title', 'Biblioteca UNAMAD | Catalogo')
-@section('meta_description', 'Consulta el catalogo de libros de la Biblioteca UNAMAD, filtra por titulo, autor, idioma y materia.')
+@section('title', 'Biblioteca UNAMAD | Catálogo')
+@section('meta_description', 'Consulta el catálogo de libros de la Biblioteca UNAMAD, filtra por título, autor, idioma y materia.')
 
 @section('css')
 <link href="{{ asset('css/pagina/catalogo.css') }}" rel="stylesheet">
@@ -31,36 +31,36 @@
     </h1>
 
     <p>
-        Encuentra materiales bibliograficos por titulo, autor, idioma o materia y navega por el acervo disponible
+        Encuentra materiales bibliográficos por título, autor, idioma o materia y navega por el acervo disponible
         de la Biblioteca UNAMAD.
     </p>
 </section>
 
-<section class="catalog-filter-card" aria-label="Filtros de catalogo">
+<section class="catalog-filter-card" aria-label="Filtros de catálogo">
     <form method="GET" action="{{ route('catalogo') }}" id="catalogoFiltrosForm">
         <div class="catalog-filter-header">
             <div>
                 <span class="catalog-filter-kicker">
                     <i class="bi bi-funnel-fill"></i>
-                    Filtrar catalogo
+                    Filtrar catálogo
                 </span>
                 <h2 class="catalog-filter-title">Encuentra el libro que necesitas</h2>
                 <p class="catalog-filter-subtitle">
-                    Busca por titulo y afina el resultado con autor, idioma o materia.
+                    Busca por título y afina el resultado con autor, idioma o materia.
                 </p>
             </div>
         </div>
 
         <div class="catalog-filter-grid">
             <div class="catalog-filter-primary">
-                <label for="titulo">Titulo o palabra clave</label>
+                <label for="titulo">Título o palabra clave</label>
                 <div class="catalog-filter-input-shell">
                     <i class="bi bi-search catalog-filter-input-icon"></i>
                     <input type="text"
                            id="titulo"
                            name="titulo"
                            class="form-control"
-                           placeholder="Escribe el titulo del libro o una palabra relacionada"
+                           placeholder="Escribe el título del libro o una palabra relacionada"
                            value="{{ request('titulo') }}">
                 </div>
             </div>
@@ -118,7 +118,7 @@
 
 <section class="catalog-results-bar">
     <div>
-        <h2>Resultados del catalogo</h2>
+        <h2>Resultados del catálogo</h2>
         <p>Explora libros disponibles y accede al detalle de cada registro.</p>
     </div>
 

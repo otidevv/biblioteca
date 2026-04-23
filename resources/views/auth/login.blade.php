@@ -18,7 +18,7 @@
                         Acceso institucional para la comunidad lectora.
                     </h1>
                     <p class="mt-5 text-base leading-8 text-emerald-50/85">
-                        Gestiona prestamos, revisa disponibilidad por sede, comenta tus lecturas y mantente conectado con el catalogo bibliografico de UNAMAD desde una sola plataforma.
+                        Gestiona préstamos, revisa disponibilidad por sede, comenta tus lecturas y mantente conectado con el catálogo bibliográfico de UNAMAD desde una sola plataforma.
                     </p>
                 </div>
             </div>
@@ -58,7 +58,7 @@
 
                 <div class="mt-6">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Bienvenido</p>
-                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Inicia sesion en tu cuenta</h2>
+                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Inicia sesión en tu cuenta</h2>
                     <p class="mt-3 text-sm leading-7 text-slate-600">
                         Ingresa con tus credenciales institucionales para continuar en el sistema de biblioteca.
                     </p>
@@ -74,7 +74,7 @@
                     @endif
 
                     <div>
-                        <x-input-label for="email" :value="'Correo electronico'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
+                        <x-input-label for="email" :value="'Correo electrónico'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
                         <x-text-input
                             id="email"
                             class="block w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4 py-3 !shadow-none focus:border-emerald-600 focus:bg-white focus:ring-emerald-600"
@@ -97,13 +97,13 @@
                             name="password"
                             required
                             autocomplete="current-password"
-                            placeholder="Ingresa tu contrasena" />
+                            placeholder="Ingresa tu contraseña" />
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
                     <label for="remember_me" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600">
                         <input id="remember_me" type="checkbox" class="rounded border-slate-300 text-emerald-700 shadow-sm focus:ring-emerald-600" name="remember">
-                        <span>Mantener sesion iniciada en este dispositivo</span>
+                        <span>Mantener sesión iniciada en este dispositivo</span>
                     </label>
 
                     <div class="flex justify-end">
@@ -113,7 +113,7 @@
                     </div>
 
                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,_#1f6b4f,_#103428)] px-5 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_18px_40px_rgba(16,52,40,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_rgba(16,52,40,0.22)]">
-                        Iniciar sesion
+                        Iniciar sesión
                     </button>
                 </form>
             </div>

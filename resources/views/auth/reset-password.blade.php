@@ -13,12 +13,12 @@
                 </div>
 
                 <div class="mt-8 max-w-xl">
-                    <p class="text-sm font-semibold uppercase tracking-[0.22em] text-amber-200/90">Nueva contrasena</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.22em] text-amber-200/90">Nueva contraseña</p>
                     <h1 class="mt-4 text-4xl font-extrabold leading-tight">
                         Crea una clave segura para continuar.
                     </h1>
                     <p class="mt-5 text-base leading-8 text-emerald-50/85">
-                        Usa una contrasena dificil de adivinar y no la compartas. Este enlace solo es valido durante 10 minutos desde que fue generado.
+                        Usa una contraseña difícil de adivinar y no la compartas. Este enlace solo es válido durante 10 minutos desde que fue generado.
                     </p>
                 </div>
             </div>
@@ -26,11 +26,11 @@
             <div class="relative grid gap-4 sm:grid-cols-2">
                 <div class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/90">Seguridad</p>
-                    <p class="mt-2 text-sm leading-6 text-emerald-50/85">Evita usar documentos, nombres o fechas personales como contrasena.</p>
+                    <p class="mt-2 text-sm leading-6 text-emerald-50/85">Evita usar documentos, nombres o fechas personales como contraseña.</p>
                 </div>
                 <div class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/90">Sesion</p>
-                    <p class="mt-2 text-sm leading-6 text-emerald-50/85">Despues del cambio podras iniciar sesion con tus nuevas credenciales.</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/90">Sesión</p>
+                    <p class="mt-2 text-sm leading-6 text-emerald-50/85">Después del cambio podrás iniciar sesión con tus nuevas credenciales.</p>
                 </div>
             </div>
         </section>
@@ -53,8 +53,8 @@
                 </div>
 
                 <div class="mt-6">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Restablecer contrasena</p>
-                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Define tu nueva contrasena</h2>
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Restablecer contraseña</p>
+                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Define tu nueva contraseña</h2>
                     <p class="mt-3 text-sm leading-7 text-slate-600">
                         Completa ambos campos para actualizar el acceso de tu cuenta.
                     </p>
@@ -73,7 +73,7 @@
                     @endif
 
                     <div>
-                        <x-input-label for="password" :value="'Nueva contrasena'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
+                        <x-input-label for="password" :value="'Nueva contraseña'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
                         <x-text-input
                             id="password"
                             class="block w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4 py-3 !shadow-none focus:border-emerald-600 focus:bg-white focus:ring-emerald-600"
@@ -82,12 +82,12 @@
                             required
                             autofocus
                             autocomplete="new-password"
-                            placeholder="Minimo 8 caracteres" />
+                            placeholder="Mínimo 8 caracteres" />
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
                     <div>
-                        <x-input-label for="password_confirmation" :value="'Confirmar contrasena'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
+                        <x-input-label for="password_confirmation" :value="'Confirmar contraseña'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
                         <x-text-input
                             id="password_confirmation"
                             class="block w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4 py-3 !shadow-none focus:border-emerald-600 focus:bg-white focus:ring-emerald-600"
@@ -95,17 +95,17 @@
                             name="password_confirmation"
                             required
                             autocomplete="new-password"
-                            placeholder="Repite la nueva contrasena" />
+                            placeholder="Repite la nueva contraseña" />
                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                     </div>
 
                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,_#1f6b4f,_#103428)] px-5 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_18px_40px_rgba(16,52,40,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_rgba(16,52,40,0.22)]">
-                        Cambiar contrasena
+                        Cambiar contraseña
                     </button>
 
                     <div class="text-center">
                         <a href="{{ route('login') }}" class="text-sm font-semibold text-emerald-800 transition hover:text-emerald-950 hover:underline">
-                            Volver al inicio de sesion
+                            Volver al inicio de sesión
                         </a>
                     </div>
                 </form>

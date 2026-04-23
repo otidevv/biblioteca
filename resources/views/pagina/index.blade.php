@@ -122,7 +122,7 @@
             <a href="https://repositorio.unamad.edu.pe/"
                class="home-library-card"
                aria-label="Explorar biblioteca {{ $b->nombre }}">
-                <img src="{{ asset('img/biblioteca-placeholder.svg') }}"
+                    <img src="{{ asset('img/repositorio.png') }}"
                      alt="Repositorio Institucional Digital"
                      class="home-library-cover"
                      onerror="this.onerror=null;this.src='{{ asset('img/biblioteca-placeholder.svg') }}';"

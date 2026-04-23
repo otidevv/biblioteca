@@ -55,7 +55,7 @@
             <a href="{{ route('dashboard') }}" class="admin-brand">
                 <img src="{{ asset('img/logo_unamad.png') }}" alt="UNAMAD" class="admin-brand__logo">
                 <div x-show="!sidebarCollapsed || windowWidth < 1024" x-transition.opacity>
-                    <div class="admin-brand__kicker">Universidad Nacional Amazonica de Madre de Dios</div>
+                    <div class="admin-brand__kicker">Universidad Nacional Amazónica de Madre de Dios</div>
                     <div class="admin-brand__title">Sistema de Biblioteca</div>
                 </div>
             </a>
@@ -68,7 +68,7 @@
                 "
                 type="button"
                 class="admin-sidebar__toggle"
-                aria-label="Alternar navegacion"
+                aria-label="Alternar navegación"
             >
                 <span class="admin-sidebar__toggle-line"></span>
                 <span class="admin-sidebar__toggle-line"></span>
@@ -140,7 +140,7 @@
                     @click="sidebarMobile = true"
                     type="button"
                     class="admin-topbar__menu d-lg-none"
-                    aria-label="Abrir navegacion"
+                    aria-label="Abrir navegación"
                 >
                     <span></span>
                     <span></span>
@@ -148,8 +148,8 @@
                 </button>
 
                 <div>
-                    <div class="admin-topbar__kicker">Gestion institucional</div>
-                    <h1 class="admin-topbar__title">@yield('page-title', 'Panel de administracion')</h1>
+                    <div class="admin-topbar__kicker">Gestión institucional</div>
+                    <h1 class="admin-topbar__title">@yield('page-title', 'Panel de administración')</h1>
                 </div>
             </div>
 
@@ -173,7 +173,7 @@
                         <div class="admin-dropdown__header">
                             <div>
                                 <div class="admin-dropdown__eyebrow">Centro de mensajes</div>
-                                <div class="admin-dropdown__title">Avisos para administracion</div>
+                                <div class="admin-dropdown__title">Avisos para administración</div>
                             </div>
                         </div>
 

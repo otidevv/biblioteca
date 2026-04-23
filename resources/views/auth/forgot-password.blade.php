@@ -13,18 +13,18 @@
                 </div>
 
                 <div class="mt-8 max-w-xl">
-                    <p class="text-sm font-semibold uppercase tracking-[0.22em] text-amber-200/90">Recuperacion de acceso</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.22em] text-amber-200/90">Recuperación de acceso</p>
                     <h1 class="mt-4 text-4xl font-extrabold leading-tight">
                         Te ayudamos a volver a tu cuenta.
                     </h1>
                     <p class="mt-5 text-base leading-8 text-emerald-50/85">
-                        Ingresa el correo registrado y enviaremos un enlace seguro para restablecer tu contrasena. Por seguridad, el enlace vencera en 10 minutos.
+                        Ingresa el correo registrado y enviaremos un enlace seguro para restablecer tu contraseña. Por seguridad, el enlace vencerá en 10 minutos.
                     </p>
                 </div>
             </div>
 
             <div class="relative rounded-2xl border border-white/12 bg-white/10 p-5 text-sm leading-7 text-emerald-50/85 backdrop-blur">
-                Si no recuerdas el correo registrado, comunicate con el personal de biblioteca para validar tu identidad y actualizar tus datos.
+                Si no recuerdas el correo registrado, comunícate con el personal de biblioteca para validar tu identidad y actualizar tus datos.
             </div>
         </section>
 
@@ -46,10 +46,10 @@
                 </div>
 
                 <div class="mt-6">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Recuperar contrasena</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Recuperar contraseña</p>
                     <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Solicita un enlace de restablecimiento</h2>
                     <p class="mt-3 text-sm leading-7 text-slate-600">
-                        Escribe el correo asociado a tu cuenta. Si existe en el sistema, recibiras un enlace para crear una nueva contrasena.
+                        Escribe el correo asociado a tu cuenta. Si existe en el sistema, recibirás un enlace para crear una nueva contraseña.
                     </p>
                 </div>
 
@@ -59,7 +59,7 @@
                     @csrf
 
                     <div>
-                        <x-input-label for="email" :value="'Correo electronico'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
+                        <x-input-label for="email" :value="'Correo electrónico'" class="mb-2 !text-sm !font-semibold !text-slate-700" />
                         <x-text-input
                             id="email"
                             class="block w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4 py-3 !shadow-none focus:border-emerald-600 focus:bg-white focus:ring-emerald-600"
@@ -74,12 +74,12 @@
                     </div>
 
                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,_#1f6b4f,_#103428)] px-5 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_18px_40px_rgba(16,52,40,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_rgba(16,52,40,0.22)]">
-                        Enviar enlace de recuperacion
+                        Enviar enlace de recuperación
                     </button>
 
                     <div class="text-center">
                         <a href="{{ route('login') }}" class="text-sm font-semibold text-emerald-800 transition hover:text-emerald-950 hover:underline">
-                            Volver al inicio de sesion
+                            Volver al inicio de sesión
                         </a>
                     </div>
                 </form>

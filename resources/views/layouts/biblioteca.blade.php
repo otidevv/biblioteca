@@ -1102,7 +1102,7 @@ body.library-dark .overlay.active {
         ];
     } elseif (request()->routeIs('catalogo')) {
         $topbarMeta = [
-            'kicker' => 'Consulta bibliografica',
+            'kicker' => 'Consulta bibliográfica',
             'icon' => 'bi-collection-fill',
             'title' => 'Catálogo institucional',
             'subtitle' => 'Busca libros, filtra resultados y revisa valoraciones antes de consultar el detalle.',
@@ -1116,7 +1116,7 @@ body.library-dark .overlay.active {
         ];
     } elseif (request()->routeIs('libro.show')) {
         $topbarMeta = [
-            'kicker' => 'Ficha bibliografica',
+            'kicker' => 'Ficha bibliográfica',
             'icon' => 'bi-journal-bookmark-fill',
             'title' => 'Detalle del libro',
             'subtitle' => 'Revisa autores, disponibilidad, comentarios y reserva el ejemplar que necesitas.',
@@ -1132,7 +1132,7 @@ body.library-dark .overlay.active {
         $topbarMeta = [
             'kicker' => 'Control de movimientos',
             'icon' => 'bi-arrow-left-right',
-            'title' => 'Prestamos y movimientos',
+            'title' => 'Préstamos y movimientos',
             'subtitle' => 'Consulta el flujo de préstamos y devoluciones desde una vista centralizada.',
         ];
     } elseif (request()->routeIs('evento')) {

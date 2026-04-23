@@ -221,7 +221,7 @@ window.libroPage = {
                     </div>
                     <div class="book-info-item">
                         <strong>Codigo interno</strong>
-                        <span>{{ $libro->codigo ?: ($libro->codigo_ant ?: 'Sin codigo') }}</span>
+                        <span>{{ $libro->codigo_ant ?: 'Sin codigo' }}</span>
                     </div>
                     <div class="book-info-item">
                         <strong>Tipo de registro</strong>
