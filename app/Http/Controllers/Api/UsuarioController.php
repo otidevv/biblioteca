@@ -563,7 +563,7 @@ class UsuarioController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo completar la importacion de lectores.',
+                'message' => $e->getMessage() ?: 'No se pudo completar la importacion de lectores.',
             ], 422);
         }
     }

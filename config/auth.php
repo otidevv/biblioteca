@@ -112,4 +112,6 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    'import_default_password' => env('IMPORT_DEFAULT_PASSWORD', '12345678'),
+
 ];

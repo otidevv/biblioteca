@@ -45,7 +45,10 @@
 
                 <div class="reader-import__tips">
                     <div><strong>Filas recomendadas:</strong> usa una fila por lector.</div>
-                    <div><strong>Para estudiantes:</strong> completa codigo institucional, carrera y estado academico.</div>
+                    <div><strong>Para estudiantes:</strong> completa codigo institucional; si la carrera no coincide con una registrada, se importara vacia.</div>
+                    <div><strong>Sexo y estado academico:</strong> se ignoran durante esta importacion.</div>
+                    <div><strong>Contrasena:</strong> puedes dejarla vacia y el sistema aplicara la predeterminada configurada.</div>
+                    <div><strong>Correo:</strong> las filas sin correo valido se mostraran, pero no se importaran.</div>
                     <div><strong>Carreras disponibles:</strong> {{ $carreras->count() }} registradas.</div>
                 </div>
             </article>
@@ -136,12 +139,7 @@
         previewUrl: '{{ route('lectores.importacion.preview') }}',
         importUrl: '{{ route('lectores.importacion.cargar') }}',
         carreras: @json($carreras->map(fn($carrera) => ['id' => $carrera->id, 'nombre' => $carrera->nombre])->values()),
-        tiposPersona: ['ESTUDIANTE', 'DOCENTE', 'ADMINISTRATIVO', 'EXTERNO'],
-        sexos: ['M', 'F', 'O'],
-        estadosAcademicos: [
-            { value: '1', label: 'Estudiante' },
-            { value: '2', label: 'Egresado' }
-        ]
+        tiposPersona: ['ESTUDIANTE', 'DOCENTE', 'ADMINISTRATIVO', 'EXTERNO']
     };
 </script>
 <script src="{{ asset('js/lectores/importacion_lectores.js') }}?v={{ filemtime(public_path('js/lectores/importacion_lectores.js')) }}"></script>

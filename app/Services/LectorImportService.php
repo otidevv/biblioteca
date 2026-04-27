@@ -18,6 +18,8 @@ use ZipArchive;
 class LectorImportService
 {
     private const STORAGE_DIR = 'importaciones_lectores';
+    private const DEFAULT_PASSWORD = '12345678';
+    private const IGNORED_FIELDS = ['sexo', 'estado_academico'];
 
     public function templateColumns(): array
     {
@@ -27,14 +29,14 @@ class LectorImportService
             ['campo' => 'nombres', 'required' => 'Si', 'detalle' => 'Nombres completos'],
             ['campo' => 'apellido_paterno', 'required' => 'Si', 'detalle' => 'Apellido paterno'],
             ['campo' => 'apellido_materno', 'required' => 'No', 'detalle' => 'Apellido materno'],
-            ['campo' => 'sexo', 'required' => 'Si', 'detalle' => 'M, F u O'],
+            ['campo' => 'sexo', 'required' => 'No', 'detalle' => 'Se ignora en la importacion; se completa luego desde el perfil'],
             ['campo' => 'telefono', 'required' => 'Si', 'detalle' => 'Telefono de contacto'],
-            ['campo' => 'email_personal', 'required' => 'Si', 'detalle' => 'Correo que sera tambien el usuario de acceso'],
+            ['campo' => 'email_personal', 'required' => 'Si para importar', 'detalle' => 'Si viene vacio o invalido, la fila no se insertara'],
             ['campo' => 'direccion', 'required' => 'No', 'detalle' => 'Direccion del lector'],
             ['campo' => 'codigo_institucional', 'required' => 'Solo estudiantes', 'detalle' => 'Codigo institucional unico'],
-            ['campo' => 'carrera', 'required' => 'Solo estudiantes', 'detalle' => 'ID o nombre exacto de la carrera'],
-            ['campo' => 'estado_academico', 'required' => 'Solo estudiantes', 'detalle' => '1, 2, ESTUDIANTE o EGRESADO'],
-            ['campo' => 'password', 'required' => 'Si', 'detalle' => 'Contrasena inicial, minimo 6 caracteres'],
+            ['campo' => 'carrera', 'required' => 'No', 'detalle' => 'Si no coincide con una carrera registrada, se importa con carrera vacia'],
+            ['campo' => 'estado_academico', 'required' => 'No', 'detalle' => 'Se ignora en la importacion'],
+            ['campo' => 'password', 'required' => 'No', 'detalle' => 'Contrasena inicial; si viene vacia se usa la predeterminada del sistema'],
         ];
     }
 
@@ -63,7 +65,7 @@ class LectorImportService
             'headers' => $headers,
             'rows' => $previewRows,
             'summary' => $summary,
-            'can_import' => $summary['total'] > 0 && $summary['invalidos'] === 0,
+            'can_import' => $summary['validos'] > 0,
         ];
     }
 
@@ -85,28 +87,31 @@ class LectorImportService
             'headers' => $payload['headers'] ?? [],
             'rows' => $previewRows,
             'summary' => $summary,
-            'can_import' => $summary['total'] > 0 && $summary['invalidos'] === 0,
+            'can_import' => $summary['validos'] > 0,
         ];
     }
 
     public function import(string $token, ?array $rows = null): array
     {
+        $this->extendExecutionTime();
+
         $this->readToken($token);
         $rows = $rows ?? ((array) ($this->readToken($token)['rows'] ?? []));
+        $validRows = array_values(array_filter($rows, fn ($row) => (bool) ($row['is_valid'] ?? false)));
         $summary = $this->buildSummary($rows);
 
         if (empty($rows)) {
             throw new RuntimeException('No hay datos listos para importar.');
         }
 
-        if (($summary['invalidos'] ?? 0) > 0) {
-            throw new RuntimeException('Corrige las filas observadas antes de ejecutar la carga masiva.');
+        if ($validRows === []) {
+            throw new RuntimeException('No hay filas validas para importar.');
         }
 
-        $created = DB::transaction(function () use ($rows) {
+        $created = DB::transaction(function () use ($validRows) {
             $total = 0;
 
-            foreach ($rows as $row) {
+            foreach ($validRows as $row) {
                 $data = $row['data'];
 
                 if (Persona::where('dni', $data['dni'])->exists()) {
@@ -127,23 +132,19 @@ class LectorImportService
                     'nombres' => $data['nombres'],
                     'apellido_paterno' => $data['apellido_paterno'],
                     'apellido_materno' => $data['apellido_materno'] !== '' ? $data['apellido_materno'] : null,
-                    'sexo' => $data['sexo'],
+                    'sexo' => null,
                     'telefono' => $data['telefono'],
                     'email_personal' => $data['email_personal'],
                     'direccion' => $data['direccion'] !== '' ? $data['direccion'] : null,
                     'codigo_institucional' => $data['codigo_institucional'] !== '' ? $data['codigo_institucional'] : null,
                     'carrera_id' => $data['carrera_id'],
-                    'estado_academico' => $data['estado_academico'] !== '' ? $data['estado_academico'] : null,
+                    'estado_academico' => null,
                 ]);
 
                 $user = User::create([
-                    'name' => trim(implode(' ', array_filter([
-                        $data['nombres'],
-                        $data['apellido_paterno'],
-                        $data['apellido_materno'],
-                    ]))),
+                    'name' => $this->buildUserName($data),
                     'email' => $data['email_personal'],
-                    'password' => Hash::make($data['password']),
+                    'password' => Hash::make($data['password_resolved'] ?? $this->resolvePassword($data['password'] ?? null)),
                     'estado' => 1,
                     'origen' => 'local',
                     'tipo_usuario' => 'Lector',
@@ -212,8 +213,8 @@ class LectorImportService
     {
         return [
             array_column($this->templateColumns(), 'campo'),
-            ['ESTUDIANTE', '70000001', 'ANA MARIA', 'QUISPE', 'HUAMAN', 'F', '987654321', 'ana.quispe@correo.com', 'AV. LOS LIBROS 123', '202410001', 'INGENIERIA DE SISTEMAS E INFORMATICA', '1', 'Clave123'],
-            ['DOCENTE', '70000002', 'LUIS ALBERTO', 'ROJAS', 'PAREDES', 'M', '912345678', 'luis.rojas@correo.com', 'JR. UNIVERSIDAD 456', '', '', '', 'Clave123'],
+            ['ESTUDIANTE', '70000001', 'ANA MARIA', 'QUISPE', 'HUAMAN', '', '987654321', 'ana.quispe@correo.com', 'AV. LOS LIBROS 123', '202410001', 'INGENIERIA DE SISTEMAS E INFORMATICA', '', 'Clave123'],
+            ['DOCENTE', '70000002', 'LUIS ALBERTO', 'ROJAS', 'PAREDES', '', '912345678', 'luis.rojas@correo.com', 'JR. UNIVERSIDAD 456', '', '', '', ''],
         ];
     }
 
@@ -369,15 +370,24 @@ XML;
 
         foreach ($worksheetXml->sheetData->row as $row) {
             $current = [];
+            $maxColumnIndex = -1;
 
             foreach ($row->c as $cell) {
                 $column = preg_replace('/\d+/', '', (string) $cell['r']);
-                $current[$this->columnToIndex($column)] = $this->readCellValue($cell, $sharedStrings);
+                $columnIndex = $this->columnToIndex($column);
+                $current[$columnIndex] = $this->readCellValue($cell, $sharedStrings);
+                $maxColumnIndex = max($maxColumnIndex, $columnIndex);
             }
 
             if ($current !== []) {
                 ksort($current);
-                $rows[] = array_values($current);
+                $normalizedRow = [];
+
+                for ($index = 0; $index <= $maxColumnIndex; $index++) {
+                    $normalizedRow[] = $current[$index] ?? '';
+                }
+
+                $rows[] = $normalizedRow;
             }
         }
 
@@ -452,7 +462,7 @@ XML;
     private function extractRows(array $rows): array
     {
         $headers = $this->normalizeHeaders(array_shift($rows) ?? []);
-        $required = ['tipo_persona', 'dni', 'nombres', 'apellido_paterno', 'sexo', 'telefono', 'email_personal', 'password'];
+        $required = ['tipo_persona', 'dni', 'nombres', 'apellido_paterno', 'telefono'];
         $missing = array_diff($required, $headers);
 
         if ($missing !== []) {
@@ -504,10 +514,20 @@ XML;
             'estado_academico' => 'estado_academico',
             'password' => 'password',
             'contrasena' => 'password',
+            'contrasena de acceso' => 'password',
+            'contrasena acceso' => 'password',
+            'clave' => 'password',
+            'clave de acceso' => 'password',
         ];
 
         return array_map(function ($header) use ($aliases) {
-            $normalized = Str::of((string) $header)->lower()->ascii()->replace(['-', '/'], ' ')->squish()->value();
+            $normalized = Str::of((string) $header)
+                ->lower()
+                ->ascii()
+                ->replace(['-', '/', '_'], ' ')
+                ->squish()
+                ->value();
+
             return $aliases[$normalized] ?? $normalized;
         }, $headers);
     }
@@ -524,7 +544,7 @@ XML;
 
     private function normalizeEditableRows(array $editedRows, array $baseRows): array
     {
-        $templateFields = array_column($this->templateColumns(), 'campo');
+        $templateFields = array_values(array_diff(array_column($this->templateColumns(), 'campo'), self::IGNORED_FIELDS));
         $baseByExcelRow = collect($baseRows)->keyBy('excel_row');
 
         return collect($editedRows)->values()->map(function ($row, $index) use ($templateFields, $baseByExcelRow) {
@@ -548,24 +568,26 @@ XML;
     {
         $carreras = Carrera::query()->get(['id', 'nombre']);
         $careerById = $carreras->keyBy(fn($item) => (string) $item->id);
-        $careerByName = $carreras->keyBy(fn($item) => Str::lower(Str::ascii($item->nombre)));
+        $careerByName = $carreras->keyBy(fn($item) => $this->normalizeCareerText($item->nombre));
         $dniCounts = array_count_values(array_map(fn($row) => $row['values']['dni'] ?? '', $rows));
         $emailCounts = array_count_values(array_map(fn($row) => Str::lower($row['values']['email_personal'] ?? ''), $rows));
         $codigoCounts = array_count_values(array_map(fn($row) => $row['values']['codigo_institucional'] ?? '', $rows));
+        $nameCounts = array_count_values(array_map(fn($row) => $this->buildUserName($row['values']), $rows));
         $existingDni = Persona::whereIn('dni', array_keys($dniCounts))->pluck('dni')->flip()->all();
         $existingEmail = User::whereIn('email', array_keys($emailCounts))->pluck('email')->map(fn($email) => Str::lower($email))->flip()->all();
+        $existingNames = User::whereIn('name', array_filter(array_keys($nameCounts)))->pluck('name')->flip()->all();
         $existingCodigo = Persona::whereIn('codigo_institucional', array_filter(array_keys($codigoCounts)))->pluck('codigo_institucional')->flip()->all();
 
-        return array_map(function ($row) use ($careerById, $careerByName, $dniCounts, $emailCounts, $codigoCounts, $existingDni, $existingEmail, $existingCodigo) {
+        return array_map(function ($row) use ($careerById, $careerByName, $dniCounts, $emailCounts, $codigoCounts, $nameCounts, $existingDni, $existingEmail, $existingNames, $existingCodigo) {
             $data = $row['values'];
             $errors = [];
             $tipoPersona = Str::upper(trim((string) ($data['tipo_persona'] ?? '')));
-            $sexo = Str::upper(trim((string) ($data['sexo'] ?? '')));
             $email = Str::lower(trim((string) ($data['email_personal'] ?? '')));
             $codigoInstitucional = trim((string) ($data['codigo_institucional'] ?? ''));
-            $password = trim((string) ($data['password'] ?? ''));
+            $passwordExcel = trim((string) ($data['password'] ?? ''));
+            $password = $this->resolvePassword($passwordExcel);
             $carreraInput = trim((string) ($data['carrera'] ?? ''));
-            $estadoAcademico = Str::upper(trim((string) ($data['estado_academico'] ?? '')));
+            $userName = $this->buildUserName($data);
 
             if (!in_array($tipoPersona, ['ESTUDIANTE', 'DOCENTE', 'ADMINISTRATIVO', 'EXTERNO'], true)) {
                 $errors[] = 'Tipo persona invalido.';
@@ -583,22 +605,26 @@ XML;
             if (($data['apellido_paterno'] ?? '') === '') {
                 $errors[] = 'El apellido paterno es obligatorio.';
             }
-            if (!in_array($sexo, ['M', 'F', 'O'], true)) {
-                $errors[] = 'El sexo debe ser M, F u O.';
+            if ($userName === '') {
+                $errors[] = 'No se pudo generar el nombre del usuario.';
+            } elseif (($nameCounts[$userName] ?? 0) > 1) {
+                $errors[] = 'El nombre completo genera un usuario repetido dentro del archivo.';
+            } elseif (isset($existingNames[$userName])) {
+                $errors[] = 'Ya existe un usuario con el mismo nombre completo.';
             }
             if (($data['telefono'] ?? '') === '') {
                 $errors[] = 'El telefono es obligatorio.';
             }
             if ($email === '') {
-                $errors[] = 'El correo personal es obligatorio.';
+                $errors[] = 'La fila no se importara porque el correo personal esta vacio.';
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'El correo personal no es valido.';
+                $errors[] = 'La fila no se importara porque el correo personal no es valido.';
             } elseif (($emailCounts[$email] ?? 0) > 1) {
                 $errors[] = 'El correo esta repetido dentro del archivo.';
             } elseif (isset($existingEmail[$email])) {
                 $errors[] = 'El correo ya existe en el sistema.';
             }
-            if (Str::length($password) < 6) {
+            if ($passwordExcel !== '' && Str::length($passwordExcel) < 6) {
                 $errors[] = 'La contrasena debe tener al menos 6 caracteres.';
             }
 
@@ -612,23 +638,15 @@ XML;
                 } elseif (isset($existingCodigo[$codigoInstitucional])) {
                     $errors[] = 'El codigo institucional ya existe en el sistema.';
                 }
-                if ($carreraInput === '') {
-                    $errors[] = 'La carrera es obligatoria para estudiantes.';
-                } else {
-                    $resolvedCareer = $careerById[$carreraInput] ?? $careerByName[Str::lower(Str::ascii($carreraInput))] ?? null;
-                    if (!$resolvedCareer) {
-                        $errors[] = 'La carrera indicada no existe.';
-                    } else {
+                if ($carreraInput !== '') {
+                    $resolvedCareer = $this->resolveCareer($carreraInput, $careerById, $careerByName);
+                    if ($resolvedCareer) {
                         $careerId = $resolvedCareer->id;
+                        $carreraInput = $resolvedCareer->nombre;
                     }
                 }
-                if (!in_array($estadoAcademico, ['1', '2', 'ESTUDIANTE', 'EGRESADO'], true)) {
-                    $errors[] = 'El estado academico debe ser 1, 2, ESTUDIANTE o EGRESADO.';
-                }
-                $estadoAcademico = in_array($estadoAcademico, ['2', 'EGRESADO'], true) ? '2' : '1';
             } else {
                 $codigoInstitucional = '';
-                $estadoAcademico = '';
                 $carreraInput = '';
             }
 
@@ -642,17 +660,71 @@ XML;
                     'nombres' => trim((string) ($data['nombres'] ?? '')),
                     'apellido_paterno' => trim((string) ($data['apellido_paterno'] ?? '')),
                     'apellido_materno' => trim((string) ($data['apellido_materno'] ?? '')),
-                    'sexo' => $sexo,
+                    'sexo' => null,
                     'telefono' => trim((string) ($data['telefono'] ?? '')),
                     'email_personal' => $email,
                     'direccion' => trim((string) ($data['direccion'] ?? '')),
                     'codigo_institucional' => $codigoInstitucional,
                     'carrera' => $carreraInput,
                     'carrera_id' => $careerId,
-                    'estado_academico' => $estadoAcademico,
-                    'password' => $password,
+                    'estado_academico' => null,
+                    'password' => $passwordExcel,
+                    'password_resolved' => $password,
                 ],
             ];
         }, $rows);
+    }
+
+    private function resolvePassword(?string $password): string
+    {
+        $password = trim((string) $password);
+
+        if ($password !== '') {
+            return $password;
+        }
+
+        return (string) config('auth.import_default_password', self::DEFAULT_PASSWORD);
+    }
+
+    private function resolveCareer(string $careerInput, $careerById, $careerByName): ?Carrera
+    {
+        $normalizedInput = $this->normalizeCareerText($careerInput);
+
+        if ($normalizedInput === '') {
+            return null;
+        }
+
+        return $careerById[$careerInput] ?? $careerByName[$normalizedInput] ?? null;
+    }
+
+    private function normalizeCareerText(?string $value): string
+    {
+        return Str::of((string) $value)
+            ->lower()
+            ->ascii()
+            ->replace(['-', '/', '_', '.', ','], ' ')
+            ->replaceMatches('/\s+/', ' ')
+            ->trim()
+            ->value();
+    }
+
+    private function buildUserName(array $data): string
+    {
+        return trim(implode(' ', array_filter([
+            trim((string) ($data['nombres'] ?? '')),
+            trim((string) ($data['apellido_paterno'] ?? '')),
+            trim((string) ($data['apellido_materno'] ?? '')),
+        ])));
+    }
+
+    private function extendExecutionTime(): void
+    {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        if (function_exists('ini_set')) {
+            @ini_set('max_execution_time', '0');
+        }
     }
 }

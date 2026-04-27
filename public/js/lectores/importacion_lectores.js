@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 alerta(
                     payload.data.can_import
                         ? 'Vista previa lista. Ya puedes importar los lectores.'
-                        : 'Se detectaron observaciones. Puedes corregirlas en la tabla y volver a validar al importar.',
+                        : 'Se detectaron observaciones. Solo se importaran las filas validas.',
                     payload.data.can_import
                 );
             }
@@ -63,15 +63,10 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const data = new FormData();
-        data.append('_token', csrfInput.value);
-        data.append('token', currentToken);
-
-        collectRows(rowsContainer).forEach(function (row, index) {
-            Object.keys(row).forEach(function (field) {
-                data.append(`rows[${index}][${field}]`, row[field]);
-            });
-        });
+        const payloadData = {
+            token: currentToken,
+            rows: collectRows(rowsContainer)
+        };
 
         try {
             confirmButton.disabled = true;
@@ -79,10 +74,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await fetch(config.importUrl, {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfInput.value,
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 },
-                body: data
+                body: JSON.stringify(payloadData)
             });
 
             const payload = await response.json();
@@ -176,7 +173,6 @@ function renderRows(rows, container, config) {
                 <td>
                     ${renderField('tipo_persona', 'Tipo', row.data.tipo_persona || '', 'select', config.tiposPersona || [], 'reader-import__field--narrow')}
                     ${renderField('dni', 'DNI', row.data.dni || '', 'text', [], 'reader-import__field')}
-                    ${renderField('sexo', 'Sexo', row.data.sexo || '', 'select', config.sexos || [], 'reader-import__field--narrow')}
                 </td>
                 <td>
                     ${renderField('nombres', 'Nombres', row.data.nombres || '', 'text', [], 'reader-import__field--wide')}
@@ -191,10 +187,9 @@ function renderRows(rows, container, config) {
                 <td>
                     ${renderField('codigo_institucional', 'Codigo', row.data.codigo_institucional || '', 'text', [], 'reader-import__field')}
                     ${renderField('carrera', 'Carrera', row.data.carrera || '', 'select', config.carreras || [], 'reader-import__field--wide')}
-                    ${renderField('estado_academico', 'Estado', row.data.estado_academico || '', 'select', config.estadosAcademicos || [], 'reader-import__field')}
                 </td>
                 <td>
-                    ${renderField('password', 'Contrasena', row.data.password || '', 'text', [], 'reader-import__field')}
+                    ${renderField('password', 'Contrasena (opcional)', row.data.password || '', 'text', [], 'reader-import__field')}
                 </td>
                 <td>${errorsHtml}</td>
             </tr>
