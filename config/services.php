@@ -36,9 +36,14 @@ return [
     ],
 
     'unamad_integrations' => [
-        'student_token' => env('UNAMAD_STUDENT_API_TOKEN'),
-        'teacher_token' => env('UNAMAD_TEACHER_API_TOKEN', env('UNAMAD_STUDENT_API_TOKEN')),
-        'verify_ssl' => (bool) env('UNAMAD_API_VERIFY_SSL', true),
+        'student_url' => env('UNAMAD_STUDENT_API_URL', env('EXTERNAL_API_URL', 'https://daa-documentos.unamad.edu.pe:8081/api/data/student')),
+        'teacher_url' => env(
+            'UNAMAD_TEACHER_API_URL',
+            str_replace('/student', '/teacher', env('EXTERNAL_API_URL', 'https://daa-documentos.unamad.edu.pe:8081/api/data/student'))
+        ),
+        'student_token' => env('UNAMAD_STUDENT_API_TOKEN', env('EXTERNAL_API_TOKEN')),
+        'teacher_token' => env('UNAMAD_TEACHER_API_TOKEN', env('EXTERNAL_API_TOKEN', env('UNAMAD_STUDENT_API_TOKEN'))),
+        'verify_ssl' => (bool) env('UNAMAD_API_VERIFY_SSL', env('EXTERNAL_API_VERIFY_SSL', true)),
     ],
 
 ];

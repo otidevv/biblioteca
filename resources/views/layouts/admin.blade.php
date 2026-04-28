@@ -215,6 +215,7 @@
                         </div>
 
                         <a href="{{ route('perfil.edit', ['layout' => 'admin']) }}" class="admin-dropdown__link">Ir al perfil</a>
+                        <a href="{{ url('/') }}" class="admin-dropdown__link">Página</a>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

@@ -1303,6 +1303,7 @@ body.library-dark .overlay.active {
                 </div>
 
                 @auth
+                @php($esLector = $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists())
                 <div class="dropdown">
                     <button class="btn library-user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle"></i>
@@ -1324,6 +1325,17 @@ body.library-dark .overlay.active {
                                 <p>Ver y actualizar mis datos personales.</p>
                             </span>
                         </a>
+                        @unless($esLector)
+                            <a href="{{ route('dashboard') }}" class="library-alert-item">
+                                <span class="library-alert-icon">
+                                    <i class="bi bi-grid-1x2"></i>
+                                </span>
+                                <span class="library-alert-copy">
+                                    <strong>Administración</strong>
+                                    <p>Ir al panel de administración.</p>
+                                </span>
+                            </a>
+                        @endunless
                         <form action="{{ route('logout') }}" method="POST" class="d-block">
                             @csrf
                             <button type="submit" class="library-alert-item library-alert-item--button">

@@ -52,7 +52,7 @@ use App\Http\Controllers\Api\ActividadController as ApiActividadController;
 |--------------------------------------------------------------------------
 */
 require __DIR__.'/auth.php';
-Route::middleware('auth')
+Route::middleware(['auth', 'no.lector.dashboard'])
     ->get('/dashboard', [AdministracionController::class, 'inicio'])
     ->name('dashboard');
 
