@@ -8,6 +8,10 @@ use Illuminate\Support\Str;
 
 class PermisoPorRuta
 {
+    protected array $routePermissionMap = [
+        'usuarios.buscar.dni' => ['lectores.registro', 'administracion.usuarios'],
+    ];
+
     protected array $pathPermissionMap = [
         'administracion/usuarios' => 'administracion.usuarios',
         'administracion/roles_permisos' => 'administracion.roles_permisos',
@@ -26,12 +30,11 @@ class PermisoPorRuta
         'administracion/libros_editar' => 'administracion.libros',
         'administracion/libros_nuevo' => 'administracion.libros',
         'administracion/ejemplares' => 'administracion.libros',
-        'inventario/compras' => 'administracion.libros',
         'inventario/compras' => 'inventario.compras',
         'inventario/fisico' => 'inventario.fisico',
         'prestamos/reservas' => 'prestamos.reservas',
         'prestamos/registro' => 'prestamos.registro',
-        'prestamos/multas*' => 'prestamos.multas', 
+        'prestamos/multas*' => 'prestamos.multas',
         'lectores/registro' => 'lectores.registro',
         'lectores/historial' => 'lectores.historial',
         'lectores/importacion' => 'lectores.importacion',
@@ -43,7 +46,7 @@ class PermisoPorRuta
         'actualizarCodigosTopograficos' => 'administracion.libros',
         'sincronizarCirculacion' => 'administracion.libros',
         'obtenerDeweyPorTitulo' => 'administracion.libros',
-        // api
+
         'api/roles' => 'administracion.roles_permisos',
         'api/bibliotecas' => 'administracion.bibliotecas',
         'api/proveedores' => 'administracion.proveedores',
@@ -52,7 +55,7 @@ class PermisoPorRuta
         'api/autores' => 'administracion.autores',
         'api/editoriales' => 'administracion.editoriales',
         'api/notificaciones' => 'administracion.notificaciones',
-        'api/actividades' => 'administracion.actividades',        
+        'api/actividades' => 'administracion.actividades',
         'api/usuarios' => 'administracion.usuarios',
         'api/inventario/libros/listar' => 'administracion.libros',
         'api/inventario/autores' => 'administracion.libros',
@@ -71,10 +74,12 @@ class PermisoPorRuta
         'api/inventario/ejemplares/resolver-traslado' => 'administracion.libros',
         'api/inventario/ejemplares/movimientos/listar' => 'administracion.libros',
         'api/inventario/ejemplares/traslados' => 'administracion.libros',
-        //'api/inventario/actualizar' => 'administracion.libros',
         'api/administracion' => 'administracion.libros',
         'api/inventario/fisico' => 'inventario.fisico',
+
+        'api/externo/buscar-dni' => ['lectores.registro', 'administracion.usuarios'],
         'api/externo' => 'lectores.registro',
+
         'api/usuarios/lectores' => 'lectores.registro',
         'api/prestamos/multas*' => 'prestamos.multas',
         'api/prestamos/reservas*' => 'prestamos.reservas',
@@ -92,7 +97,6 @@ class PermisoPorRuta
         'prestamos.multas.' => 'prestamos.multas',
         'prestamos.reservas.' => 'prestamos.reservas',
         'prestamos.registro.' => 'prestamos.registro',
-        // Agrega más submódulos aquí
     ];
 
     public function handle(Request $request, Closure $next)
@@ -102,21 +106,34 @@ class PermisoPorRuta
         }
 
         $ruta = $request->route()?->getName();
+        $path = trim($request->path(), '/');
         $permiso = null;
 
-        // Mapear prefijo de ruta al permiso de submódulo
         if ($ruta) {
+            $permiso = $this->routePermissionMap[$ruta] ?? null;
+
             foreach ($this->submoduloPermisos as $prefijo => $submodulo) {
-                if (str_starts_with($ruta, $prefijo)) {
+                if (!$permiso && str_starts_with($ruta, $prefijo)) {
                     $permiso = $submodulo;
                     break;
                 }
             }
 
+            if (!$permiso && isset($this->pathPermissionMap[$ruta])) {
+                $permiso = $this->pathPermissionMap[$ruta];
+            }
+
+            if (!$permiso) {
+                foreach ($this->pathPermissionMap as $pattern => $permission) {
+                    if (Str::is($pattern, $path) || Str::is($pattern . '/*', $path)) {
+                        $permiso = $permission;
+                        break;
+                    }
+                }
+            }
+
             $permiso ??= $ruta;
         } else {
-            $path = trim($request->path(), '/');
-
             foreach ($this->pathPermissionMap as $pattern => $permission) {
                 if (Str::is($pattern, $path) || Str::is($pattern . '/*', $path)) {
                     $permiso = $permission;
@@ -129,13 +146,14 @@ class PermisoPorRuta
             abort(403, 'No autorizado');
         }
 
-        // Verificar permiso
+        $permisos = is_array($permiso) ? $permiso : [$permiso];
+
         $tienePermiso = auth()->user()
             ->roles()
-            ->whereHas('permisos', function ($q) use ($permiso) {
-                $q->where('codigo', $permiso)
-                  ->orWhereHas('hijos', function ($h) use ($permiso) {
-                      $h->where('codigo', $permiso);
+            ->whereHas('permisos', function ($q) use ($permisos) {
+                $q->whereIn('codigo', $permisos)
+                  ->orWhereHas('hijos', function ($h) use ($permisos) {
+                      $h->whereIn('codigo', $permisos);
                   });
             })
             ->exists();
