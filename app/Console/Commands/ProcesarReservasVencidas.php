@@ -20,6 +20,7 @@ class ProcesarReservasVencidas extends Command
         $procesadas = 0;
         $sancionesCreadas = 0;
         $yaSancionadas = 0;
+        $sancionesLevantadas = 0;
 
         Reservacion::query()
             ->where('estado', 0)
@@ -63,7 +64,34 @@ class ProcesarReservasVencidas extends Command
                 }
             });
 
-        $mensaje = "Reservas vencidas procesadas: {$procesadas}. Sanciones creadas: {$sancionesCreadas}. Reservas con sancion previa: {$yaSancionadas}.";
+        Sancion::query()
+            ->where('tipo_sancion_id', 1)
+            ->where('estado', 3)
+            ->whereDate('fecha_fin', '<', now()->toDateString())
+            ->orderBy('id')
+            ->chunkById(200, function ($sanciones) use (&$sancionesLevantadas) {
+                foreach ($sanciones as $sancion) {
+                    DB::transaction(function () use ($sancion, &$sancionesLevantadas) {
+                        $sancionActual = Sancion::query()->lockForUpdate()->find($sancion->id);
+
+                        if (! $sancionActual || (int) $sancionActual->tipo_sancion_id !== 1 || (int) $sancionActual->estado !== 3) {
+                            return;
+                        }
+
+                        if (empty($sancionActual->fecha_fin) || $sancionActual->fecha_fin->gte(now()->startOfDay())) {
+                            return;
+                        }
+
+                        $sancionActual->estado = 0;
+                        $sancionActual->detalles_termino = trim((string) ($sancionActual->detalles_termino ?: 'Sancion levantada automaticamente por vencimiento.'));
+                        $sancionActual->save();
+
+                        $sancionesLevantadas++;
+                    });
+                }
+            });
+
+        $mensaje = "Reservas vencidas procesadas: {$procesadas}. Sanciones creadas: {$sancionesCreadas}. Reservas con sancion previa: {$yaSancionadas}. Sanciones levantadas: {$sancionesLevantadas}.";
 
         $this->info($mensaje);
         $this->line($mensaje);
