@@ -89,6 +89,6 @@ Artisan::command('sanciones:procesar', function () {
 })->purpose('Aplica sanciones automaticas por tardanza, deterioro y reservas no recogidas');
 
 Schedule::command('reservas:procesar-vencidas')
-    ->everyFiveMinutes()
+    ->everyMinute()
     ->withoutOverlapping()
     ->name('reservas:procesar-vencidas');

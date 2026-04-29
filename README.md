@@ -7,6 +7,57 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Scheduler de reservas vencidas
+
+El proyecto incluye el comando `reservas:procesar-vencidas`, encargado de:
+
+- buscar reservas vencidas en estado `0`
+- marcar la reserva con estado `3`
+- registrar la sancion automatica del lector relacionado
+- liberar el ejemplar asociado para que vuelva a quedar disponible
+- evitar sanciones duplicadas para la misma reserva
+
+La tarea se programa en el Scheduler de Laravel para ejecutarse cada minuto.
+
+### Ejecucion manual
+
+```bash
+php artisan reservas:procesar-vencidas
+```
+
+### Produccion en Linux
+
+Agrega esta linea al `crontab` del servidor para que Laravel ejecute el scheduler cada minuto:
+
+```cron
+* * * * * cd /ruta/a/sistema-biblioteca && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Produccion en Windows
+
+Si usas Apache en Windows, crea una tarea en el Programador de tareas:
+
+1. Nombre sugerido: `Laravel Scheduler - Biblioteca`
+2. Trigger: repetir cada `1 minuto`
+3. Programa/script: ruta a `php.exe`
+4. Agregar argumentos:
+
+```powershell
+artisan schedule:run
+```
+
+5. Iniciar en:
+
+```powershell
+D:\IRVIN\proyectos\sistema-biblioteca
+```
+
+Ejemplo habitual:
+
+- Programa/script: `C:\php\php.exe`
+- Argumentos: `artisan schedule:run`
+- Iniciar en: `D:\IRVIN\proyectos\sistema-biblioteca`
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
