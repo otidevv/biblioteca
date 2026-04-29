@@ -65,8 +65,7 @@ class ProcesarReservasVencidas extends Command
             });
 
         Sancion::query()
-            ->where('tipo_sancion_id', 1)
-            ->where('estado', 3)
+            ->whereIn('tipo_sancion_id', [1, 3])
             ->whereDate('fecha_fin', '<', now()->toDateString())
             ->orderBy('id')
             ->chunkById(200, function ($sanciones) use (&$sancionesLevantadas) {
@@ -74,7 +73,7 @@ class ProcesarReservasVencidas extends Command
                     DB::transaction(function () use ($sancion, &$sancionesLevantadas) {
                         $sancionActual = Sancion::query()->lockForUpdate()->find($sancion->id);
 
-                        if (! $sancionActual || (int) $sancionActual->tipo_sancion_id !== 1 || (int) $sancionActual->estado !== 3) {
+                        if (! $sancionActual || ! in_array((int) $sancionActual->tipo_sancion_id, [1, 3], true)) {
                             return;
                         }
 
@@ -82,7 +81,11 @@ class ProcesarReservasVencidas extends Command
                             return;
                         }
 
-                        $sancionActual->estado = 0;
+                        if ((int) $sancionActual->estado === 2) {
+                            return;
+                        }
+
+                        $sancionActual->estado = 2;
                         $sancionActual->detalles_termino = trim((string) ($sancionActual->detalles_termino ?: 'Sancion levantada automaticamente por vencimiento.'));
                         $sancionActual->save();
 
