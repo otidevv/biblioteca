@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('fecha_limite');
             $table->tinyInteger('prestamo')->default(1);//0 sala, 1 casa
             $table->foreignId('bibliotecario_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->tinyInteger('estado')->default(1);// 0 en espera, 1 atendido, 2 cancelado
+            $table->tinyInteger('estado')->default(1);// 0 en espera, 1 atendido, 2 cancelado, 3 fuera de plazo
             $table->timestamps();
         });
     }

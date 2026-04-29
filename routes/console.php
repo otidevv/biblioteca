@@ -3,11 +3,11 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
 use App\Models\Ejemplar;
 use App\Models\Dewey;
 use App\Models\Dewey_aprendizaje;
 use App\Models\Prestamo;
-use App\Models\Reservacion;
 use App\Services\SancionAutomaticaService;
 
 Artisan::command('inspire', function () {
@@ -72,7 +72,6 @@ Artisan::command('dewey:seed-learning {--reset : Vacia dewey_aprendizajes antes 
 Artisan::command('sanciones:procesar', function () {
     $servicio = app(SancionAutomaticaService::class);
     $sancionesPrestamo = 0;
-    $sancionesReserva = 0;
 
     Prestamo::query()
         ->where('estado', 1)
@@ -84,38 +83,12 @@ Artisan::command('sanciones:procesar', function () {
             }
         });
 
-    Reservacion::query()
-        ->where('estado', 0)
-        ->chunk(200, function ($reservas) use ($servicio, &$sancionesReserva) {
-            foreach ($reservas as $reserva) {
-                $fechaLimiteReal = optional($reserva->fecha_limite_real);
+    Artisan::call('reservas:procesar-vencidas');
 
-                if (! $fechaLimiteReal || now()->lte($fechaLimiteReal)) {
-                    continue;
-                }
-
-                DB::transaction(function () use ($reserva, $servicio, &$sancionesReserva) {
-                    $reservaActual = Reservacion::lockForUpdate()->find($reserva->id);
-
-                    if (! $reservaActual || (int) $reservaActual->estado !== 0) {
-                        return;
-                    }
-
-                    $reservaActual->estado = 2;
-                    $reservaActual->save();
-
-                    $ejemplar = Ejemplar::lockForUpdate()->find($reservaActual->ejemplar_id);
-                    if ($ejemplar && (int) $ejemplar->estado === 2) {
-                        $ejemplar->estado = 1;
-                        $ejemplar->save();
-                    }
-
-                    if ($servicio->registrarReservaNoRecogida($reservaActual)) {
-                        $sancionesReserva++;
-                    }
-                });
-            }
-        });
-
-    $this->info("Sanciones procesadas. Prestamos: {$sancionesPrestamo}. Reservas: {$sancionesReserva}.");
+    $this->info("Sanciones procesadas. Prestamos: {$sancionesPrestamo}. " . trim(Artisan::output()));
 })->purpose('Aplica sanciones automaticas por tardanza, deterioro y reservas no recogidas');
+
+Schedule::command('reservas:procesar-vencidas')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->name('reservas:procesar-vencidas');

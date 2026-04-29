@@ -26,6 +26,7 @@ class ReservacionController extends Controller
 
         $query = Reservacion::with(['ejemplar.libro', 'lector'])
             ->where('estado', 0)
+            ->whereRaw("TIMESTAMP(fecha_limite, '20:00:00') > ?", [now()->format('Y-m-d H:i:s')])
             ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
                 if ($bibliotecasAsignadas->isEmpty()) {
                     $q->whereRaw('1 = 0');
@@ -51,9 +52,7 @@ class ReservacionController extends Controller
             })
             ->addColumn('fecha_limite', function ($row) {
                 $now = Carbon::now();
-                $fechaLimite = Carbon::parse($row->fecha_reservacion)
-                    ->addDay()
-                    ->setTime(20, 0, 0);
+                $fechaLimite = $row->fecha_limite_real;
 
                 $diff = $now->diffInSeconds($fechaLimite, false);
 
