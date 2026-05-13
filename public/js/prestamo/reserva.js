@@ -72,11 +72,53 @@ $(document).ready(function () {
     modal = new bootstrap.Modal(document.getElementById('modalEntrega'));
 
     $(document).on('click', '.entregarReserva', function () {
-        let id = $(this).data('id');
+        let id       = $(this).data('id');
+        let libro    = $(this).data('libro')   || '—';
+        let lector   = $(this).data('lector')  || '—';
+        let tipo     = $(this).data('tipo')    || '—';
+        let codigo   = $(this).data('codigo')  || '';
+        let isbn     = $(this).data('isbn')    || '';
+        let edicion  = $(this).data('edicion') || '';
+        let autores  = $(this).data('autores') || '';
 
         $('#reserva_id').val(id);
-        $('#dias').val(1);
+        $('#dias').val('');
         $('#observaciones').val('');
+
+        // Título
+        $('#rsv-ctx-libro').text(libro);
+
+        // Badges de metadatos
+        if (codigo) {
+            $('#rsv-ctx-codigo').text('Cód: ' + codigo).removeClass('d-none');
+        } else {
+            $('#rsv-ctx-codigo').addClass('d-none');
+        }
+        if (isbn) {
+            $('#rsv-ctx-isbn').text('ISBN: ' + isbn).removeClass('d-none');
+        } else {
+            $('#rsv-ctx-isbn').addClass('d-none');
+        }
+        if (edicion) {
+            $('#rsv-ctx-edicion').text(edicion).removeClass('d-none');
+        } else {
+            $('#rsv-ctx-edicion').addClass('d-none');
+        }
+
+        // Autores
+        if (autores) {
+            $('#rsv-ctx-autores')
+                .html('<i class="bi bi-person-lines-fill"></i> ' + autores)
+                .removeClass('d-none');
+        } else {
+            $('#rsv-ctx-autores').addClass('d-none');
+        }
+
+        // Lector y tipo
+        $('#rsv-ctx-lector').text(lector);
+        let tipoIcon  = tipo === 'A CASA' ? '<i class="bi bi-house-fill me-1"></i>' : '<i class="bi bi-building me-1"></i>';
+        let tipoClass = tipo === 'A CASA' ? 'rsv-tipo-pill--casa' : 'rsv-tipo-pill--sala';
+        $('#rsv-ctx-tipo').html(tipoIcon + tipo).attr('class', 'rsv-tipo-pill ' + tipoClass);
 
         modal.show();
     });

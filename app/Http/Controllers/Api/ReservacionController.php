@@ -24,7 +24,7 @@ class ReservacionController extends Controller
         $user = auth()->user();
         [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
-        $query = Reservacion::with(['ejemplar.libro', 'lector'])
+        $query = Reservacion::with(['ejemplar.libro.autores', 'lector'])
             ->where('estado', 0)
             ->whereRaw("TIMESTAMP(fecha_limite, '20:00:00') > ?", [now()->format('Y-m-d H:i:s')])
             ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
@@ -48,7 +48,8 @@ class ReservacionController extends Controller
 
         return DataTables::eloquent($query)
             ->addColumn('fecha', function ($row) {
-                return '<span class="reservation-table__date">' . $row->created_at->format('d/m/Y') . '</span>';
+                return '<div class="rsv-date-cell"><i class="bi bi-calendar3"></i><span>'
+                    . $row->created_at->format('d/m/Y') . '</span></div>';
             })
             ->addColumn('fecha_limite', function ($row) {
                 $now = Carbon::now();
@@ -57,7 +58,7 @@ class ReservacionController extends Controller
                 $diff = $now->diffInSeconds($fechaLimite, false);
 
                 if ($diff <= 0) {
-                    return '<span class="reservation-pill reservation-pill--danger">VENCIDO</span>';
+                    return '<span class="reservation-pill reservation-pill--danger"><i class="bi bi-x-circle-fill"></i> VENCIDO</span>';
                 }
 
                 return '<span class="countdown reservation-countdown" data-seconds="'.$diff.'"></span>';
@@ -65,39 +66,76 @@ class ReservacionController extends Controller
             ->addColumn('libro', function ($row) {
                 $titulo = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
 
-                return '<div class="reservation-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>';
+                return '<div class="rsv-book-cell">
+                    <div class="rsv-book-icon"><i class="bi bi-book-half"></i></div>
+                    <span class="rsv-book-title" title="' . e($titulo) . '">' . e($titulo) . '</span>
+                </div>';
             })
             ->addColumn('ejemplar', function ($row) {
                 $codigo = $row->ejemplar->codigo_dewey
                     ? $row->ejemplar->codigo_dewey.$row->ejemplar->tipo.$row->ejemplar->codigo_interno
                     : $row->ejemplar->codigo_ant;
 
-                return '<span class="reservation-table__code">' . e($codigo ?: '-') . '</span>';
+                return '<span class="rsv-code-badge"><i class="bi bi-upc"></i> ' . e($codigo ?: '-') . '</span>';
             })
             ->addColumn('lector', function ($row) {
-                $lector = $row->lector->name ?? 'Lector no disponible';
+                $nombre  = $row->lector->name ?? 'Lector no disponible';
+                $inicial = mb_strtoupper(mb_substr($nombre, 0, 1));
+                $palette = ['#7c3aed','#dc2626','#2563eb','#16a34a','#0891b2','#d97706'];
+                $color   = $palette[ord($inicial) % count($palette)];
 
-                return '<div class="reservation-table__reader" title="' . e($lector) . '">' . e($lector) . '</div>';
+                return '<div class="rsv-reader-cell">
+                    <div class="rsv-reader-avatar" style="background:' . $color . '18;color:' . $color . '">'
+                        . $inicial . '</div>
+                    <span class="rsv-reader-name" title="' . e($nombre) . '">' . e($nombre) . '</span>
+                </div>';
             })
             ->addColumn('estado', function ($row) {
                 return match ((int) $row->estado) {
-                    0 => '<span class="reservation-pill reservation-pill--warning">EN ESPERA</span>',
-                    1 => '<span class="reservation-pill reservation-pill--success">ATENDIDO</span>',
-                    2 => '<span class="reservation-pill reservation-pill--neutral">CANCELADO</span>',
+                    0 => '<span class="reservation-pill reservation-pill--warning"><i class="bi bi-hourglass-split"></i> EN ESPERA</span>',
+                    1 => '<span class="reservation-pill reservation-pill--success"><i class="bi bi-check-circle-fill"></i> ATENDIDO</span>',
+                    2 => '<span class="reservation-pill reservation-pill--neutral"><i class="bi bi-slash-circle"></i> CANCELADO</span>',
                     default => '<span class="reservation-pill reservation-pill--neutral">DESCONOCIDO</span>',
                 };
             })
             ->addColumn('prestamo', function ($row) {
                 return (int) $row->prestamo === 1
-                    ? '<span class="reservation-pill reservation-pill--info">A CASA</span>'
-                    : '<span class="reservation-pill reservation-pill--info">EN SALA</span>';
+                    ? '<span class="rsv-tipo-pill rsv-tipo-pill--casa"><i class="bi bi-house-fill"></i> A CASA</span>'
+                    : '<span class="rsv-tipo-pill rsv-tipo-pill--sala"><i class="bi bi-building"></i> EN SALA</span>';
             })
             ->addColumn('acciones', function ($row) {
-                return $row->estado === 0
-                    ? '<button class="btn btn-sm btn-success entregarReserva" data-id="'.$row->id.'">
-                        <i class="fas fa-check"></i> Entregar
-                    </button>'
-                    : '';
+                if ((int) $row->estado !== 0) return '';
+
+                $libro       = $row->ejemplar->libro;
+                $titulo      = e($libro->titulo ?? '');
+                $lector      = e($row->lector->name ?? '');
+                $tipo        = (int) $row->prestamo === 1 ? 'A CASA' : 'EN SALA';
+                $codigo      = e($libro->codigo ?: ($libro->codigo_dewey ?: ''));
+                $isbn        = e($libro->isbn ?? '');
+                $edicionParts = array_filter([$libro->edicion, $libro->anio_edicion]);
+                $edicion     = e(implode(' · ', $edicionParts));
+                $autores     = e(
+                    ($libro->autores ?? collect())
+                        ->map(fn ($a) => trim($a->apellidos.', '.$a->nombres))
+                        ->filter()
+                        ->implode(' / ')
+                );
+                $codEjemplar = e($row->ejemplar->codigo_dewey
+                    ? $row->ejemplar->codigo_dewey.$row->ejemplar->tipo.$row->ejemplar->codigo_interno
+                    : ($row->ejemplar->codigo_ant ?? ''));
+
+                return '<button class="btn btn-sm btn-success entregarReserva"
+                            data-id="'.$row->id.'"
+                            data-libro="'.$titulo.'"
+                            data-lector="'.$lector.'"
+                            data-tipo="'.$tipo.'"
+                            data-codigo="'.$codigo.'"
+                            data-isbn="'.$isbn.'"
+                            data-edicion="'.$edicion.'"
+                            data-autores="'.$autores.'"
+                            data-ejemplar="'.$codEjemplar.'">
+                            <i class="bi bi-box-arrow-in-right"></i> Entregar
+                        </button>';
             })
             ->rawColumns(['acciones', 'fecha', 'fecha_limite', 'libro', 'ejemplar', 'lector', 'estado', 'prestamo'])
             ->toJson();
