@@ -37,6 +37,7 @@ class PermisoPorRuta
         'prestamos/multas*' => 'prestamos.multas',
         'lectores/registro' => 'lectores.registro',
         'lectores/historial' => 'lectores.historial',
+        'lectores/penalizaciones' => 'lectores.penalizaciones',
         'lectores/importacion' => 'lectores.importacion',
         'reportes/grafico' => 'reportes.grafico',
         'reportes/descargas' => 'reportes.descargas',
