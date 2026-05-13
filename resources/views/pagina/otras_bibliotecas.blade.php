@@ -62,8 +62,8 @@
 
 .external-libraries-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
 }
 
 .external-library-card {
@@ -71,7 +71,7 @@
     flex-direction: column;
     gap: 1rem;
     height: 100%;
-    padding: 1.25rem;
+    padding: 1.5rem;
     border-radius: 1.35rem;
     border: 1px solid rgba(24, 77, 59, 0.09);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 245, 0.88));
@@ -181,9 +181,147 @@ body.library-dark .external-library-card__icon {
     color: #f2cf82;
 }
 
+/* ── Barra de filtros ── */
+.external-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1.35rem;
+    border: 1px solid rgba(24, 77, 59, 0.09);
+    background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(243,248,245,0.9));
+    box-shadow: 0 8px 24px rgba(24,77,59,0.06);
+}
+
+.external-search-wrap {
+    position: relative;
+}
+
+.external-search-icon {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #1a7357;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.external-search-input {
+    width: 100%;
+    padding: 0.65rem 0.9rem 0.65rem 2.4rem;
+    border-radius: 0.9rem;
+    border: 1.5px solid rgba(24,77,59,0.15);
+    background: #fff;
+    font-size: 0.92rem;
+    color: #1a3028;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.external-search-input:focus {
+    border-color: #1a7357;
+    box-shadow: 0 0 0 3px rgba(26,115,87,0.12);
+}
+
+.external-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.ext-cat-btn {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    border: 1.5px solid rgba(24,77,59,0.15);
+    background: transparent;
+    color: #3a6155;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.ext-cat-btn:hover {
+    border-color: #1a7357;
+    color: #1a7357;
+    background: rgba(26,115,87,0.06);
+}
+
+.ext-cat-btn.is-active {
+    background: #1a7357;
+    border-color: #1a7357;
+    color: #fff;
+}
+
+.external-results-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.external-results-count {
+    font-size: 0.85rem;
+    color: #6c8078;
+    font-weight: 600;
+}
+
+.external-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #7a9a90;
+    font-size: 0.95rem;
+}
+
+body.library-dark .external-filter-bar {
+    border-color: rgba(255,255,255,0.08);
+    background: linear-gradient(180deg, rgba(18,30,24,0.94), rgba(11,20,16,0.9));
+}
+
+body.library-dark .external-search-input {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+    color: #e8f4f0;
+}
+
+body.library-dark .external-search-input:focus {
+    border-color: #4db896;
+    box-shadow: 0 0 0 3px rgba(77,184,150,0.15);
+}
+
+body.library-dark .external-search-icon {
+    color: #86e2c0;
+}
+
+body.library-dark .ext-cat-btn {
+    border-color: rgba(255,255,255,0.12);
+    color: #adc0b7;
+}
+
+body.library-dark .ext-cat-btn:hover {
+    border-color: #4db896;
+    color: #4db896;
+}
+
+body.library-dark .ext-cat-btn.is-active {
+    background: #1a7357;
+    border-color: #1a7357;
+    color: #fff;
+}
+
+body.library-dark .external-results-count {
+    color: #7a9a90;
+}
+
 @media (max-width: 576px) {
     .external-libraries-hero {
         padding: 1.25rem;
+    }
+    .external-filter-bar {
+        padding: 1rem;
     }
 }
 </style>
@@ -201,9 +339,30 @@ body.library-dark .external-library-card__icon {
         </p>
     </section>
 
-    <section class="external-libraries-grid">
+    <div class="external-filter-bar">
+        <div class="external-search-wrap">
+            <i class="bi bi-search external-search-icon"></i>
+            <input type="text"
+                   id="extSearch"
+                   class="external-search-input"
+                   placeholder="Buscar por nombre, institución o descripción...">
+        </div>
+        <div class="external-categories" id="extCategories"></div>
+    </div>
+
+    <div class="external-results-bar">
+        <span class="external-results-count" id="extCount">
+            {{ $bibliotecasExternas->count() }} recursos disponibles
+        </span>
+    </div>
+
+    <section class="external-libraries-grid" id="extGrid">
         @foreach($bibliotecasExternas as $biblioteca)
-            <article class="external-library-card">
+            <article class="external-library-card"
+                     data-nombre="{{ strtolower($biblioteca['nombre']) }}"
+                     data-institucion="{{ strtolower($biblioteca['institucion']) }}"
+                     data-descripcion="{{ strtolower($biblioteca['descripcion']) }}"
+                     data-etiqueta="{{ $biblioteca['etiqueta'] }}">
                 <div class="external-library-card__top">
                     <span class="external-library-card__icon">
                         <i class="bi {{ $biblioteca['icono'] }}"></i>
@@ -226,4 +385,69 @@ body.library-dark .external-library-card__icon {
         @endforeach
     </section>
 </div>
+
+<script>
+(function () {
+    const search   = document.getElementById('extSearch');
+    const grid     = document.getElementById('extGrid');
+    const catWrap  = document.getElementById('extCategories');
+    const countEl  = document.getElementById('extCount');
+    const cards    = Array.from(grid.querySelectorAll('.external-library-card'));
+
+    let activeCategory = 'Todos';
+
+    // Construir botones de categoría
+    const etiquetas = ['Todos', ...new Set(cards.map(c => c.dataset.etiqueta))];
+    etiquetas.forEach(label => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ext-cat-btn' + (label === 'Todos' ? ' is-active' : '');
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+            activeCategory = label;
+            catWrap.querySelectorAll('.ext-cat-btn').forEach(b => b.classList.remove('is-active'));
+            btn.classList.add('is-active');
+            filtrar();
+        });
+        catWrap.appendChild(btn);
+    });
+
+    let debounce = null;
+    search.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(filtrar, 250);
+    });
+
+    function filtrar() {
+        const q = search.value.trim().toLowerCase();
+        let visibles = 0;
+
+        cards.forEach(card => {
+            const porCategoria = activeCategory === 'Todos' || card.dataset.etiqueta === activeCategory;
+            const porTexto = q === '' ||
+                card.dataset.nombre.includes(q) ||
+                card.dataset.institucion.includes(q) ||
+                card.dataset.descripcion.includes(q);
+
+            const mostrar = porCategoria && porTexto;
+            card.style.display = mostrar ? '' : 'none';
+            if (mostrar) visibles++;
+        });
+
+        countEl.textContent = visibles + (visibles === 1 ? ' recurso encontrado' : ' recursos encontrados');
+
+        let empty = grid.querySelector('.external-empty');
+        if (visibles === 0) {
+            if (!empty) {
+                empty = document.createElement('div');
+                empty.className = 'external-empty';
+                empty.innerHTML = '<i class="bi bi-search d-block fs-3 mb-2"></i>No se encontraron resultados para tu búsqueda.';
+                grid.appendChild(empty);
+            }
+        } else if (empty) {
+            empty.remove();
+        }
+    }
+})();
+</script>
 @endsection

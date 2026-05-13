@@ -60,9 +60,9 @@
             <table id="tabla-usuarios" class="table table-hover table-bordered align-middle text-nowrap datatable w-100 user-table">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
                         <th>Usuario</th>
                         <th>Rol</th>
+                        <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>

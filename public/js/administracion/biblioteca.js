@@ -17,15 +17,53 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'codigo', name: 'codigo' },
-            { data: 'nombre', name: 'nombre' },
-            { data: 'direccion', name: 'direccion' },
-            { data: 'estado', name: 'estado' },
-            { 
-                data: 'acciones', 
-                name: 'acciones', 
-                orderable: false, 
-                searchable: false 
+            {
+                data: 'nombre',
+                name: 'nombre',
+                render: function (data, type, row) {
+                    const imgHtml = row.imagen
+                        ? `<img src="/${row.imagen.replace(/^\/+/,'')}" class="bib-table-thumb" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                        + `<div class="bib-table-icon-fallback" style="display:none"><i class="bi bi-buildings-fill"></i></div>`
+                        : `<div class="bib-table-icon-fallback"><i class="bi bi-buildings-fill"></i></div>`;
+
+                    const desc = row.descripcion
+                        ? `<span class="bib-table-desc">${row.descripcion}</span>`
+                        : '';
+
+                    return `
+                        <div class="bib-table-identity">
+                            <div class="bib-table-cover">${imgHtml}</div>
+                            <div class="bib-table-info">
+                                <span class="bib-table-code">${row.codigo || ''}</span>
+                                <span class="bib-table-name">${data}</span>
+                                ${desc}
+                            </div>
+                        </div>`;
+                }
+            },
+            {
+                data: 'direccion',
+                name: 'direccion',
+                render: function (data) {
+                    if (!data) return '<span class="bib-table-no-data">Sin dirección</span>';
+                    const truncated = data.length > 55 ? data.substring(0, 55) + '…' : data;
+                    return `<span class="bib-table-location"><i class="bi bi-geo-alt-fill"></i>${truncated}</span>`;
+                }
+            },
+            {
+                data: 'estado',
+                name: 'estado',
+                render: function (data) {
+                    return parseInt(data) === 1
+                        ? '<span class="bib-status-pill bib-status-pill--active"><i class="bi bi-check-circle-fill"></i> Activa</span>'
+                        : '<span class="bib-status-pill bib-status-pill--inactive"><i class="bi bi-x-circle-fill"></i> Inactiva</span>';
+                }
+            },
+            {
+                data: 'acciones',
+                name: 'acciones',
+                orderable: false,
+                searchable: false
             }
         ],        
         dom: default_datatable_dom,

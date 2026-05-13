@@ -34,9 +34,8 @@
             <table id="tabla-biblioteca" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
                 <thead>
                     <tr>
-                        <th>Abrev.</th>
-                        <th>Nombre</th>
-                        <th>Direccion</th>
+                        <th>Biblioteca</th>
+                        <th>Ubicación</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>

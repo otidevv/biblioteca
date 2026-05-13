@@ -30,14 +30,69 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'nombre', name: 'nombre' },
-            { data: 'total_usuarios', name: 'total_usuarios' },
-            { data: 'total_permisos', name: 'total_permisos' },
-            { 
-                data: 'acciones', 
-                name: 'acciones', 
-                orderable: false, 
-                searchable: false 
+            {
+                data: 'nombre',
+                name: 'nombre',
+                render: function (data, type, row) {
+                    const roleIcons = {
+                        'programador':           'bi-terminal-fill',
+                        'administrador':         'bi-shield-fill',
+                        'encargado':             'bi-person-badge-fill',
+                        'atencion a estudiantes':'bi-headset',
+                        'lector':                'bi-book-fill',
+                    };
+                    const roleColors = {
+                        'programador':           '#7c3aed',
+                        'administrador':         '#dc2626',
+                        'encargado':             '#2563eb',
+                        'atencion a estudiantes':'#16a34a',
+                        'lector':                '#0891b2',
+                    };
+                    const key   = (data || '').toLowerCase();
+                    const icon  = roleIcons[key]  || 'bi-shield-lock';
+                    const color = roleColors[key] || '#64748b';
+                    const desc  = row.descripcion
+                        ? `<span class="role-table-desc">${row.descripcion}</span>`
+                        : '';
+                    return `
+                        <div class="role-table-identity">
+                            <div class="role-table-icon" style="background:${color}18;color:${color}">
+                                <i class="bi ${icon}"></i>
+                            </div>
+                            <div class="role-table-info">
+                                <span class="role-table-name">${data}</span>
+                                ${desc}
+                            </div>
+                        </div>`;
+                }
+            },
+            {
+                data: 'total_usuarios',
+                name: 'total_usuarios',
+                render: function (data) {
+                    const n = parseInt(data) || 0;
+                    const variant = n === 0 ? 'none' : n >= 5 ? 'high' : 'low';
+                    return `<span class="role-count-pill role-count-pill--${variant}">
+                                <i class="bi bi-people-fill"></i> ${n}
+                            </span>`;
+                }
+            },
+            {
+                data: 'total_permisos',
+                name: 'total_permisos',
+                render: function (data) {
+                    const n = parseInt(data) || 0;
+                    const variant = n === 0 ? 'none' : n >= 10 ? 'high' : 'low';
+                    return `<span class="role-count-pill role-count-pill--${variant}">
+                                <i class="bi bi-shield-check"></i> ${n}
+                            </span>`;
+                }
+            },
+            {
+                data: 'acciones',
+                name: 'acciones',
+                orderable: false,
+                searchable: false
             }
         ],        
         dom: default_datatable_dom,

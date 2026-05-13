@@ -17,36 +17,54 @@ $(document).ready(function () {
             error: default_error_handler
         },
         columns: [
-            { data: 'name', name: 'name' },
-            { data: 'email', name: 'email' },
+            {
+                data: 'name',
+                name: 'name',
+                render: function (data, type, row) {
+                    const words = (data || '').trim().split(/\s+/);
+                    const initials = words.slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+                    const palette = ['#0f766e','#2563eb','#7c3aed','#ea580c','#16a34a','#b45309','#0369a1'];
+                    const color = palette[(data.charCodeAt(0) || 0) % palette.length];
+                    return `
+                        <div class="user-table-identity">
+                            <div class="user-table-avatar" style="background:${color}">${initials}</div>
+                            <div class="user-table-info">
+                                <span class="user-table-name">${data}</span>
+                                <span class="user-table-email">${row.email || ''}</span>
+                            </div>
+                        </div>`;
+                }
+            },
             {
                 data: 'roles',
                 name: 'rol',
                 render: function (data) {
                     if (!Array.isArray(data) || data.length === 0) {
-                        return '<span class="badge bg-secondary">Sin rol</span>';
+                        return '<span class="user-role-pill user-role-pill--none">Sin rol</span>';
                     }
-
+                    const roleStyles = {
+                        'programador':          'violet',
+                        'administrador':        'red',
+                        'encargado':            'blue',
+                        'atencion a estudiantes':'green',
+                        'lector':               'cyan',
+                    };
                     return data.map(rol => {
-                        let color = 'bg-primary';
-
-                        switch ((rol.nombre || '').toLowerCase()) {
-                            case 'admin':
-                                color = 'bg-danger';
-                                break;
-                            case 'programador':
-                                color = 'bg-warning text-dark';
-                                break;
-                            case 'lector':
-                                color = 'bg-info text-dark';
-                                break;
-                            case 'atencion a estudiantes':
-                                color = 'bg-success';
-                                break;
-                        }
-
-                        return `<span class="badge ${color} user-role-badge" style="color: #111827;">${rol.nombre}</span>`;
+                        const key = (rol.nombre || '').toLowerCase();
+                        const variant = roleStyles[key] || 'gray';
+                        return `<span class="user-role-pill user-role-pill--${variant}">${rol.nombre}</span>`;
                     }).join('');
+                }
+            },
+            {
+                data: 'estado',
+                name: 'estado',
+                orderable: false,
+                searchable: false,
+                render: function (data) {
+                    return parseInt(data) === 1
+                        ? '<span class="user-status-pill user-status-pill--active"><i class="bi bi-check-circle-fill"></i> Activo</span>'
+                        : '<span class="user-status-pill user-status-pill--inactive"><i class="bi bi-x-circle-fill"></i> Inactivo</span>';
                 }
             },
             {
