@@ -109,16 +109,7 @@ class PaginaController extends Controller
             $query->where(function ($q) use ($termino) {
                 $q->where('titulo', 'like', '%' . $termino . '%')
                     ->orWhere('palabras_clave', 'like', '%' . $termino . '%')
-                    ->orWhereHas('autores', function ($autorQuery) use ($termino) {
-                        $autorQuery->where('nombres', 'like', '%' . $termino . '%')
-                            ->orWhere('apellidos', 'like', '%' . $termino . '%');
-                    })
-                    ->orWhereHas('idioma', function ($idiomaQuery) use ($termino) {
-                        $idiomaQuery->where('nombre', 'like', '%' . $termino . '%');
-                    })
-                    ->orWhereHas('materias', function ($materiaQuery) use ($termino) {
-                        $materiaQuery->where('materias.nombre', 'like', '%' . $termino . '%');
-                    });
+                    ->orWhere('isbn', 'like', '%' . $termino . '%');
             });
         }
 

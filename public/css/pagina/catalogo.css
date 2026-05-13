@@ -134,6 +134,16 @@
     flex: 0 0 auto;
     color: #0f7a72;
     font-size: 1rem;
+    transition: color 0.2s;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+    display: inline-block;
+    animation: spin 0.7s linear infinite;
 }
 
 .catalog-filter-input-shell .form-control {

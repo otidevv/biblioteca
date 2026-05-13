@@ -2,6 +2,7 @@ $(document).ready(function () {
     const $form = $('#catalogoFiltrosForm');
     const $contenedor = $('#contenedor-libros');
     let requestActiva = null;
+    let debounceTimer = null;
 
     function inicializarSelect2() {
         $('#autor_id').select2({
@@ -65,7 +66,8 @@ $(document).ready(function () {
             requestActiva.abort();
         }
 
-        $contenedor.css('opacity', '0.6');
+        $contenedor.css('opacity', '0.5');
+        $('#catalog-search-icon').removeClass('bi-search').addClass('bi-arrow-repeat spin-icon');
 
         requestActiva = $.ajax({
             url: url,
@@ -85,15 +87,28 @@ $(document).ready(function () {
             })
             .always(function () {
                 $contenedor.css('opacity', '1');
+                $('#catalog-search-icon').removeClass('bi-arrow-repeat spin-icon').addClass('bi-search');
                 requestActiva = null;
             });
     }
 
     inicializarSelect2();
 
+    $('#titulo').on('input', function () {
+        clearTimeout(debounceTimer);
+        const valor = $(this).val().trim();
+
+        if (valor.length === 0 || valor.length >= 2) {
+            debounceTimer = setTimeout(function () {
+                const url = $form.attr('action') + '?' + $form.serialize();
+                cargarLibros(url);
+            }, 500);
+        }
+    });
+
     $form.on('submit', function (e) {
         e.preventDefault();
-
+        clearTimeout(debounceTimer);
         const url = $(this).attr('action') + '?' + $(this).serialize();
         cargarLibros(url);
     });

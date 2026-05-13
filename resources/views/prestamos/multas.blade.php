@@ -864,61 +864,6 @@
                             @endif
                         </div>
                     </article>
-
-                    <div class="modal fade" id="modalSancion{{ $sancion->id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <div>
-                                        <h5 class="modal-title">Sancion #{{ $sancion->id }}</h5>
-                                        <small class="text-muted">{{ $sancion->usuario->name ?? 'Lector no disponible' }}</small>
-                                    </div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                </div>
-
-                                <div class="modal-body">
-                                    <div class="penalty-card__grid">
-                                        <div class="penalty-card__item">
-                                            <span>Estado</span>
-                                            <strong>{{ $estadoTexto }}</strong>
-                                        </div>
-                                        <div class="penalty-card__item">
-                                            <span>Origen</span>
-                                            <strong>{{ $origen }}</strong>
-                                        </div>
-                                        <div class="penalty-card__item">
-                                            <span>Biblioteca</span>
-                                            <strong>{{ $bibliotecaRelacionada }}</strong>
-                                        </div>
-                                        <div class="penalty-card__item">
-                                            <span>Libro</span>
-                                            <strong>{{ $libroRelacionado }}</strong>
-                                        </div>
-                                        <div class="penalty-card__item">
-                                            <span>Fecha inicio</span>
-                                            <strong>{{ $sancion->fecha_inicio?->format('d/m/Y') ?? '-' }}</strong>
-                                        </div>
-                                        <div class="penalty-card__item">
-                                            <span>Fecha fin</span>
-                                            <strong>{{ $sancion->fecha_fin?->format('d/m/Y') ?? '-' }}</strong>
-                                        </div>
-                                    </div>
-
-                                    <div class="penalty-card__notes">
-                                        <p><strong>Motivo:</strong> {{ $sancion->motivo ?: '-' }}</p>
-                                        <p><strong>Tipo:</strong> {{ $tipoTexto }}</p>
-                                        <p><strong>Codigo de pago:</strong> {{ $sancion->codigo_pago ?: '-' }}</p>
-                                        <p><strong>Observaciones:</strong> {{ $sancion->observaciones ?: '-' }}</p>
-                                        <p><strong>Detalle de cierre:</strong> {{ $sancion->detalles_termino ?: '-' }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 @endforeach
             </section>
 
@@ -931,6 +876,78 @@
 @endsection
 
 @section('modal')
+{{-- Modales de detalle de sanciones --}}
+@foreach($sanciones as $sancion)
+    @php
+        $esActiva = (int) ($sancion->estado ?? 0) === 1;
+        $estadoTexto = $esActiva ? 'Activa' : 'Cerrada';
+        $tipoTexto = $sancion->tipoSancion?->nombre ?? $sancion->tipo ?? '-';
+        $referenciaPrestamo = $sancion->prestamo;
+        $referenciaReserva = $sancion->reservacion;
+        $libroRelacionado = $referenciaPrestamo?->ejemplar?->libro?->titulo
+            ?? $referenciaReserva?->ejemplar?->libro?->titulo
+            ?? 'Sin libro relacionado';
+        $bibliotecaRelacionada = $referenciaPrestamo?->ejemplar?->biblioteca?->nombre
+            ?? $referenciaReserva?->ejemplar?->biblioteca?->nombre
+            ?? 'Biblioteca no disponible';
+        $origen = $referenciaPrestamo ? 'Prestamo' : ($referenciaReserva ? 'Reservacion' : 'Registro manual');
+    @endphp
+    <div class="modal fade" id="modalSancion{{ $sancion->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Sancion #{{ $sancion->id }}</h5>
+                        <small class="text-muted">{{ $sancion->usuario->name ?? 'Lector no disponible' }}</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="penalty-card__grid">
+                        <div class="penalty-card__item">
+                            <span>Estado</span>
+                            <strong>{{ $estadoTexto }}</strong>
+                        </div>
+                        <div class="penalty-card__item">
+                            <span>Origen</span>
+                            <strong>{{ $origen }}</strong>
+                        </div>
+                        <div class="penalty-card__item">
+                            <span>Biblioteca</span>
+                            <strong>{{ $bibliotecaRelacionada }}</strong>
+                        </div>
+                        <div class="penalty-card__item">
+                            <span>Libro</span>
+                            <strong>{{ $libroRelacionado }}</strong>
+                        </div>
+                        <div class="penalty-card__item">
+                            <span>Fecha inicio</span>
+                            <strong>{{ $sancion->fecha_inicio?->format('d/m/Y') ?? '-' }}</strong>
+                        </div>
+                        <div class="penalty-card__item">
+                            <span>Fecha fin</span>
+                            <strong>{{ $sancion->fecha_fin?->format('d/m/Y') ?? '-' }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="penalty-card__notes">
+                        <p><strong>Motivo:</strong> {{ $sancion->motivo ?: '-' }}</p>
+                        <p><strong>Tipo:</strong> {{ $tipoTexto }}</p>
+                        <p><strong>Codigo de pago:</strong> {{ $sancion->codigo_pago ?: '-' }}</p>
+                        <p><strong>Observaciones:</strong> {{ $sancion->observaciones ?: '-' }}</p>
+                        <p><strong>Detalle de cierre:</strong> {{ $sancion->detalles_termino ?: '-' }}</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
+
 <div class="modal fade" id="modalNuevaSancion" tabindex="-1" aria-labelledby="modalNuevaSancionTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <form method="POST" action="{{ route('prestamos.multas.nueva') }}" class="modal-content">

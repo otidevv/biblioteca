@@ -55,7 +55,7 @@
             <div class="catalog-filter-primary">
                 <label for="titulo">Título o palabra clave</label>
                 <div class="catalog-filter-input-shell">
-                    <i class="bi bi-search catalog-filter-input-icon"></i>
+                    <i class="bi bi-search catalog-filter-input-icon" id="catalog-search-icon"></i>
                     <input type="text"
                            id="titulo"
                            name="titulo"

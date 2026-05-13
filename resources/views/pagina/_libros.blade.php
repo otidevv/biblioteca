@@ -23,6 +23,16 @@
                         {{ \Illuminate\Support\Str::limit($libro->titulo, 46) }}
                     </h6>
 
+                    @php
+                        $codigoMostrar = $libro->codigo ?: ($libro->isbn ?: null);
+                    @endphp
+                    @if($codigoMostrar)
+                        <div class="catalog-grid-code">
+                            <i class="bi bi-upc"></i>
+                            {{ $codigoMostrar }}
+                        </div>
+                    @endif
+
                     <div class="catalog-grid-authors">
                         @forelse($libro->autores as $autor)
                             {{ $autor->nombres }} {{ $autor->apellidos }}@if(!$loop->last), @endif

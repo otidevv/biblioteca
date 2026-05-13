@@ -67,6 +67,29 @@
     overflow: hidden;
 }
 
+.catalog-grid-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0f7a72;
+    background: rgba(15, 122, 114, 0.08);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.library-dark .catalog-grid-code {
+    color: #86e2c0;
+    background: rgba(134, 226, 192, 0.1);
+}
+
 .catalog-grid-authors {
     min-height: 2.9rem;
     color: #6c7d76;
