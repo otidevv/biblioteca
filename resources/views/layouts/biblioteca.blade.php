@@ -1021,43 +1021,73 @@ body.library-dark .overlay.active {
 
 @media (max-width: 575.98px) {
     .library-topbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.85rem;
+        flex-direction: row;
+        align-items: center;
+        padding: 0.55rem 0.75rem;
+        gap: 0.5rem;
     }
 
     .library-topbar-title {
-        width: 100%;
-        align-items: flex-start;
-        gap: 0.75rem;
+        min-width: 0;
+        flex: 1 1 auto;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .library-topbar-title-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+
+    .library-topbar-title-kicker {
+        display: none;
+    }
+
+    .library-topbar-title h5 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .library-topbar-title span {
+        display: none;
     }
 
     .library-topbar-title-copy {
         min-width: 0;
         flex: 1 1 auto;
-        padding-right: 0;
-    }
-
-    .library-topbar-title h5 {
-        font-size: 1rem;
-        line-height: 1.3;
-    }
-
-    .library-topbar-title span {
-        font-size: 0.82rem;
-        line-height: 1.35;
+        padding: 0;
     }
 
     .library-topbar-actions {
-        width: 100%;
-        justify-content: flex-start;
+        flex-shrink: 0;
+        gap: 0.4rem;
+        flex-wrap: nowrap;
     }
 
-    .library-user-chip,
-    .library-login-btn,
-    .library-logout-btn {
-        width: 100%;
-        justify-content: center;
+    .library-theme-btn,
+    .library-alert-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .library-user-chip {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.82rem;
+        gap: 0.4rem;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .library-login-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.82rem;
+        white-space: nowrap;
     }
 }
 
@@ -1097,7 +1127,7 @@ body.library-dark .overlay.active {
         $topbarMeta = [
             'kicker' => 'Portada institucional',
             'icon' => 'bi-house-heart-fill',
-            'title' => 'Sistema de Biblioteca',
+            'title' => 'Biblioteca UNAMAD',
             'subtitle' => 'Explora novedades, bibliotecas y accesos principales desde una portada clara.',
         ];
     } elseif (request()->routeIs('catalogo')) {

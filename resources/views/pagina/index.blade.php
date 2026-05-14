@@ -22,7 +22,7 @@
         Universidad Nacional Amazónica de Madre de Dios
     </span>
 
-    <h2>📚 Descubre, consulta y reserva el conocimiento</h2>
+    <h2>Descubre, consulta y reserva el conocimiento</h2>
     <p>
         Accede al catálogo institucional con miles de títulos, revisa disponibilidad en tiempo real por biblioteca y encuentra publicaciones recientes. Una plataforma moderna y orientada a tu búsqueda de información.
     </p>
@@ -48,21 +48,21 @@
 
 <section class="home-stats">
     <div class="row g-3">
-        <div class="col-12 col-md-4">
+        <div class="col-4">
             <div class="home-stat-card">
                 <span><i class="bi bi-building-check"></i></span>
                 <h3>{{ $totalBibliotecas }}</h3>
                 <p>Bibliotecas disponibles para consulta y recorrido.</p>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-4">
             <div class="home-stat-card">
                 <span><i class="bi bi-bookmark-star-fill"></i></span>
                 <h3>{{ $totalLibrosRecientes }}</h3>
                 <p>Títulos recientes destacados en esta portada.</p>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-4">
             <div class="home-stat-card">
                 <span><i class="bi bi-calendar2-check"></i></span>
                 <h3>{{ $totalActividades }}</h3>
@@ -75,8 +75,8 @@
 <section class="home-section">
     <div class="home-section-header">
         <div>
-            <h3 class="home-section-title">🏛️ Nuestras Bibliotecas</h3>
-            <p class="home-section-subtitle">Explora las 5 sedes y espacios de consulta disponibles en la universidad.</p>
+            <h3 class="home-section-title">Nuestras Bibliotecas</h3>
+            <p class="home-section-subtitle">Explora las sedes y espacios de consulta disponibles en la universidad.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
             Ver catálogo completo <i class="bi bi-chevron-right"></i>
@@ -150,7 +150,7 @@
 <section class="home-section">
     <div class="home-section-header">
         <div>
-            <h3 class="home-section-title">📅 Actividades en Curso</h3>
+            <h3 class="home-section-title">Actividades en Curso</h3>
             <p class="home-section-subtitle">Talleres, encuentros, capacitaciones y avisos activos para la comunidad universitaria.</p>
         </div>
         <a href="{{ route('evento') }}" class="home-link">
@@ -195,7 +195,7 @@
 <section class="home-section">
     <div class="home-section-header">
         <div>
-            <h3 class="home-section-title">✨ Títulos Recientes</h3>
+            <h3 class="home-section-title">Títulos Recientes</h3>
             <p class="home-section-subtitle">Una selección curada para empezar a explorar nuestro extenso catálogo.</p>
         </div>
         <a href="{{ route('catalogo') }}" class="home-link">
