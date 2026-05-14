@@ -13,6 +13,7 @@ use App\Models\Tipo_registro;
 use App\Models\Idioma;
 use App\Models\Dewey;
 use App\Models\Prestamo;
+use App\Models\Visita;
 use App\Models\ActividadCategoria;
 use App\Services\ReporteInventarioFisicoService;
 use Illuminate\Support\Facades\Auth;
@@ -20,21 +21,34 @@ class AdministracionController extends Controller
 {
     public function inicio()
     {
-        $totalLibros = Libro::count();
-        $totalUsuarios = User::count();
+        $totalLibros      = Libro::count();
+        $totalUsuarios    = User::count();
         $prestamosActivos = Prestamo::whereIn('estado', [1, 'prestado'])->count();
         $totalBibliotecas = Biblioteca::count();
-        $librosRecientes = Libro::with(['autores', 'editorial'])
-            ->latest()
-            ->limit(5)
-            ->get();
+        $librosRecientes  = Libro::with(['autores', 'editorial'])->latest()->limit(5)->get();
+
+        $visitasHoy    = Visita::whereDate('fecha', today())->count();
+        $visitasSemana = Visita::whereBetween('fecha', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $visitasMes    = Visita::whereYear('fecha', now()->year)->whereMonth('fecha', now()->month)->count();
+        $visitasTotal  = Visita::count();
+
+        $visitasPorDia = Visita::selectRaw('fecha, COUNT(*) as total')
+            ->where('fecha', '>=', now()->subDays(29)->toDateString())
+            ->groupBy('fecha')
+            ->orderBy('fecha')
+            ->pluck('total', 'fecha');
 
         return view('administracion.index', compact(
             'totalLibros',
             'totalUsuarios',
             'prestamosActivos',
             'totalBibliotecas',
-            'librosRecientes'
+            'librosRecientes',
+            'visitasHoy',
+            'visitasSemana',
+            'visitasMes',
+            'visitasTotal',
+            'visitasPorDia'
         ));
     }
     public function index(string $modulo, $id=null)

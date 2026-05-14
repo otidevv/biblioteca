@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CargarPermisosUsuario;
 use App\Http\Middleware\PermisoPorRuta;
+use App\Http\Middleware\RegistrarVisita;
 use App\Http\Middleware\RejectLectorDashboard;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -24,8 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ✅ Alias de middleware (reemplaza Kernel.php)
         $middleware->alias([
-            'permiso.ruta' => PermisoPorRuta::class,
+            'permiso.ruta'        => PermisoPorRuta::class,
             'no.lector.dashboard' => RejectLectorDashboard::class,
+            'registrar.visita'    => RegistrarVisita::class,
         ]);
     })
 

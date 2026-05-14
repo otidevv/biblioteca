@@ -2,6 +2,52 @@
 
 @section('page-title', 'Resumen del sistema')
 
+@section('js')
+@if(($visitasPorDia ?? collect())->isNotEmpty())
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const raw   = @json($visitasPorDia ?? []);
+    const today = new Date();
+
+    const labels = [];
+    const values = [];
+
+    for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        labels.push(d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }));
+        values.push(raw[key] ?? 0);
+    }
+
+    new Chart(document.getElementById('chartVisitas'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Visitas',
+                data: values,
+                backgroundColor: 'rgba(37,99,235,.18)',
+                borderColor:     'rgba(37,99,235,.7)',
+                borderWidth: 1.5,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+})();
+</script>
+@endif
+@endsection
+
 @section('content')
 <div class="admin-dashboard">
     <section class="admin-dashboard__hero">
@@ -128,6 +174,41 @@
                 <div class="admin-empty">Aun no hay libros recientes para mostrar en este panel.</div>
             @endif
         </article>
+    </section>
+
+    <section class="admin-dashboard__visits">
+        <div class="admin-visits__header">
+            <div>
+                <div class="admin-card__eyebrow">Trafico del sistema</div>
+                <h3 class="admin-card__title">Visitas a la web publica</h3>
+            </div>
+            <span class="admin-visits__note">Sesiones unicas por dia en paginas publicas</span>
+        </div>
+
+        <div class="admin-visits__stats">
+            <div class="admin-visits__stat">
+                <span class="admin-visits__stat-label">Hoy</span>
+                <strong class="admin-visits__stat-value">{{ number_format($visitasHoy ?? 0) }}</strong>
+            </div>
+            <div class="admin-visits__stat">
+                <span class="admin-visits__stat-label">Esta semana</span>
+                <strong class="admin-visits__stat-value">{{ number_format($visitasSemana ?? 0) }}</strong>
+            </div>
+            <div class="admin-visits__stat">
+                <span class="admin-visits__stat-label">Este mes</span>
+                <strong class="admin-visits__stat-value">{{ number_format($visitasMes ?? 0) }}</strong>
+            </div>
+            <div class="admin-visits__stat admin-visits__stat--total">
+                <span class="admin-visits__stat-label">Total historico</span>
+                <strong class="admin-visits__stat-value">{{ number_format($visitasTotal ?? 0) }}</strong>
+            </div>
+        </div>
+
+        @if(($visitasPorDia ?? collect())->isNotEmpty())
+        <div class="admin-visits__chart-wrap">
+            <canvas id="chartVisitas" height="80"></canvas>
+        </div>
+        @endif
     </section>
 
     <div class="admin-footer-note">

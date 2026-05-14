@@ -290,12 +290,14 @@ Route::prefix('pagina')->group(function () {
     Route::get('/libro/{id}/rating', [ApiPaginaController::class, 'rating']);
     }); 
 
-Route::get('/', [PaginaController::class, 'index'])->name('home');
-Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->name('biblioteca.show');
-Route::get('/{id}/libro', [PaginaController::class, 'showLibro'])->name('libro.show');
-Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
-Route::get('/otras-bibliotecas', [PaginaController::class, 'otrasBibliotecas'])->name('otras.bibliotecas');
-Route::get('/evento', [PaginaController::class, 'eventos'])->name('evento');
+Route::middleware('registrar.visita')->group(function () {
+    Route::get('/', [PaginaController::class, 'index'])->name('home');
+    Route::get('/biblioteca/{id}', [PaginaController::class, 'showBiblioteca'])->name('biblioteca.show');
+    Route::get('/{id}/libro', [PaginaController::class, 'showLibro'])->name('libro.show');
+    Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
+    Route::get('/otras-bibliotecas', [PaginaController::class, 'otrasBibliotecas'])->name('otras.bibliotecas');
+    Route::get('/evento', [PaginaController::class, 'eventos'])->name('evento');
+});
 Route::middleware('auth')
     ->get('/prestamos', [PaginaController::class, 'misPrestamos'])
     ->name('prestamos');
