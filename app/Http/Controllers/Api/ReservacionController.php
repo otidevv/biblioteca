@@ -124,7 +124,8 @@ class ReservacionController extends Controller
                     ? $row->ejemplar->codigo_dewey.$row->ejemplar->tipo.$row->ejemplar->codigo_interno
                     : ($row->ejemplar->codigo_ant ?? ''));
 
-                return '<button class="btn btn-sm btn-success entregarReserva"
+                return '<div class="d-flex gap-1">
+                        <button class="btn btn-sm btn-success entregarReserva"
                             data-id="'.$row->id.'"
                             data-libro="'.$titulo.'"
                             data-lector="'.$lector.'"
@@ -135,7 +136,14 @@ class ReservacionController extends Controller
                             data-autores="'.$autores.'"
                             data-ejemplar="'.$codEjemplar.'">
                             <i class="bi bi-box-arrow-in-right"></i> Entregar
-                        </button>';
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger cancelarReservaAdmin"
+                            data-id="'.$row->id.'"
+                            data-libro="'.$titulo.'"
+                            data-lector="'.$lector.'">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+                        </div>';
             })
             ->rawColumns(['acciones', 'fecha', 'fecha_limite', 'libro', 'ejemplar', 'lector', 'estado', 'prestamo'])
             ->toJson();
@@ -265,6 +273,41 @@ class ReservacionController extends Controller
             return [
                 'status' => 200,
                 'payload' => ['ok' => 'Reserva cancelada correctamente'],
+            ];
+        });
+
+        return response()->json($resultado['payload'], $resultado['status']);
+    }
+
+    public function cancelarReservaAdmin($id)
+    {
+        $resultado = DB::transaction(function () use ($id) {
+            $reserva = Reservacion::lockForUpdate()->find($id);
+
+            if (! $reserva) {
+                return [
+                    'status' => 404,
+                    'payload' => ['error' => 'Reserva no encontrada'],
+                ];
+            }
+
+            if ((int) $reserva->estado !== 0) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'Solo se pueden cancelar reservas en espera'],
+                ];
+            }
+
+            $reserva->estado = 2;
+            $reserva->save();
+
+            $ejemplar = Ejemplar::lockForUpdate()->find($reserva->ejemplar_id);
+            $ejemplar->estado = 1;
+            $ejemplar->save();
+
+            return [
+                'status' => 200,
+                'payload' => ['success' => 'Reserva cancelada correctamente'],
             ];
         });
 

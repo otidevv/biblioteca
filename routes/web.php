@@ -259,6 +259,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
                 ->name('prestamos.multas.lectores');
             Route::get('reservas/listar', [ApiReservacionController::class, 'listar']);
             Route::post('reserva/{id}/entregar', [ApiReservacionController::class, 'entregar']);
+            Route::post('reserva/{id}/cancelar', [ApiReservacionController::class, 'cancelarReservaAdmin']);
             Route::get('prestamos/listar', [ApiPrestamoController::class, 'listar']);
             Route::get('{id}/preview-sancion', [ApiPrestamoController::class, 'previewSancion']);
             Route::post('{id}/devolver', [ApiPrestamoController::class, 'devolver']);

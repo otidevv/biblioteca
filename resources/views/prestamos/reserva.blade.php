@@ -77,6 +77,31 @@
 @endsection
 
 @section('modal')
+<div class="modal fade" id="modalCancelarAdmin" tabindex="-1" aria-labelledby="modalCancelarAdminTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title" id="modalCancelarAdminTitle">Cancelar reserva</h5>
+                    <small class="text-muted">Esta acción liberará el ejemplar y dejará la solicitud sin efecto.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center py-3">
+                <p class="mb-1 fw-bold text-dark">¿Cancelar la reserva de <span id="cancelar-lector-nombre" class="text-primary"></span>?</p>
+                <p class="mb-0 text-muted small">Libro: <span id="cancelar-libro-nombre"></span></p>
+                <p class="mt-2 text-muted">El ejemplar quedará disponible nuevamente.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-between">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Volver</button>
+                <button type="button" class="btn btn-danger" id="confirmarCancelacionAdmin">
+                    <i class="bi bi-x-circle me-1"></i> Sí, cancelar reserva
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalEntrega" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered reservation-register__modal-dialog">
     <div class="modal-content reservation-register__modal">

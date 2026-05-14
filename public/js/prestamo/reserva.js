@@ -71,6 +71,42 @@ $(document).ready(function () {
 
     modal = new bootstrap.Modal(document.getElementById('modalEntrega'));
 
+    let modalCancelar = new bootstrap.Modal(document.getElementById('modalCancelarAdmin'));
+    let reservaIdCancelar = null;
+
+    $(document).on('click', '.cancelarReservaAdmin', function () {
+        reservaIdCancelar = $(this).data('id');
+        $('#cancelar-lector-nombre').text($(this).data('lector') || '—');
+        $('#cancelar-libro-nombre').text($(this).data('libro') || '—');
+        modalCancelar.show();
+    });
+
+    $('#confirmarCancelacionAdmin').on('click', function () {
+        if (! reservaIdCancelar) return;
+
+        const btn = $(this).prop('disabled', true);
+
+        fetch(`/api/prestamos/reserva/${reservaIdCancelar}/cancelar`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alerta(data.success, true);
+                    modalCancelar.hide();
+                    tabla.ajax.reload(null, false);
+                } else {
+                    alerta(data.error || 'Ocurrió un error', false);
+                }
+            })
+            .catch(() => alerta('Error en la petición', false))
+            .finally(() => btn.prop('disabled', false));
+    });
+
     $(document).on('click', '.entregarReserva', function () {
         let id       = $(this).data('id');
         let libro    = $(this).data('libro')   || '—';
