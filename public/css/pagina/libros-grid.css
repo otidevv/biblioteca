@@ -169,8 +169,95 @@ body.library-dark .catalog-empty {
     box-shadow: 0 20px 42px rgba(0, 0, 0, 0.24);
 }
 
+@media (max-width: 767.98px) {
+    .catalog-grid-cover {
+        height: 240px;
+    }
+
+    .catalog-grid-body {
+        min-height: 180px;
+        padding: 0.75rem 0.75rem 0.85rem;
+    }
+
+    .catalog-grid-cover-wrap {
+        padding: 0.75rem 0.75rem 0;
+    }
+}
+
 @media (max-width: 575.98px) {
     .catalog-grid-cover {
-        height: 290px;
+        height: 180px;
+        padding: 0.5rem;
+    }
+
+    .catalog-grid-cover-wrap {
+        padding: 0.6rem 0.6rem 0;
+    }
+
+    .catalog-grid-body {
+        min-height: 0;
+        padding: 0.6rem 0.65rem 0.75rem;
+    }
+
+    .catalog-grid-tag {
+        font-size: 0.72rem;
+        padding: 0.25rem 0.5rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .catalog-grid-title {
+        font-size: 0.85rem;
+        min-height: 0;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+    }
+
+    .catalog-grid-authors {
+        min-height: 0;
+        font-size: 0.78rem;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+    }
+
+    /* Rating: forzar salto de línea entre estrellas y texto */
+    .catalog-grid-rating {
+        margin-top: 0.4rem;
+    }
+
+    .catalog-grid-rating > div {
+        flex-wrap: wrap !important;
+        gap: 0.15rem !important;
+        align-items: flex-start !important;
+    }
+
+    .catalog-grid-rating small {
+        display: block;
+        width: 100%;
+        font-size: 0.7rem;
+        line-height: 1.3;
+        white-space: normal;
+    }
+
+    /* Meta: solo el botón, sin el texto "Disponible en catálogo" */
+    .catalog-grid-meta {
+        padding-top: 0.6rem;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .catalog-grid-meta small {
+        display: none;
+    }
+
+    .catalog-grid-button {
+        width: 100%;
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 0.42rem 0.6rem;
+        white-space: normal;
     }
 }

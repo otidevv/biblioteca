@@ -1,6 +1,29 @@
 ﻿.book-detail-shell {
     display: grid;
     gap: 1.5rem;
+    min-width: 0;
+}
+
+.book-detail-shell > * {
+    min-width: 0;
+}
+
+/* admin.css fuerza color:#111827 en todos los badges — restaurar texto claro
+   en badges con fondo de color (danger, success, secondary) */
+.badge.bg-success,
+.badge.bg-danger,
+.badge.text-bg-success,
+.badge.text-bg-danger,
+.badge.text-bg-secondary,
+.badge.rounded-pill.text-bg-success,
+.badge.rounded-pill.text-bg-danger,
+.badge.rounded-pill.text-bg-secondary {
+    color: #fff !important;
+}
+
+.badge.text-bg-warning,
+.badge.rounded-pill.text-bg-warning {
+    color: #1a2e25 !important;
 }
 
 .book-hero-card {
@@ -111,6 +134,7 @@
     z-index: 1;
     display: grid;
     gap: 1rem;
+    min-width: 0;
 }
 
 .book-eyebrow {
@@ -133,6 +157,8 @@
     font-size: clamp(1.9rem, 3vw, 2.7rem);
     font-weight: 800;
     line-height: 1.08;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .book-authors {
@@ -349,6 +375,8 @@
 
 .book-alert-content {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
 .book-alert-content strong {
@@ -411,6 +439,7 @@
 .book-stack {
     display: grid;
     gap: 1.3rem;
+    min-width: 0;
 }
 
 .book-subgrid {
@@ -559,6 +588,10 @@
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.8fr);
     gap: 1.3rem;
+}
+
+.book-comments-layout > div {
+    min-width: 0;
 }
 
 .book-comments-list {
@@ -1225,9 +1258,19 @@ body.library-dark .book-copy-library {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .book-copies-grid,
-    .book-modal-summary {
+    .book-copies-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* En móvil: mostrar título/autores antes que la portada */
+@media (max-width: 991.98px) {
+    .book-hero-card .col-lg-4 {
+        order: 2;
+    }
+
+    .book-hero-card .col-lg-8 {
+        order: 1;
     }
 }
 
@@ -1242,9 +1285,12 @@ body.library-dark .book-copy-library {
 
     .book-stat-grid,
     .book-info-grid,
-    .book-copies-grid,
-    .book-related-grid {
+    .book-copies-grid {
         grid-template-columns: 1fr;
+    }
+
+    .book-related-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .book-copies-grid {
@@ -1254,7 +1300,7 @@ body.library-dark .book-copy-library {
     }
 
     .book-cover-image {
-        height: 380px;
+        height: 320px;
     }
 
     .book-action-row {
@@ -1287,5 +1333,235 @@ body.library-dark .book-copy-library {
     .book-modal-cancel,
     .book-modal-footer .book-action-primary {
         width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .book-detail-shell {
+        gap: 1rem;
+    }
+
+    /* Reducir gutter del row hero en móvil */
+    .book-hero-card .row {
+        --bs-gutter-x: 0.75rem;
+    }
+
+    .book-hero-card {
+        padding: 0.85rem;
+    }
+
+    .book-cover-image {
+        height: 240px;
+    }
+
+    .book-cover-stats {
+        gap: 0.55rem;
+        margin-top: 0.75rem;
+    }
+
+    .book-stat-item {
+        padding: 0.75rem 0.6rem;
+    }
+
+    .book-stat-badge {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .book-main-title {
+        font-size: 1.3rem;
+        line-height: 1.15;
+    }
+
+    .book-authors {
+        font-size: 0.9rem;
+    }
+
+    .book-chip {
+        font-size: 0.8rem;
+        padding: 0.38rem 0.65rem;
+    }
+
+    .book-quick-specs {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+        padding: 0.85rem;
+    }
+
+    .book-spec-item {
+        gap: 0.6rem;
+    }
+
+    .book-description-card,
+    .book-info-card,
+    .book-comments-card,
+    .book-comment-form-card {
+        padding: 0.85rem;
+    }
+
+    .book-action-primary,
+    .book-action-secondary {
+        min-height: 44px;
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .book-info-alert {
+        gap: 0.65rem;
+        padding: 0.85rem;
+    }
+
+    .book-alert-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+    }
+
+    .book-modal-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+    }
+
+    .book-modal-stat {
+        padding: 0.6rem 0.55rem;
+    }
+
+    .book-modal-stat span {
+        font-size: 0.7rem;
+    }
+
+    .book-modal-stat strong {
+        font-size: 0.85rem;
+        line-height: 1.3;
+        word-break: break-all;
+    }
+
+    .book-related-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+    }
+
+    /* Tabla disponibilidad: mostrar solo Biblioteca y Estado */
+    #tablaDisponibilidad .table {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+
+    #tablaDisponibilidad .table th,
+    #tablaDisponibilidad .table td {
+        padding: 0.55rem 0.6rem;
+    }
+
+    /* Ocultar columnas Total y Disponibles en móvil */
+    #tablaDisponibilidad .table th:nth-child(2),
+    #tablaDisponibilidad .table td:nth-child(2),
+    #tablaDisponibilidad .table th:nth-child(3),
+    #tablaDisponibilidad .table td:nth-child(3) {
+        display: none;
+    }
+
+    /* Ejemplares: layout horizontal (icono izquierda, contenido derecha) */
+    .book-copy-card {
+        padding: 0.75rem;
+    }
+
+    .book-copy-card-inner {
+        display: grid;
+        grid-template-columns: 38px 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.3rem 0.65rem;
+        height: auto;
+    }
+
+    .book-copy-icon {
+        grid-column: 1;
+        grid-row: 1 / 4;
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+        align-self: start;
+        margin-top: 0.1rem;
+    }
+
+    .book-copy-code {
+        grid-column: 2;
+        font-size: 0.88rem;
+    }
+
+    .book-copy-library {
+        grid-column: 2;
+        font-size: 0.8rem;
+        line-height: 1.35;
+    }
+
+    .book-copy-status {
+        grid-column: 2;
+        margin-top: 0;
+    }
+
+    .book-copy-status .badge {
+        font-size: 0.75rem;
+        padding: 0.38rem 0.65rem;
+    }
+
+    /* Comentarios */
+    .book-comment-card {
+        padding: 0.75rem 0.8rem;
+    }
+
+    .book-comment-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .book-comment-date {
+        font-size: 0.78rem;
+    }
+
+    .book-comment-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 0.88rem;
+    }
+
+    .book-comment-author {
+        font-size: 0.9rem;
+    }
+
+    .book-comment-stars i {
+        font-size: 0.9rem;
+    }
+
+    /* Rating panel y formulario */
+    .book-rating-panel {
+        padding: 0.75rem;
+    }
+
+    .rating label {
+        font-size: 1.8rem;
+    }
+
+    .book-comments-toggle {
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* Info items */
+    .book-info-item {
+        padding: 0.7rem 0.75rem;
+    }
+
+    .book-info-item strong {
+        font-size: 0.74rem;
+    }
+
+    .book-info-item span {
+        font-size: 0.88rem;
+    }
+
+    .book-section-title {
+        font-size: 1rem;
     }
 }

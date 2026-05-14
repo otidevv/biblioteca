@@ -26,9 +26,9 @@
             <td>{{ $disponibles }}</td>
             <td>
                 @if($disponibles > 0)
-                    <span class="badge bg-success">Disponible</span>
+                    <span class="badge text-bg-success">Disponible</span>
                 @else
-                    <span class="badge bg-danger">No disponible</span>
+                    <span class="badge text-bg-danger">No disponible</span>
                 @endif
             </td>
         </tr>
