@@ -62,13 +62,12 @@
                 <table id="tabla-prestamos" class="table table-hover table-bordered align-middle loan-register__table datatable w-100">
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Plazo</th>
+                            <th>Fechas</th>
                             <th>Libro</th>
                             <th>Ejemplar</th>
                             <th>Lector</th>
-                            <th>Prestamo</th>
                             <th>Estado</th>
+                            <th>Vigencia</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -89,7 +88,7 @@
       <div class="modal-header" style="background:var(--admin-accent,#2563eb);color:#fff;">
         <div>
           <span style="font-size:.75rem;opacity:.8;display:block;letter-spacing:.05em;">CIRCULACIÓN DIRECTA</span>
-          <h5 class="modal-title mb-0" id="pdModalTitle">Nuevo préstamo</h5>
+          <h5 class="modal-title mb-0" id="pdModalTitle" style="color:inherit;">Nuevo préstamo</h5>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>

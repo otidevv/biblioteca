@@ -26,7 +26,7 @@ class PrestamoController extends Controller
         $user = Auth::user();
         [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
-        $query = Prestamo::with(['ejemplar.libro', 'lector'])
+        $query = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca', 'lector.persona'])
             ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
                 if ($bibliotecasAsignadas->isEmpty()) {
                     $q->whereRaw('1 = 0');
@@ -64,6 +64,16 @@ class PrestamoController extends Controller
 
                 return '<span class="loan-table__date">' . $fechaLimite->format('d/m/Y H:i') . '</span>';
             })
+            ->addColumn('fechas', function ($row) {
+                $fp = optional($row->fecha_prestamo)->format('d/m/Y');
+                $fechaBase = Carbon::parse($row->fecha_prestamo)->addDays($row->duracion);
+                $fl = $fechaBase->copy()->setTime(20, 0, 0)->format('d/m/Y');
+
+                return '<div class="loan-dates">' .
+                    '<span class="loan-dates__row"><i class="bi bi-calendar-event me-1"></i>' . ($fp ?: '-') . '</span>' .
+                    '<span class="loan-dates__row loan-dates__row--limit"><i class="bi bi-calendar-check me-1"></i>' . $fl . '</span>' .
+                    '</div>';
+            })
             ->addColumn('libro', function ($row) {
                 $titulo = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
 
@@ -74,15 +84,44 @@ class PrestamoController extends Controller
                 $codigoAnt = trim((string) ($row->ejemplar->codigo_ant ?? ''));
 
                 $codigo = $codigoDewey !== ''
-                    ? $codigoDewey . $row->ejemplar->tipo . $row->ejemplar->codigo_interno
+                    ? $codigoDewey . ($row->ejemplar->tipo ?? '') . $row->ejemplar->codigo_interno
                     : ($codigoAnt !== '' ? $codigoAnt : '-');
 
-                return '<span class="loan-table__code">' . e($codigo) . '</span>';
+                $biblioteca = $row->ejemplar->biblioteca->nombre ?? '';
+
+                return '<span class="loan-table__code">' . e($codigo) . '</span>' .
+                    ($biblioteca
+                        ? '<small class="loan-table__bib"><i class="bi bi-building me-1"></i>' . e($biblioteca) . '</small>'
+                        : '');
             })
             ->addColumn('lector', function ($row) {
-                $lector = $row->lector->name ?? 'Lector no disponible';
+                $user    = $row->lector;
+                $persona = optional($user)->persona;
 
-                return '<div class="loan-table__reader" title="' . e($lector) . '">' . e($lector) . '</div>';
+                if ($persona && ($persona->apellido_paterno || $persona->nombres)) {
+                    $nombre = trim(
+                        trim($persona->apellido_paterno . ' ' . $persona->apellido_materno) .
+                        ', ' . $persona->nombres
+                    );
+                } else {
+                    $nombre = $user->name ?? 'Lector no disponible';
+                }
+
+                $dni    = $persona->dni ?? '';
+                $codigo = $persona->codigo_institucional ?? '';
+
+                $badges = '';
+                if ($dni) {
+                    $badges .= '<span class="loan-lector-badge">DNI ' . e($dni) . '</span>';
+                }
+                if ($codigo) {
+                    $badges .= '<span class="loan-lector-badge loan-lector-badge--code">Cód. ' . e($codigo) . '</span>';
+                }
+
+                return '<div class="loan-table__reader" title="' . e($nombre) . '">' . e($nombre) . '</div>' .
+                    ($badges
+                        ? '<div class="loan-lector-badges">' . $badges . '</div>'
+                        : ($user && $user->email ? '<small class="loan-table__reader-sub">' . e($user->email) . '</small>' : ''));
             })
             ->addColumn('estado', function ($row) {
                 $now = Carbon::now();
@@ -107,13 +146,19 @@ class PrestamoController extends Controller
                 return '<span class="loan-pill loan-pill--neutral">--</span>';
             })
             ->addColumn('estado_prestamo', function ($row) {
-                return match ((int) $row->estado_prestamo) {
+                $estadoHtml = match ((int) $row->estado_prestamo) {
                     0 => '<span class="loan-pill loan-pill--warning">PRESTADO</span>',
                     1 => '<span class="loan-pill loan-pill--success">DEVUELTO</span>',
                     2 => '<span class="loan-pill loan-pill--danger">TARDANZA</span>',
                     3 => '<span class="loan-pill loan-pill--dark">DETERIORO</span>',
                     default => '<span class="loan-pill loan-pill--neutral">--</span>',
                 };
+
+                $lugarHtml = (int) ($row->prestamo_lugar ?? 0) === 1
+                    ? '<span class="loan-pill loan-pill--info loan-pill--sm">A CASA</span>'
+                    : '<span class="loan-pill loan-pill--info loan-pill--sm">EN SALA</span>';
+
+                return '<div class="loan-status-stack">' . $estadoHtml . $lugarHtml . '</div>';
             })
             ->addColumn('prestamo_lugar', function ($row) {
                 return (int) ($row->prestamo_lugar ?? $row->prestamo ?? 0) === 1
@@ -127,7 +172,33 @@ class PrestamoController extends Controller
                     </button>'
                     : '';
             })
-            ->rawColumns(['acciones', 'fecha_prestamo', 'fecha_limite', 'libro', 'ejemplar', 'lector', 'estado', 'estado_prestamo', 'prestamo_lugar'])
+            ->filterColumn('lector', function ($query, $keyword) {
+                $query->whereHas('lector', function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%")
+                      ->orWhere('email', 'like', "%{$keyword}%")
+                      ->orWhereHas('persona', function ($p) use ($keyword) {
+                          $p->where('dni', 'like', "%{$keyword}%")
+                            ->orWhere('codigo_institucional', 'like', "%{$keyword}%")
+                            ->orWhere('nombres', 'like', "%{$keyword}%")
+                            ->orWhere('apellido_paterno', 'like', "%{$keyword}%")
+                            ->orWhere('apellido_materno', 'like', "%{$keyword}%");
+                      });
+                });
+            })
+            ->filterColumn('libro', function ($query, $keyword) {
+                $query->whereHas('ejemplar.libro', function ($q) use ($keyword) {
+                    $q->where('titulo', 'like', "%{$keyword}%")
+                      ->orWhere('isbn', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('ejemplar', function ($query, $keyword) {
+                $query->whereHas('ejemplar', function ($q) use ($keyword) {
+                    $q->where('codigo_ant', 'like', "%{$keyword}%")
+                      ->orWhere('codigo_dewey', 'like', "%{$keyword}%")
+                      ->orWhere('codigo_interno', 'like', "%{$keyword}%");
+                });
+            })
+            ->rawColumns(['acciones', 'fechas', 'fecha_prestamo', 'fecha_limite', 'libro', 'ejemplar', 'lector', 'estado', 'estado_prestamo', 'prestamo_lugar'])
             ->toJson();
     }
 

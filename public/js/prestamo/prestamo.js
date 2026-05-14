@@ -82,13 +82,12 @@ $(document).ready(function () {
         },
 
         columns: [
-            { data: 'fecha_prestamo', name: 'fecha_prestamo', className: 'loan-col loan-col--date' },
-            { data: 'fecha_limite', name: 'fecha_limite', className: 'loan-col loan-col--date' },
-            { data: 'libro', name: 'libro', className: 'loan-col loan-col--book' },
-            { data: 'ejemplar', name: 'ejemplar', className: 'loan-col loan-col--code' },
-            { data: 'lector', name: 'lector', className: 'loan-col loan-col--reader' },
-            { data: 'estado_prestamo', name: 'estado_prestamo', className: 'loan-col loan-col--badge' },
-            { data: 'estado', name: 'estado', className: 'loan-col loan-col--badge' },
+            { data: 'fechas',         name: 'fecha_prestamo',  className: 'loan-col loan-col--date',   searchable: false },
+            { data: 'libro',          name: 'libro',           className: 'loan-col loan-col--book' },
+            { data: 'ejemplar',       name: 'ejemplar',        className: 'loan-col loan-col--code' },
+            { data: 'lector',         name: 'lector',          className: 'loan-col loan-col--reader' },
+            { data: 'estado_prestamo',name: 'estado_prestamo', className: 'loan-col loan-col--status', searchable: false, orderable: false },
+            { data: 'estado',         name: 'estado',          className: 'loan-col loan-col--badge',  searchable: false, orderable: false },
             {
                 data: 'acciones',
                 name: 'acciones',
@@ -123,8 +122,12 @@ $(document).ready(function () {
 
         let data = tabla.row(tr).data();
         $('#prestamo_id').val(data.id);
-        $('#libro_nombre').text($('<div>').html(data.libro).text());
-        $('#ejemplar_codigo').text($('<div>').html(data.ejemplar).text());
+
+        let libroEl = $('<div>').html(data.libro);
+        $('#libro_nombre').text(libroEl.find('.loan-table__book').text() || libroEl.text());
+
+        let ejemplarEl = $('<div>').html(data.ejemplar);
+        $('#ejemplar_codigo').text(ejemplarEl.find('.loan-table__code').text() || ejemplarEl.text());
 
         let ahora = new Date();
         let fechaLimite = new Date(data.fecha_limite_raw);

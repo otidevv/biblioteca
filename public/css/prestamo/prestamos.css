@@ -182,7 +182,7 @@
 
 .loan-register__table th.loan-col--date,
 .loan-register__table td.loan-col--date {
-    width: 11%;
+    width: 12%;
 }
 
 .loan-register__table th.loan-col--book,
@@ -192,17 +192,22 @@
 
 .loan-register__table th.loan-col--code,
 .loan-register__table td.loan-col--code {
-    width: 12%;
+    width: 14%;
 }
 
 .loan-register__table th.loan-col--reader,
 .loan-register__table td.loan-col--reader {
-    width: 17%;
+    width: 16%;
+}
+
+.loan-register__table th.loan-col--status,
+.loan-register__table td.loan-col--status {
+    width: 13%;
 }
 
 .loan-register__table th.loan-col--badge,
 .loan-register__table td.loan-col--badge {
-    width: 12%;
+    width: 13%;
 }
 
 .loan-register__table th.loan-col--actions,
@@ -241,6 +246,84 @@
     display: block;
     white-space: normal;
     word-break: break-word;
+}
+
+.loan-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.loan-dates__row {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+}
+
+.loan-dates__row--limit {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.loan-table__bib {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 11.5px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.loan-table__reader-sub {
+    display: block;
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.loan-lector-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+.loan-lector-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #475569;
+    letter-spacing: .02em;
+    white-space: nowrap;
+}
+
+.loan-lector-badge--code {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.loan-status-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.loan-pill--sm {
+    min-height: 20px;
+    padding: 2px 8px;
+    font-size: 10px;
 }
 
 .loan-pill {
@@ -312,6 +395,29 @@
     color: #111827;
 }
 
+.loan-register__modal-header .btn-close,
+#modalPrestamoDirecto .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: .8;
+    transition: opacity .15s ease;
+}
+
+.loan-register__modal-header .btn-close:hover,
+#modalPrestamoDirecto .modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.admin-dark .loan-register__modal-header .btn-close,
+.admin-dark #modalPrestamoDirecto .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: .75;
+}
+
+.admin-dark .loan-register__modal-header .btn-close:hover,
+.admin-dark #modalPrestamoDirecto .modal-header .btn-close:hover {
+    opacity: 1;
+}
+
 .loan-register__modal-dialog {
     max-width: 760px;
 }
@@ -347,6 +453,7 @@
     margin: 6px 0 0;
     font-size: 24px;
     font-weight: 800;
+    color: #f8fafc;
 }
 
 .loan-register__modal-kicker {
@@ -497,6 +604,26 @@
 .admin-dark .loan-table__code,
 .admin-dark .loan-table__date {
     color: #f8fafc;
+}
+
+.admin-dark .loan-dates__row {
+    color: #f1f5f9;
+}
+
+.admin-dark .loan-dates__row--limit,
+.admin-dark .loan-table__bib,
+.admin-dark .loan-table__reader-sub {
+    color: #94a3b8;
+}
+
+.admin-dark .loan-lector-badge {
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+}
+
+.admin-dark .loan-lector-badge--code {
+    background: rgba(37, 99, 235, 0.2);
+    color: #93c5fd;
 }
 
 @media (max-width: 991.98px) {
