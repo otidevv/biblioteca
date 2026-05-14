@@ -92,6 +92,25 @@ $(document).ready(function () {
             });
     }
 
+    // Construye los parámetros manualmente para evitar problemas con
+    // el <select> oculto que Select2 reemplaza al serializar el form.
+    function buildParams() {
+        const params = new URLSearchParams();
+        const titulo = $('#titulo').val().trim();
+        if (titulo) params.set('titulo', titulo);
+
+        const autorId = $('#autor_id').val();
+        if (autorId) params.set('autor_id', autorId);
+
+        const idiomaId = $('#idioma_id').val();
+        if (idiomaId) params.set('idioma_id', idiomaId);
+
+        const materiaId = $('#materia_id').val();
+        if (materiaId) params.set('materia_id', materiaId);
+
+        return params.toString();
+    }
+
     inicializarSelect2();
 
     $('#titulo').on('input', function () {
@@ -100,16 +119,23 @@ $(document).ready(function () {
 
         if (valor.length === 0 || valor.length >= 2) {
             debounceTimer = setTimeout(function () {
-                const url = $form.attr('action') + '?' + $form.serialize();
+                const url = $form.attr('action') + '?' + buildParams();
                 cargarLibros(url);
             }, 500);
         }
     });
 
+    // select2:select fires after the value is set; select2:clear fires after clearing with X
+    $('#autor_id, #idioma_id, #materia_id').on('select2:select select2:clear', function () {
+        clearTimeout(debounceTimer);
+        const url = $form.attr('action') + '?' + buildParams();
+        cargarLibros(url);
+    });
+
     $form.on('submit', function (e) {
         e.preventDefault();
         clearTimeout(debounceTimer);
-        const url = $(this).attr('action') + '?' + $(this).serialize();
+        const url = $(this).attr('action') + '?' + buildParams();
         cargarLibros(url);
     });
 

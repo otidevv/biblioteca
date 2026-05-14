@@ -25,6 +25,7 @@ class PaginaController extends Controller
         $q = $request->get('q');
         $autores = Autor::query()
             ->when($q, fn($query) => $query->where('nombres','like',"%$q%")->orWhere('apellidos','like',"%$q%"))
+            ->whereHas('libros', fn($libros) => $libros->whereHas('ejemplares', fn($ej) => $ej->whereNotNull('biblioteca_id')))
             ->limit(20)
             ->get();
 
