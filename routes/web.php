@@ -260,6 +260,9 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('reservas/listar', [ApiReservacionController::class, 'listar']);
             Route::post('reserva/{id}/entregar', [ApiReservacionController::class, 'entregar']);
             Route::post('reserva/{id}/cancelar', [ApiReservacionController::class, 'cancelarReservaAdmin']);
+            Route::get('ejemplares/disponibles', [ApiPrestamoController::class, 'buscarEjemplaresDisponibles']);
+            Route::get('bibliotecas/accesibles', [ApiPrestamoController::class, 'biblioteacasAccesibles']);
+            Route::post('prestamo/directo', [ApiPrestamoController::class, 'prestamoDirecto']);
             Route::get('prestamos/listar', [ApiPrestamoController::class, 'listar']);
             Route::get('{id}/preview-sancion', [ApiPrestamoController::class, 'previewSancion']);
             Route::post('{id}/devolver', [ApiPrestamoController::class, 'devolver']);

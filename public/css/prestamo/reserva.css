@@ -62,6 +62,12 @@
     white-space: nowrap;
 }
 
+/* Variante inline: debajo del título en la celda libro */
+.rsv-code-badge--inline {
+    display: inline-flex;
+    margin-top: 4px;
+}
+
 /* ── Celda lector ── */
 .rsv-reader-cell {
     display: flex;

@@ -136,11 +136,13 @@
                 <span class="rsv-modal-ctx-label">Libro</span>
                 <strong id="rsv-ctx-libro" class="rsv-modal-ctx-value">—</strong>
 
-                {{-- Badges: código, ISBN, edición --}}
+                {{-- Badges: código interno, ISBN, edición, ejemplar --}}
                 <div class="rsv-book-meta">
-                  <span id="rsv-ctx-codigo"  class="rsv-book-meta-badge rsv-book-meta-badge--code d-none"></span>
-                  <span id="rsv-ctx-isbn"    class="rsv-book-meta-badge rsv-book-meta-badge--isbn d-none"></span>
-                  <span id="rsv-ctx-edicion" class="rsv-book-meta-badge rsv-book-meta-badge--edition d-none"></span>
+                  <span id="rsv-ctx-codigo-ant" class="rsv-book-meta-badge rsv-book-meta-badge--code d-none"></span>
+                  <span id="rsv-ctx-codigo"     class="rsv-book-meta-badge rsv-book-meta-badge--code d-none"></span>
+                  <span id="rsv-ctx-isbn"       class="rsv-book-meta-badge rsv-book-meta-badge--isbn d-none"></span>
+                  <span id="rsv-ctx-edicion"    class="rsv-book-meta-badge rsv-book-meta-badge--edition d-none"></span>
+                  <span id="rsv-ctx-ejemplar"   class="rsv-book-meta-badge rsv-book-meta-badge--code d-none"></span>
                 </div>
 
                 {{-- Autores --}}

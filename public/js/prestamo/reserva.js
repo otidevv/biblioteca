@@ -108,14 +108,16 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '.entregarReserva', function () {
-        let id       = $(this).data('id');
-        let libro    = $(this).data('libro')   || '—';
-        let lector   = $(this).data('lector')  || '—';
-        let tipo     = $(this).data('tipo')    || '—';
-        let codigo   = $(this).data('codigo')  || '';
-        let isbn     = $(this).data('isbn')    || '';
-        let edicion  = $(this).data('edicion') || '';
-        let autores  = $(this).data('autores') || '';
+        let id        = $(this).data('id');
+        let libro     = $(this).data('libro')      || '—';
+        let lector    = $(this).data('lector')     || '—';
+        let tipo      = $(this).data('tipo')       || '—';
+        let codigo    = $(this).data('codigo')     || '';
+        let codigoAnt = $(this).data('codigo-ant') || '';
+        let isbn      = $(this).data('isbn')       || '';
+        let edicion   = $(this).data('edicion')    || '';
+        let autores   = $(this).data('autores')    || '';
+        let ejemplar  = $(this).data('ejemplar')   || '';
 
         $('#reserva_id').val(id);
         $('#dias').val('');
@@ -125,8 +127,13 @@ $(document).ready(function () {
         $('#rsv-ctx-libro').text(libro);
 
         // Badges de metadatos
+        if (codigoAnt) {
+            $('#rsv-ctx-codigo-ant').html('<i class="bi bi-hash me-1"></i>Cód. interno: ' + codigoAnt).removeClass('d-none');
+        } else {
+            $('#rsv-ctx-codigo-ant').addClass('d-none');
+        }
         if (codigo) {
-            $('#rsv-ctx-codigo').text('Cód: ' + codigo).removeClass('d-none');
+            $('#rsv-ctx-codigo').text('Cód. libro: ' + codigo).removeClass('d-none');
         } else {
             $('#rsv-ctx-codigo').addClass('d-none');
         }
@@ -139,6 +146,11 @@ $(document).ready(function () {
             $('#rsv-ctx-edicion').text(edicion).removeClass('d-none');
         } else {
             $('#rsv-ctx-edicion').addClass('d-none');
+        }
+        if (ejemplar) {
+            $('#rsv-ctx-ejemplar').html('<i class="bi bi-upc me-1"></i>Ejemplar: ' + ejemplar).removeClass('d-none');
+        } else {
+            $('#rsv-ctx-ejemplar').addClass('d-none');
         }
 
         // Autores

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Biblioteca;
 use App\Models\Ejemplar;
 use App\Models\Prestamo;
+use App\Models\Sancion;
 use App\Models\Usuario_rol_biblioteca;
 use App\Services\SancionAutomaticaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Auth;
 
@@ -250,6 +253,131 @@ class PrestamoController extends Controller
         return response()->json(
             app(SancionAutomaticaService::class)->previsualizarPorPrestamo($prestamo, $estadoLibro, $diasRetraso)
         );
+    }
+
+    public function biblioteacasAccesibles()
+    {
+        if (! auth()->check()) {
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
+        }
+
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario(auth()->id());
+
+        $query = Biblioteca::orderBy('nombre');
+
+        if (! $accesoGlobal) {
+            if ($bibliotecasAsignadas->isEmpty()) {
+                return response()->json([]);
+            }
+            $query->whereIn('id', $bibliotecasAsignadas->all());
+        }
+
+        return response()->json($query->get(['id', 'nombre']));
+    }
+
+    public function buscarEjemplaresDisponibles(Request $request)
+    {
+        if (! auth()->check()) {
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
+        }
+
+        $q = trim((string) $request->input('q', ''));
+        $user = auth()->user();
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
+
+        $bibFiltro = $request->input('biblioteca_id');
+
+        $query = Ejemplar::with(['libro', 'biblioteca'])
+            ->where('estado', 1)
+            ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
+                if ($bibliotecasAsignadas->isEmpty()) {
+                    $q->whereRaw('1 = 0');
+                    return;
+                }
+                $q->whereIn('biblioteca_id', $bibliotecasAsignadas->all());
+            })
+            ->when($bibFiltro, fn ($q) => $q->where('biblioteca_id', $bibFiltro))
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->whereHas('libro', fn ($l) => $l->where('titulo', 'like', "%{$q}%"))
+                        ->orWhere('codigo_ant', 'like', "%{$q}%")
+                        ->orWhere('codigo_dewey', 'like', "%{$q}%");
+                });
+            })
+            ->limit(20)
+            ->get();
+
+        return response()->json($query->map(function ($e) {
+            $codigo = $e->codigo_dewey
+                ? $e->codigo_dewey . ($e->tipo ?? '') . $e->codigo_interno
+                : ($e->codigo_ant ?? '-');
+
+            return [
+                'id'         => $e->id,
+                'libro'      => $e->libro->titulo ?? '—',
+                'codigo'     => $codigo,
+                'biblioteca' => $e->biblioteca->nombre ?? '—',
+            ];
+        }));
+    }
+
+    public function prestamoDirecto(Request $request)
+    {
+        if (! auth()->check()) {
+            return response()->json(['error' => 'Debes iniciar sesión'], 401);
+        }
+
+        $request->validate([
+            'lector_id'      => 'required|exists:users,id',
+            'ejemplar_id'    => 'required|exists:ejemplares,id',
+            'prestamo_lugar' => 'required|integer|in:0,1',
+            'dias'           => 'required|integer|min:1',
+            'observaciones'  => 'nullable|string',
+        ]);
+
+        $resultado = DB::transaction(function () use ($request) {
+            $user = auth()->user();
+            [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
+
+            $ejemplar = Ejemplar::lockForUpdate()->find($request->ejemplar_id);
+
+            if (! $ejemplar || (int) $ejemplar->estado !== 1) {
+                return ['status' => 422, 'payload' => ['error' => 'El ejemplar ya no está disponible']];
+            }
+
+            if (! $accesoGlobal && ! $bibliotecasAsignadas->contains((int) $ejemplar->biblioteca_id)) {
+                return ['status' => 403, 'payload' => ['error' => 'No tienes acceso a este ejemplar']];
+            }
+
+            $tieneSancion = Sancion::where('user_id', $request->lector_id)
+                ->where('estado', 1)
+                ->whereDate('fecha_fin', '>=', now()->toDateString())
+                ->exists();
+
+            if ($tieneSancion) {
+                return ['status' => 422, 'payload' => ['error' => 'El lector tiene una sanción vigente y no puede recibir préstamos']];
+            }
+
+            $prestamo = new Prestamo;
+            $prestamo->lector_id      = $request->lector_id;
+            $prestamo->prestamo_lugar = $request->prestamo_lugar;
+            $prestamo->duracion       = $request->dias;
+            $prestamo->fecha_prestamo = now();
+            $prestamo->fecha_limite   = now()->addDays($request->dias);
+            $prestamo->observaciones_prestamo = $request->observaciones;
+            $prestamo->ejemplar_id    = $request->ejemplar_id;
+            $prestamo->estado         = 1;
+            $prestamo->estado_prestamo = 0;
+            $prestamo->user_id        = $user->id;
+            $prestamo->save();
+
+            $ejemplar->estado = 0;
+            $ejemplar->save();
+
+            return ['status' => 200, 'payload' => ['success' => 'Préstamo registrado correctamente']];
+        });
+
+        return response()->json($resultado['payload'], $resultado['status']);
     }
 
     private function resolverBibliotecasUsuario(int $userId): array

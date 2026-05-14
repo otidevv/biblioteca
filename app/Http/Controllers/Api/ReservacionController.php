@@ -64,11 +64,19 @@ class ReservacionController extends Controller
                 return '<span class="countdown reservation-countdown" data-seconds="'.$diff.'"></span>';
             })
             ->addColumn('libro', function ($row) {
-                $titulo = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
+                $titulo    = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
+                $codigoAnt = $row->ejemplar->libro->codigo_ant ?? '';
+
+                $codigoBadge = $codigoAnt
+                    ? '<span class="rsv-code-badge rsv-code-badge--inline"><i class="bi bi-hash"></i> ' . e($codigoAnt) . '</span>'
+                    : '';
 
                 return '<div class="rsv-book-cell">
                     <div class="rsv-book-icon"><i class="bi bi-book-half"></i></div>
-                    <span class="rsv-book-title" title="' . e($titulo) . '">' . e($titulo) . '</span>
+                    <div>
+                        <span class="rsv-book-title" title="' . e($titulo) . '">' . e($titulo) . '</span>
+                        ' . $codigoBadge . '
+                    </div>
                 </div>';
             })
             ->addColumn('ejemplar', function ($row) {
@@ -111,6 +119,7 @@ class ReservacionController extends Controller
                 $lector      = e($row->lector->name ?? '');
                 $tipo        = (int) $row->prestamo === 1 ? 'A CASA' : 'EN SALA';
                 $codigo      = e($libro->codigo ?: ($libro->codigo_dewey ?: ''));
+                $codigoAnt   = e($libro->codigo_ant ?? '');
                 $isbn        = e($libro->isbn ?? '');
                 $edicionParts = array_filter([$libro->edicion, $libro->anio_edicion]);
                 $edicion     = e(implode(' · ', $edicionParts));
@@ -131,6 +140,7 @@ class ReservacionController extends Controller
                             data-lector="'.$lector.'"
                             data-tipo="'.$tipo.'"
                             data-codigo="'.$codigo.'"
+                            data-codigo-ant="'.$codigoAnt.'"
                             data-isbn="'.$isbn.'"
                             data-edicion="'.$edicion.'"
                             data-autores="'.$autores.'"

@@ -53,6 +53,9 @@
                     <h2 class="admin-panel__title">Prestamos en curso</h2>
                     <p class="admin-panel__copy">La tabla permite buscar rapidamente por fecha, lector, libro o estado y abrir el flujo de devolucion sin salir del modulo.</p>
                 </div>
+                <button class="btn btn-primary" id="btnNuevoPrestamoDirecto" type="button">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo préstamo
+                </button>
             </div>
 
             <div class="loan-register__table-wrap admin-table-shell table-responsive">
@@ -77,6 +80,158 @@
 @endsection
 
 @section('modal')
+
+{{-- Modal: Nuevo préstamo directo --}}
+<div class="modal fade" id="modalPrestamoDirecto" tabindex="-1" aria-labelledby="pdModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+
+      <div class="modal-header" style="background:var(--admin-accent,#2563eb);color:#fff;">
+        <div>
+          <span style="font-size:.75rem;opacity:.8;display:block;letter-spacing:.05em;">CIRCULACIÓN DIRECTA</span>
+          <h5 class="modal-title mb-0" id="pdModalTitle">Nuevo préstamo</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      {{-- Indicador de pasos --}}
+      <div class="d-flex border-bottom" id="pd-steps-bar">
+        <div class="pd-step-tab active flex-fill text-center py-2 px-1" data-step="1">
+          <small class="d-block text-muted pd-step-num">Paso 1</small>
+          <strong class="pd-step-label" style="font-size:.85rem;">Lector</strong>
+        </div>
+        <div class="pd-step-tab flex-fill text-center py-2 px-1" data-step="2">
+          <small class="d-block text-muted pd-step-num">Paso 2</small>
+          <strong class="pd-step-label" style="font-size:.85rem;">Ejemplar</strong>
+        </div>
+        <div class="pd-step-tab flex-fill text-center py-2 px-1" data-step="3">
+          <small class="d-block text-muted pd-step-num">Paso 3</small>
+          <strong class="pd-step-label" style="font-size:.85rem;">Detalles</strong>
+        </div>
+      </div>
+
+      {{-- Paso 1: buscar lector --}}
+      <div class="modal-body pd-step-body" id="pd-body-1">
+        <p class="text-muted mb-3">Ingresa el nombre, DNI o correo del estudiante para buscarlo en el sistema.</p>
+        <div class="input-group mb-3">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" id="pd-lector-q" class="form-control" placeholder="Nombre, DNI o correo...">
+          <button class="btn btn-outline-secondary" id="pd-lector-buscar" type="button">Buscar</button>
+        </div>
+        <div id="pd-lector-results"></div>
+        <div id="pd-lector-sel" class="d-none mt-2 p-3 rounded border border-success bg-success bg-opacity-10">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-check-fill text-success fs-5"></i>
+            <div>
+              <strong id="pd-lector-sel-nombre"></strong>
+              <small class="text-muted d-block" id="pd-lector-sel-info"></small>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="pd-lector-cambiar">
+              <i class="bi bi-x"></i> Cambiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {{-- Paso 2: buscar ejemplar --}}
+      <div class="modal-body pd-step-body d-none" id="pd-body-2">
+        <p class="text-muted mb-3">Escribe el título del libro o el código del ejemplar para ver los disponibles.</p>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-5">
+            <label class="form-label fw-semibold small mb-1">Filtrar por biblioteca</label>
+            <select id="pd-filtro-bib" class="form-select form-select-sm">
+              <option value="">Todas las bibliotecas</option>
+            </select>
+          </div>
+          <div class="col-md-7">
+            <label class="form-label fw-semibold small mb-1">Buscar libro o código</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="pd-libro-q" class="form-control" placeholder="Título del libro o código...">
+              <button class="btn btn-primary" id="pd-libro-buscar" type="button">Buscar</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="pd-libro-results" style="max-height:340px;overflow-y:auto;"></div>
+
+        <div id="pd-ejemplar-sel" class="d-none mt-3 p-3 rounded-3 border border-success bg-success bg-opacity-10">
+          <div class="d-flex align-items-start gap-3">
+            <div class="rounded-2 p-2 bg-success bg-opacity-25 flex-shrink-0">
+              <i class="bi bi-book-half text-success fs-5"></i>
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <strong id="pd-ejemplar-sel-libro" class="d-block"></strong>
+              <div class="d-flex flex-wrap gap-2 mt-1">
+                <span class="badge bg-secondary" id="pd-ejemplar-sel-bib"></span>
+                <code class="text-muted small" id="pd-ejemplar-sel-codigo"></code>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" id="pd-ejemplar-cambiar">
+              <i class="bi bi-x"></i> Cambiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {{-- Paso 3: detalles del préstamo --}}
+      <div class="modal-body pd-step-body d-none" id="pd-body-3">
+        <div class="p-3 rounded mb-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+          <div class="row g-2">
+            <div class="col-sm-6">
+              <small class="text-muted d-block">Lector</small>
+              <strong id="pd-ctx-lector">—</strong>
+            </div>
+            <div class="col-sm-6">
+              <small class="text-muted d-block">Libro / Ejemplar</small>
+              <strong id="pd-ctx-libro">—</strong>
+              <small class="text-muted d-block" id="pd-ctx-codigo"></small>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Días de préstamo</label>
+            <input type="number" id="pd-dias" class="form-control" min="1" placeholder="Ej. 7" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Tipo de préstamo</label>
+            <select id="pd-tipo" class="form-select">
+              <option value="0">En sala</option>
+              <option value="1">A casa</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Fecha límite estimada</label>
+            <input type="text" id="pd-fecha-est" class="form-control" readonly style="background:#f1f5f9;">
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label fw-semibold">Observaciones <span class="fw-normal text-muted">(opcional)</span></label>
+          <textarea id="pd-obs" class="form-control" rows="2" placeholder="Indicaciones relevantes..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" id="pd-btn-prev" disabled>
+          <i class="bi bi-arrow-left me-1"></i> Anterior
+        </button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="pd-btn-next">
+            Siguiente <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+          <button type="button" class="btn btn-success d-none" id="pd-btn-confirm">
+            <i class="bi bi-check-lg me-1"></i> Confirmar préstamo
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="modalPrestamo" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered loan-register__modal-dialog">
     <div class="modal-content shadow-lg border-0 loan-register__modal">
