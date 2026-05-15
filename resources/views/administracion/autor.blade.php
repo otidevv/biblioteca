@@ -37,7 +37,8 @@
             <table id="tabla-autor" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
                 <thead>
                     <tr>
-                        <th>Nombre y apellidos</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
                         <th>Pais</th>
                         <th class="text-center">Acciones</th>
                     </tr>

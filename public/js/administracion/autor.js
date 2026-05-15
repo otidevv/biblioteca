@@ -35,11 +35,8 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'nombres', name: 'nombres', 
-                render: function (data, type, row) {
-                return row.nombres + ' ' + row.apellidos;
-                }
-            },
+            { data: 'nombres', name: 'nombres' },
+            { data: 'apellidos', name: 'apellidos' },
             { data: 'pais', name: 'pais' },
             { 
                 data: 'acciones', 
@@ -65,24 +62,36 @@ $(document).ready(function () {
 
     // EDITAR
     $('#tabla-autor').on('click', '.editarAutor', function () {
-        let data = tabla.row($(this).closest('tr')).data();        
+        let data = tabla.row($(this).closest('tr')).data();
+        $('#formAutor')[0].reset();
         $('#id').val(data.id);
-        $('#tipo_documento').val(data.tipo_documento);
-        $('#nro_documento').val(data.nro_documento);
-        $('#razon_social').val(data.razon_social);
-        $('#responsable').val(data.responsable);
-        $('#telefono').val(data.telefono);
-        $('#direccion').val(data.direccion);
-        $('#web').val(data.web);
-        $('#estado').val(data.estado ?? '');
-        // MARCAR roles del usuario
-            if (data.roles && Array.isArray(data.roles)) {
-                data.roles.forEach(function (rol) {
-                    $('#rol_' + rol.id).prop('checked', true);
-                });
-            }
-
+        $('#nombre').val(data.nombres);
+        $('#apellidos').val(data.apellidos);
+        $('#pais').val(data.pais_id ?? '0').trigger('change');
         $('#modalAutor').modal('show');
+    });
+
+    // ELIMINAR
+    $('#tabla-autor').on('click', '.eliminarAutor', function () {
+        let data = tabla.row($(this).closest('tr')).data();
+        if (!confirm('¿Deseas eliminar al autor "' + data.nombres + ' ' + data.apellidos + '"?')) return;
+
+        $.ajax({
+            url: '/api/autores/' + data.id,
+            type: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': $('input[name="_token"]').val() },
+            success: function (response) {
+                if (response.success) {
+                    alerta('Autor eliminado correctamente', true);
+                    tabla.ajax.reload();
+                } else {
+                    alerta(response.message ?? 'Error al eliminar el autor', false);
+                }
+            },
+            error: function (xhr) {
+                alerta(xhr.responseJSON?.message ?? 'Error al eliminar el autor', false);
+            }
+        });
     });
     $('#formAutor').on('submit', function (e) {
         e.preventDefault();

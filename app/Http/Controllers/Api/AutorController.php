@@ -15,17 +15,19 @@ class AutorController extends Controller
     {
         $query = Autor::with('pais');
 
-        // Filtrar por nombre o apellido
         if ($request->has('search') && !empty($request->search['value'])) {
             $search = $request->search['value'];
             $query->where(function($q) use ($search) {
                 $q->where('nombres', 'like', "%{$search}%")
-                ->orWhere('apellidos', 'like', "%{$search}%");
+                  ->orWhere('apellidos', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(nombres, ' ', apellidos) LIKE ?", ["%{$search}%"])
+                  ->orWhereRaw("CONCAT(apellidos, ' ', nombres) LIKE ?", ["%{$search}%"]);
             });
         }
 
         return DataTables::of($query)
-            ->addColumn('acciones', function($row) {
+            ->addColumn('pais_id', fn($row) => $row->pais)
+            ->addColumn('acciones', function() {
                 return '
                     <div class="dropdown admin-action-menu">
                         <button class="btn admin-action-menu__trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir acciones">
@@ -47,27 +49,35 @@ class AutorController extends Controller
             })
             ->rawColumns(['acciones'])
             ->make(true);
+
     }
     public function nuevo(Request $request)
     {
-        //return $request;
         $request->validate([
-            // AUTOR
-            'nombre'            => 'required|string|max:20',
-            'apellidos'            => 'required|string|max:150',
+            'nombre'     => 'required|string|max:100',
+            'apellidos'  => 'nullable|string|max:150',
+            'pais'       => 'nullable|integer|exists:paises,id',
         ]);
-        //return $request;    
+
+        $existe = Autor::whereRaw('LOWER(nombres) = ?', [strtolower($request->nombre)])
+            ->whereRaw('LOWER(apellidos) = ?', [strtolower($request->apellidos ?? '')])
+            ->exists();
+
+        if ($existe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe un autor registrado con ese nombre y apellidos.',
+            ], 422);
+        }
+
         DB::beginTransaction();
 
         try {
 
-            /** =========================
-             *  AUTOR
-             *  ========================= */
             $autor = Autor::create([
-                'nombres'        => $request->nombre,
-                'apellidos'        => $request->apellidos,
-                'pais'     => $request->pais,
+                'nombres'   => $request->nombre,
+                'apellidos' => $request->apellidos,
+                'pais'      => $request->pais ?: null,
             ]);
             DB::commit();
             return response()->json([
@@ -90,22 +100,32 @@ class AutorController extends Controller
     public function edit(Request $request)
     {
         $request->validate([
-            // AUTOR
-            'id'                => 'required|exists:autores,id',
-            'nombre'            => 'required|string|max:20',
-            'apellidos'            => 'required|string|max:150',
+            'id'         => 'required|exists:autores,id',
+            'nombre'     => 'required|string|max:100',
+            'apellidos'  => 'nullable|string|max:150',
+            'pais'       => 'nullable|integer|exists:paises,id',
         ]);
+
+        $existe = Autor::whereRaw('LOWER(nombres) = ?', [strtolower($request->nombre)])
+            ->whereRaw('LOWER(apellidos) = ?', [strtolower($request->apellidos ?? '')])
+            ->where('id', '!=', $request->id)
+            ->exists();
+
+        if ($existe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe otro autor registrado con ese nombre y apellidos.',
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
 
-            /** =========================
-             *  AUTOR
-             *  ========================= */
             $autor = Autor::where('id', $request->id)->first();
             $autor->update([
-                'nombres'        => $request->nombre,
-                'apellidos'        => $request->apellidos,
-                'pais'     => $request->pais,
+                'nombres'   => $request->nombre,
+                'apellidos' => $request->apellidos,
+                'pais'      => $request->pais ?: null,
             ]);
             DB::commit();
             return response()->json([
@@ -123,12 +143,14 @@ class AutorController extends Controller
         }
     }
 
-    public function destroy(Request $request)
+    public function destroy(int $id)
     {
-        $request->validate([
-            'id' => 'required|exists:autores,id',
-        ]);
-        $autor = Autor::where('id', $request->id)->first();
+        $autor = Autor::find($id);
+
+        if (!$autor) {
+            return response()->json(['success' => false, 'message' => 'Autor no encontrado'], 404);
+        }
+
         $autor->delete();
 
         return response()->json([
