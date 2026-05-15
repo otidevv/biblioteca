@@ -91,11 +91,11 @@
                             <button type="button" class="btn btn-primary" id="btnNuevaEditorial">+</button>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 form-group form-optional">
                         <label>Edicion</label>
                         <input type="text" name="edicion" class="form-control" value="{{ optional($libroActual)->edicion ?? '' }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 form-group form-optional">
                         <label>Anio edicion</label>
                         <input type="number" name="anio_edicion" class="form-control" value="{{ optional($libroActual)->anio_edicion ?? '' }}">
                     </div>
@@ -112,15 +112,15 @@
                         <label>Paginas</label>
                         <input type="number" name="paginas" class="form-control" value="{{ optional($libroActual)->paginas ?? '' }}">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 form-group form-optional">
                         <label>Materias</label>
                         <select name="materias[]" id="materias" class="form-select select2" multiple></select>
                     </div>
-                    <div class="col-md-3 form-group form-required">
+                    <div class="col-md-3 form-group form-optional">
                         <label>Fecha publicacion</label>
                         <input type="date" name="fecha_publicacion" class="form-control" value="{{ optional($libroActual)->fecha_publicacion ?? '' }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 form-group form-optional">
                         <label>Lugar publicacion</label>
                         <input type="text" name="lugar_publicacion" class="form-control" value="{{ optional($libroActual)->lugar_publicacion ?? '' }}">
                     </div>
@@ -175,15 +175,15 @@
                 </div>
 
                 <div class="row g-3">
-                    <div class="col-md-12">
+                    <div class="col-md-12 form-group form-optional">
                         <label>Resumen</label>
                         <textarea name="resumen" rows="4" class="form-control">{{ optional($libroActual)->resumen ?? '' }}</textarea>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 form-group form-optional">
                         <label>Anotaciones</label>
                         <textarea name="anotaciones" rows="4" class="form-control">{{ optional($libroActual)->anotaciones ?? '' }}</textarea>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 form-group form-optional">
                         <label>Palabras clave</label>
                         <textarea name="palabras_clave" rows="4" class="form-control">{{ optional($libroActual)->palabras_clave ?? '' }}</textarea>
                     </div>
@@ -200,14 +200,14 @@
                 </div>
 
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-6 form-group form-optional">
                         <label>Imagen portada</label>
                         <input type="file" name="imagen" id="imagen" class="form-control">
                         <div class="book-form__preview mt-2">
                             <img id="previewImagen" src="{{ optional($libroActual)->imagen ? '/'.optional($libroActual)->imagen : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22280%22 height=%22390%22 viewBox=%220 0 280 390%22%3E%3Crect width=%22280%22 height=%22390%22 rx=%2224%22 fill=%22%23f8fafc%22/%3E%3Cpath d=%22M84 118h112v154H84z%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%228%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%22110%22 cy=%22150%22 r=%2218%22 fill=%22%23cbd5e1%22/%3E%3Cpath d=%22m94 238 32-34 26 24 34-40 26 50H94Z%22 fill=%22%23cbd5e1%22/%3E%3Ctext x=%22140%22 y=%22300%22 text-anchor=%22middle%22 fill=%22%2364758b%22 font-family=%22Arial%22 font-size=%2220%22%3ESin portada%3C/text%3E%3C/svg%3E' }}" alt="Vista previa de portada">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 form-group form-optional">
                         <label>Archivo indice (PDF)</label>
                         <input type="file" name="archivo_indice" id="archivo_indice" class="form-control">
                         <small id="nombrePdf" class="text-muted">{{ basename(optional($libroActual)->archivo_indice ?? '') }}</small>

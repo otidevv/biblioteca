@@ -1491,10 +1491,19 @@
     text-transform: uppercase;
 }
 
-.form-required .form-label::after{
+.form-required .form-label::after,
+.form-required label::after{
     content: ' *';
     display: inline;
     color: red;
+}
+
+.form-optional label::after{
+    content: ' (opcional)';
+    display: inline;
+    color: #6c757d;
+    font-size: 0.82em;
+    font-weight: normal;
 }
 
 .invalid-feedback
