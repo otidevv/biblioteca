@@ -1,88 +1,57 @@
 @if ($paginator->hasPages())
-    <nav class="d-flex justify-items-center justify-content-between">
-        <div class="d-flex justify-content-between flex-fill d-sm-none">
-            <ul class="pagination">
-                {{-- Previous Page Link --}}
-                @if ($paginator->onFirstPage())
-                    <li class="page-item disabled" aria-disabled="true">
-                        <span class="page-link">@lang('pagination.previous')</span>
-                    </li>
-                @else
-                    <li class="page-item">
-                        <a class="page-link" href="{{ $paginator->previousPageUrl() }}" rel="prev">@lang('pagination.previous')</a>
-                    </li>
-                @endif
+<nav class="catalog-pagination" aria-label="Navegación de páginas">
 
-                {{-- Next Page Link --}}
-                @if ($paginator->hasMorePages())
-                    <li class="page-item">
-                        <a class="page-link" href="{{ $paginator->nextPageUrl() }}" rel="next">@lang('pagination.next')</a>
-                    </li>
-                @else
-                    <li class="page-item disabled" aria-disabled="true">
-                        <span class="page-link">@lang('pagination.next')</span>
-                    </li>
-                @endif
-            </ul>
-        </div>
+    <div class="catalog-pagination__info">
+        <i class="bi bi-journals"></i>
+        Mostrando
+        <strong>{{ number_format($paginator->firstItem()) }}</strong>
+        –
+        <strong>{{ number_format($paginator->lastItem()) }}</strong>
+        de
+        <strong>{{ number_format($paginator->total()) }}</strong>
+        libros
+    </div>
 
-        <div class="d-none flex-sm-fill d-sm-flex align-items-sm-center justify-content-sm-between">
-            <div>
-                <p class="small text-muted">
-                    {!! __('Resultados del') !!}
-                    <span class="fw-semibold">{{ $paginator->firstItem() }}</span>
-                    {!! __('al') !!}
-                    <span class="fw-semibold">{{ $paginator->lastItem() }}</span>
-                    {!! __('de') !!}
-                    <span class="fw-semibold">{{ $paginator->total() }}</span>
-                    {!! __('libros ') !!}
-                </p>
-            </div>
+    <div class="catalog-pagination__nav">
+        {{-- Anterior --}}
+        @if ($paginator->onFirstPage())
+            <span class="catalog-page-btn catalog-page-btn--arrow disabled" aria-disabled="true">
+                <i class="bi bi-chevron-left"></i>
+            </span>
+        @else
+            <a class="catalog-page-btn catalog-page-btn--arrow" href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="Página anterior">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        @endif
 
-            <div style="margin-left: 10px;">
-                <ul class="pagination">
-                    {{-- Previous Page Link --}}
-                    @if ($paginator->onFirstPage())
-                        <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
-                            <span class="page-link" aria-hidden="true">&lsaquo;</span>
-                        </li>
+        {{-- Números --}}
+        @foreach ($elements as $element)
+            @if (is_string($element))
+                <span class="catalog-page-btn catalog-page-btn--dots">···</span>
+            @endif
+
+            @if (is_array($element))
+                @foreach ($element as $page => $url)
+                    @if ($page == $paginator->currentPage())
+                        <span class="catalog-page-btn catalog-page-btn--active" aria-current="page">{{ $page }}</span>
                     @else
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="@lang('pagination.previous')">&lsaquo;</a>
-                        </li>
+                        <a class="catalog-page-btn" href="{{ $url }}">{{ $page }}</a>
                     @endif
+                @endforeach
+            @endif
+        @endforeach
 
-                    {{-- Pagination Elements --}}
-                    @foreach ($elements as $element)
-                        {{-- "Three Dots" Separator --}}
-                        @if (is_string($element))
-                            <li class="page-item disabled" aria-disabled="true"><span class="page-link">{{ $element }}</span></li>
-                        @endif
+        {{-- Siguiente --}}
+        @if ($paginator->hasMorePages())
+            <a class="catalog-page-btn catalog-page-btn--arrow" href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="Página siguiente">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        @else
+            <span class="catalog-page-btn catalog-page-btn--arrow disabled" aria-disabled="true">
+                <i class="bi bi-chevron-right"></i>
+            </span>
+        @endif
+    </div>
 
-                        {{-- Array Of Links --}}
-                        @if (is_array($element))
-                            @foreach ($element as $page => $url)
-                                @if ($page == $paginator->currentPage())
-                                    <li class="page-item active" aria-current="page"><span class="page-link">{{ $page }}</span></li>
-                                @else
-                                    <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
-                                @endif
-                            @endforeach
-                        @endif
-                    @endforeach
-
-                    {{-- Next Page Link --}}
-                    @if ($paginator->hasMorePages())
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
-                        </li>
-                    @else
-                        <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.next')">
-                            <span class="page-link" aria-hidden="true">&rsaquo;</span>
-                        </li>
-                    @endif
-                </ul>
-            </div>
-        </div>
-    </nav>
+</nav>
 @endif

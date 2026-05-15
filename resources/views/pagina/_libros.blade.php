@@ -76,8 +76,4 @@
     @endforelse
 </div>
 
-@if($libros->hasPages())
-<div class="d-flex justify-content-center mt-4">
-    {{ $libros->links('vendor.pagination.bootstrap-5') }}
-</div>
-@endif
+{{ $libros->links('vendor.pagination.bootstrap-5') }}
