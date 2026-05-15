@@ -162,6 +162,23 @@ class AutorController extends Controller
             'message' => 'Autor eliminado correctamente',
         ], 200);
     }
+    public function libros(int $id)
+    {
+        $autor = Autor::with(['libros' => fn($q) => $q->orderBy('titulo')])
+            ->findOrFail($id);
+
+        return response()->json([
+            'autor'  => trim($autor->nombres . ' ' . $autor->apellidos),
+            'libros' => $autor->libros->map(fn($l) => [
+                'id'         => $l->id,
+                'titulo'     => $l->titulo,
+                'codigo'     => $l->codigo,
+                'anio'       => $l->anio_edicion,
+                'imagen_url' => $l->imagen_url,
+            ]),
+        ]);
+    }
+
     // metodos para select2 en nuevo libro
     public function listarAutores(Request $request)
     {

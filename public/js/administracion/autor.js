@@ -76,6 +76,48 @@ $(document).ready(function () {
         }
     });
 
+    // VER LIBROS DEL AUTOR
+    $('#tabla-autor').on('click', '.autor-badge:not(.autor-badge--empty)', function () {
+        const data = tabla.row($(this).closest('tr')).data();
+        const $grid = $('#librosAutorGrid');
+        const $vacio = $('#librosAutorVacio');
+
+        $('#modalLibrosAutorNombre').text(data.nombres + ' ' + data.apellidos);
+        $grid.html('<div class="autor-libros-loading"><div class="spinner-border text-warning" role="status"></div></div>');
+        $vacio.addClass('d-none');
+        $grid.removeClass('d-none');
+        $('#modalLibrosAutor').modal('show');
+
+        $.ajax({
+            url: '/api/autores/' + data.id + '/libros',
+            type: 'GET',
+            xhrFields: { withCredentials: true },
+            success: function (response) {
+                const libros = response.libros ?? [];
+                if (!libros.length) {
+                    $grid.addClass('d-none');
+                    $vacio.removeClass('d-none');
+                    return;
+                }
+                $grid.html(libros.map(l => `
+                    <div class="autor-libro-card">
+                        <div class="autor-libro-card__cover">
+                            <img src="${l.imagen_url}" alt="${l.titulo}" loading="lazy">
+                        </div>
+                        <div class="autor-libro-card__body">
+                            <p class="autor-libro-card__titulo">${l.titulo}</p>
+                            <span class="autor-libro-card__codigo"><i class="bi bi-upc"></i>${l.codigo ?? '—'}</span>
+                            ${l.anio ? `<span class="autor-libro-card__anio"><i class="bi bi-calendar3"></i>${l.anio}</span>` : ''}
+                        </div>
+                    </div>
+                `).join(''));
+            },
+            error: function () {
+                $grid.html('<p class="text-danger text-center py-3">Error al cargar los libros.</p>');
+            }
+        });
+    });
+
     // NUEVO
     $('#btnNuevo').on('click', function () {
         $('#formAutor')[0].reset();

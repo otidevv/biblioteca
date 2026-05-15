@@ -51,6 +51,32 @@
 @endsection
 
 @section('modal')
+
+{{-- Modal libros del autor --}}
+<div class="modal fade" id="modalLibrosAutor" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-sm autor-libros-modal">
+            <div class="modal-header autor-libros-modal__header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="autor-libros-modal__icon"><i class="bi bi-book-half"></i></div>
+                    <div>
+                        <p class="autor-libros-modal__eyebrow mb-0">Bibliografía del autor</p>
+                        <h5 class="modal-title fw-bold mb-0" id="modalLibrosAutorNombre"></h5>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body autor-libros-modal__body p-3">
+                <div id="librosAutorGrid" class="autor-libros-grid"></div>
+                <div id="librosAutorVacio" class="autor-libros-vacio d-none">
+                    <i class="bi bi-journal-x"></i>
+                    <p>Este autor no tiene libros registrados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalAutor" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <form id="formAutor" class="modal-content shadow-sm author-modal">

@@ -209,6 +209,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/listar', [ApiAutorController::class, 'listar']);
             Route::post('/nuevo', [ApiAutorController::class, 'nuevo']);
             Route::post('/edit', [ApiAutorController::class, 'edit']);
+            Route::get('/{id}/libros', [ApiAutorController::class, 'libros']);
             Route::delete('/{id}', [ApiAutorController::class, 'destroy']);
         });
         //NUEVOS LIBROS EJEMPLARES
