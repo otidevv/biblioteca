@@ -22,17 +22,26 @@ class PaginaController extends Controller
 
     public function listarAutores(Request $request)
     {
-        $q = $request->get('q');
+        $q = $request->filled('q') ? $request->get('q') : null;
+
         $autores = Autor::query()
-            ->when($q, fn($query) => $query->where('nombres','like',"%$q%")->orWhere('apellidos','like',"%$q%"))
+            ->when($q, function($query) use ($q) {
+                $query->where(function($sub) use ($q) {
+                    $sub->where('nombres', 'like', "%$q%")
+                        ->orWhere('apellidos', 'like', "%$q%")
+                        ->orWhereRaw("CONCAT(nombres, ' ', apellidos) LIKE ?", ["%$q%"])
+                        ->orWhereRaw("CONCAT(apellidos, ' ', nombres) LIKE ?", ["%$q%"]);
+                });
+            })
             ->whereHas('libros', fn($libros) => $libros->whereHas('ejemplares', fn($ej) => $ej->whereNotNull('biblioteca_id')))
+            ->orderBy('nombres')
             ->limit(20)
             ->get();
 
         return response()->json(
             $autores->map(fn($a) => [
-                'id' => $a->id,
-                'text' => $a->nombres.' '.$a->apellidos,
+                'id'   => $a->id,
+                'text' => trim($a->nombres . ' ' . $a->apellidos),
             ])
         );
     }

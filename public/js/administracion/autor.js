@@ -35,9 +35,32 @@ $(document).ready(function () {
             error: default_error_handler        
         },
         columns: [
-            { data: 'nombres', name: 'nombres' },
-            { data: 'apellidos', name: 'apellidos' },
-            { data: 'pais', name: 'pais' },
+            { data: 'nombres', name: 'nombres',
+                render: function(data, type, row) {
+                    if (type !== 'display') return data;
+                    const iniciales = ((row.nombres?.[0] ?? '') + (row.apellidos?.[0] ?? '')).toUpperCase();
+                    return `<div class="autor-cell">
+                                <div class="autor-avatar">${iniciales}</div>
+                                <span class="autor-cell__name">${row.nombres ?? ''}</span>
+                            </div>`;
+                }
+            },
+            { data: 'apellidos', name: 'apellidos',
+                render: data => `<span class="autor-cell__apellido">${data ?? ''}</span>`
+            },
+            { data: 'pais', name: 'pais',
+                render: function(data) {
+                    if (!data) return '<span class="autor-pais--vacio">—</span>';
+                    return `<span class="autor-pais"><i class="bi bi-geo-alt-fill"></i>${data}</span>`;
+                }
+            },
+            { data: 'libros_count', name: 'libros_count', className: 'text-center', searchable: false,
+                render: function(data) {
+                    const n = data ?? 0;
+                    const cls = n === 0 ? 'autor-badge--empty' : n >= 10 ? 'autor-badge--high' : 'autor-badge--normal';
+                    return `<span class="autor-badge ${cls}"><i class="bi bi-book"></i>${n}</span>`;
+                }
+            },
             { 
                 data: 'acciones', 
                 name: 'acciones', 
@@ -129,13 +152,11 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr) {
-                // Limpiar errores previos
                 $('.is-invalid').removeClass('is-invalid');
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    $.each(errors, function (field, messages) {
+                let json = xhr.responseJSON;
+                if (xhr.status === 422 && json.errors) {
+                    $.each(json.errors, function (field, messages) {
                         let input = $('[name="' + field + '"]');
-                        // Campos array (roles[])
                         if (field.includes('.')) {
                             input = $('[name="' + field.split('.')[0] + '[]"]');
                         }
@@ -143,8 +164,7 @@ $(document).ready(function () {
                         alerta(messages[0], false);
                     });
                 } else {
-                    alerta(xhr.responseJSON.message??'Error al guardar al autor', false);
-                    //toastr.error('Error interno del servidor');
+                    alerta(json?.message ?? 'Error al guardar el autor', false);
                 }
             },
             complete: function () {

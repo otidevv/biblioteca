@@ -13,7 +13,7 @@ class AutorController extends Controller
     //
     public function listar(Request $request)
     {
-        $query = Autor::with('pais');
+        $query = Autor::with('pais')->withCount('libros');
 
         if ($request->has('search') && !empty($request->search['value'])) {
             $search = $request->search['value'];
@@ -53,6 +53,8 @@ class AutorController extends Controller
     }
     public function nuevo(Request $request)
     {
+        $request->merge(['pais' => $request->pais ?: null]);
+
         $request->validate([
             'nombre'     => 'required|string|max:100',
             'apellidos'  => 'nullable|string|max:150',
@@ -99,6 +101,8 @@ class AutorController extends Controller
     }
     public function edit(Request $request)
     {
+        $request->merge(['pais' => $request->pais ?: null]);
+
         $request->validate([
             'id'         => 'required|exists:autores,id',
             'nombre'     => 'required|string|max:100',
@@ -161,23 +165,25 @@ class AutorController extends Controller
     // metodos para select2 en nuevo libro
     public function listarAutores(Request $request)
     {
-        $query = Autor::query()->limit(10);;
+        $query = Autor::query()->orderBy('nombres');
 
-        if ($request->has('q')) {
+        if ($request->filled('q')) {
             $search = $request->q;
             $query->where(function($q) use ($search) {
                 $q->where('nombres', 'LIKE', "%$search%")
-                ->orWhere('apellidos', 'LIKE', "%$search%");
-            })->limit(10);
+                  ->orWhere('apellidos', 'LIKE', "%$search%")
+                  ->orWhereRaw("CONCAT(nombres, ' ', apellidos) LIKE ?", ["%$search%"])
+                  ->orWhereRaw("CONCAT(apellidos, ' ', nombres) LIKE ?", ["%$search%"]);
+            });
         }
-        $autores = $query->get(['id', 'nombres', 'apellidos'])->map(function($autor) {
-            return [
-                'id' => $autor->id,
-                'text' => $autor->nombres . ' ' . $autor->apellidos,
-                'nombres' => $autor->nombres,
-                'apellidos' => $autor->apellidos
-            ];
-        });
+
+        $autores = $query->limit(20)->get(['id', 'nombres', 'apellidos'])->map(fn($autor) => [
+            'id'        => $autor->id,
+            'text'      => trim($autor->nombres . ' ' . $autor->apellidos),
+            'nombres'   => $autor->nombres,
+            'apellidos' => $autor->apellidos,
+        ]);
+
         return response()->json($autores);
     }
 }

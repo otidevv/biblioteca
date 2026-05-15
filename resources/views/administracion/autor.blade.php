@@ -40,6 +40,7 @@
                         <th>Nombres</th>
                         <th>Apellidos</th>
                         <th>Pais</th>
+                        <th class="text-center">Libros</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>

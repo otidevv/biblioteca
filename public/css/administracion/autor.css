@@ -119,3 +119,118 @@
         font-size: 20px;
     }
 }
+
+/* ── Tabla de autores ── */
+
+.autor-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.autor-avatar {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.14) 0%, rgba(251, 146, 60, 0.22) 100%);
+    color: #c2410c;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.autor-cell__name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.autor-cell__apellido {
+    color: #334155;
+    font-size: 14px;
+}
+
+.autor-pais {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.autor-pais i {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.autor-pais--vacio {
+    color: #cbd5e1;
+    font-size: 15px;
+}
+
+.autor-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.autor-badge i {
+    font-size: 11px;
+}
+
+.autor-badge--empty {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.autor-badge--normal {
+    background: rgba(234, 88, 12, 0.1);
+    color: #c2410c;
+}
+
+.autor-badge--high {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.18) 0%, rgba(251, 146, 60, 0.26) 100%);
+    color: #9a3412;
+    font-weight: 800;
+}
+
+/* Dark mode */
+.admin-dark .autor-cell__name {
+    color: #e2e8f0;
+}
+
+.admin-dark .autor-cell__apellido {
+    color: #94a3b8;
+}
+
+.admin-dark .autor-avatar {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.2) 0%, rgba(251, 146, 60, 0.28) 100%);
+    color: #fb923c;
+}
+
+.admin-dark .autor-pais {
+    color: #94a3b8;
+}
+
+.admin-dark .autor-badge--empty {
+    background: rgba(148, 163, 184, 0.1);
+    color: #64748b;
+}
+
+.admin-dark .autor-badge--normal {
+    background: rgba(234, 88, 12, 0.16);
+    color: #fb923c;
+}
+
+.admin-dark .autor-badge--high {
+    background: rgba(234, 88, 12, 0.24);
+    color: #fdba74;
+}
