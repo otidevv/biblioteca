@@ -4,6 +4,7 @@
             <a href="{{ route('libro.show', $libro->id) }}"
                class="catalog-grid-card"
                aria-label="Ver detalle del libro {{ $libro->titulo }}">
+
                 <div class="catalog-grid-cover-wrap">
                     <img src="{{ $libro->imagen_url }}"
                          alt="{{ $libro->titulo }}"
@@ -11,46 +12,56 @@
                          onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';"
                          loading="lazy"
                          decoding="async">
+                    <span class="catalog-grid-tag">
+                        <i class="bi bi-bookmark-star-fill"></i>
+                        Catálogo
+                    </span>
                 </div>
 
                 <div class="catalog-grid-body">
-                    <span class="catalog-grid-tag">
-                        <i class="bi bi-bookmark-star-fill"></i>
-                        Catalogo
-                    </span>
-
                     <h6 class="catalog-grid-title" title="{{ $libro->titulo }}">
-                        {{ \Illuminate\Support\Str::limit($libro->titulo, 46) }}
+                        {{ \Illuminate\Support\Str::limit($libro->titulo, 52) }}
                     </h6>
 
-                    @php
-                        $codigoMostrar = $libro->codigo ?: ($libro->isbn ?: null);
-                    @endphp
-                    @if($codigoMostrar)
-                        <div class="catalog-grid-code">
-                            <i class="bi bi-upc"></i>
-                            {{ $codigoMostrar }}
-                        </div>
-                    @endif
-
                     <div class="catalog-grid-authors">
-                        @forelse($libro->autores as $autor)
-                            {{ $autor->nombres }} {{ $autor->apellidos }}@if(!$loop->last), @endif
-                        @empty
-                            Autor no disponible
-                        @endforelse
+                        <i class="bi bi-person-fill catalog-grid-authors__icon"></i>
+                        <span>
+                            @forelse($libro->autores as $autor)
+                                {{ $autor->nombres }} {{ $autor->apellidos }}@if(!$loop->last), @endif
+                            @empty
+                                Autor no disponible
+                            @endforelse
+                        </span>
+                    </div>
+
+                    <div class="catalog-grid-codes">
+                        @if($libro->codigo_ant)
+                            <div class="catalog-grid-code">
+                                <i class="bi bi-archive-fill"></i>
+                                {{ $libro->codigo_ant }}
+                            </div>
+                        @endif
+                        @php $codigoMostrar = $libro->codigo ?: ($libro->isbn ?: null); @endphp
+                        @if($codigoMostrar)
+                            <div class="catalog-grid-code catalog-grid-code--secondary">
+                                <i class="bi bi-upc"></i>
+                                {{ $codigoMostrar }}
+                            </div>
+                        @endif
                     </div>
 
                     <div class="catalog-grid-rating">
                         <x-rating-stars :rating="$libro->rating_promedio" :count="$libro->comentarios_count" />
                     </div>
 
-                    <div class="catalog-grid-meta">
-                        <small>
-                            <i class="bi bi-file-text-fill me-1"></i>
-                            Disponible en catalogo
-                        </small>
-                        <span class="catalog-grid-button">Ver detalle</span>
+                    <div class="catalog-grid-footer">
+                        <span class="catalog-grid-avail">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Disponible
+                        </span>
+                        <span class="catalog-grid-button">
+                            Ver detalle <i class="bi bi-arrow-right-short"></i>
+                        </span>
                     </div>
                 </div>
             </a>
