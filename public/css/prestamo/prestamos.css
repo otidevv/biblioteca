@@ -232,6 +232,7 @@
 .loan-table__reader {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     color: #0f172a;
@@ -416,6 +417,482 @@
 .admin-dark .loan-register__modal-header .btn-close:hover,
 .admin-dark #modalPrestamoDirecto .modal-header .btn-close:hover {
     opacity: 1;
+}
+
+/* ── Indicador de pasos ── */
+.pd-steps-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(148, 163, 184, .14);
+    gap: 0;
+    background: #fafbfc;
+}
+
+.pd-step-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    transition: opacity .2s;
+}
+
+.pd-step-tab:not(.pd-step--active):not(.pd-step--done) {
+    opacity: .45;
+}
+
+.pd-step-bubble {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    border: 2px solid #cbd5e1;
+    background: #f8fafc;
+    color: #64748b;
+    transition:
+        background .25s ease,
+        border-color .25s ease,
+        color .2s ease,
+        transform .25s cubic-bezier(.34, 1.56, .64, 1),
+        box-shadow .25s ease;
+}
+
+.pd-step--active .pd-step-bubble {
+    background: var(--admin-accent, #2563eb);
+    border-color: var(--admin-accent, #2563eb);
+    color: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 5px rgba(37, 99, 235, .15);
+}
+
+.pd-step--done .pd-step-bubble {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+    transform: scale(1);
+}
+
+.pd-step--done {
+    opacity: 1;
+}
+
+.pd-step-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+}
+
+.pd-step-num {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+.pd-step--active .pd-step-num {
+    color: var(--admin-accent, #2563eb);
+}
+
+.pd-step--done .pd-step-num {
+    color: #16a34a;
+}
+
+.pd-step-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pd-step--active .pd-step-label {
+    color: #0f172a;
+}
+
+.pd-step--done .pd-step-label {
+    color: #15803d;
+}
+
+.pd-step-connector {
+    flex: 1;
+    height: 2px;
+    border-radius: 1px;
+    background: #e2e8f0;
+    margin: 0 10px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.pd-step-connector::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #22c55e;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .4s ease;
+}
+
+.pd-step--done + .pd-step-connector::after {
+    transform: scaleX(1);
+}
+
+/* ── Intro de cada paso ── */
+.pd-body-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    margin-bottom: 16px;
+    color: #0369a1;
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+.pd-body-intro i {
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* ── Items de resultado (lector / ejemplar) ── */
+.pd-results-wrap {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.pd-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background .15s, padding-left .15s;
+}
+
+.pd-result-item:last-child {
+    border-bottom: 0;
+}
+
+.pd-result-item:hover {
+    background: #f0f7ff;
+    padding-left: 18px;
+}
+
+.pd-result-item:active {
+    background: #dbeafe;
+}
+
+.pd-result-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, .1);
+    color: var(--admin-accent, #2563eb);
+    font-size: 17px;
+    transition: background .15s;
+}
+
+.pd-result-item:hover .pd-result-avatar {
+    background: rgba(37, 99, 235, .18);
+}
+
+.pd-result-avatar--book {
+    border-radius: 10px;
+    background: rgba(16, 185, 129, .1);
+    color: #059669;
+}
+
+.pd-result-item:hover .pd-result-avatar--book {
+    background: rgba(16, 185, 129, .2);
+}
+
+.pd-result-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.pd-result-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pd-result-sub {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.pd-result-chevron {
+    color: #cbd5e1;
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: transform .15s, color .15s;
+}
+
+.pd-result-item:hover .pd-result-chevron {
+    transform: translateX(4px);
+    color: var(--admin-accent, #2563eb);
+}
+
+.pd-result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #dcfce7;
+    color: #15803d;
+    flex-shrink: 0;
+    align-self: flex-start;
+    white-space: nowrap;
+}
+
+/* dark mode – pasos + resultados */
+.admin-dark .pd-steps-bar {
+    background: rgba(15, 23, 42, .5);
+    border-color: rgba(148, 163, 184, .12);
+}
+
+.admin-dark .pd-step-bubble {
+    background: rgba(30, 41, 59, .9);
+    border-color: #475569;
+    color: #94a3b8;
+}
+
+.admin-dark .pd-step-label {
+    color: #cbd5e1;
+}
+
+.admin-dark .pd-step-connector {
+    background: #334155;
+}
+
+.admin-dark .pd-body-intro {
+    background: rgba(3, 105, 161, .12);
+    border-color: rgba(186, 230, 253, .18);
+    color: #7dd3fc;
+}
+
+.admin-dark .pd-results-wrap {
+    border-color: rgba(148, 163, 184, .15);
+    background: rgba(15, 23, 42, .6);
+}
+
+.admin-dark .pd-result-item {
+    border-color: rgba(148, 163, 184, .08);
+}
+
+.admin-dark .pd-result-item:hover {
+    background: rgba(37, 99, 235, .1);
+}
+
+.admin-dark .pd-result-name {
+    color: #f1f5f9;
+}
+
+.admin-dark .pd-result-sub {
+    color: #94a3b8;
+}
+
+/* ── Tarjeta de selección (lector / ejemplar elegido) ── */
+.pd-sel-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, .07) 0%, rgba(99, 102, 241, .04) 100%);
+    border: 1px solid rgba(37, 99, 235, .2);
+    border-left: 3px solid var(--admin-accent, #2563eb);
+}
+
+.pd-sel-card__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, .12);
+    color: var(--admin-accent, #2563eb);
+}
+
+.pd-sel-card__avatar--book {
+    border-radius: 10px;
+    background: rgba(99, 102, 241, .12);
+    color: #6366f1;
+}
+
+.pd-sel-card__name {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pd-sel-card__sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.pd-sel-card__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: rgba(37, 99, 235, .1);
+    color: var(--admin-accent, #2563eb);
+}
+
+.pd-sel-card__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 9px;
+    border: 1px solid rgba(37, 99, 235, .25);
+    background: rgba(37, 99, 235, .07);
+    color: var(--admin-accent, #2563eb);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s, transform .12s;
+}
+
+.pd-sel-card__btn:hover {
+    background: rgba(37, 99, 235, .14);
+    border-color: rgba(37, 99, 235, .4);
+}
+
+.pd-sel-card__btn:active {
+    transform: scale(.96);
+}
+
+/* dark mode */
+.admin-dark .pd-sel-card {
+    background: rgba(37, 99, 235, .1);
+    border-color: rgba(37, 99, 235, .28);
+}
+
+.admin-dark .pd-sel-card__name {
+    color: #f1f5f9;
+}
+
+.admin-dark .pd-sel-card__sub {
+    color: #94a3b8;
+}
+
+.admin-dark .pd-sel-card__tag {
+    background: rgba(37, 99, 235, .18);
+    color: #93c5fd;
+}
+
+.admin-dark .pd-sel-card__btn {
+    background: rgba(37, 99, 235, .12);
+    border-color: rgba(37, 99, 235, .3);
+    color: #93c5fd;
+}
+
+.admin-dark .pd-sel-card__btn:hover {
+    background: rgba(37, 99, 235, .22);
+}
+
+/* responsive – pasos en pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .pd-step-info {
+        display: none;
+    }
+    .pd-step-tab {
+        flex: 0 0 auto;
+        justify-content: center;
+    }
+    .pd-step-connector {
+        flex: 1;
+        margin: 0 6px;
+    }
+    .pd-steps-bar {
+        padding: 14px 16px;
+        justify-content: center;
+    }
+}
+
+/* ── Botón cerrar personalizado: modal Nuevo Préstamo ── */
+.pd-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pd-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1.5px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .22s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.pd-modal-close:hover {
+    background: rgba(255, 255, 255, 0.26);
+    border-color: rgba(255, 255, 255, 0.55);
+    transform: rotate(90deg);
+}
+
+.pd-modal-close:active {
+    background: rgba(255, 255, 255, 0.38);
+    transform: rotate(90deg) scale(.9);
+    transition-duration: .08s;
+}
+
+.pd-modal-close:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
 }
 
 .loan-register__modal-dialog {
@@ -626,11 +1103,36 @@
     color: #93c5fd;
 }
 
+/* ── Scroll hint (oculto en desktop, visible en móvil) ── */
+.loan-register__scroll-hint {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px 2px;
+    font-size: 11.5px;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: .03em;
+    user-select: none;
+}
+
+.loan-register__scroll-hint i {
+    animation: scrollHintBounce .85s ease-in-out infinite alternate;
+}
+
+@keyframes scrollHintBounce {
+    from { transform: translateX(-3px); }
+    to   { transform: translateX(3px); }
+}
+
 @media (max-width: 991.98px) {
-    .loan-register__hero,
-    .loan-register__stats {
-        grid-template-columns: 1fr;
+    .loan-register__hero {
         flex-direction: column;
+    }
+
+    .loan-register__stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .loan-register__summary {
@@ -664,11 +1166,64 @@
         min-width: 100%;
     }
 
+    /* Panel header: título arriba, botón abajo a todo el ancho */
+    .loan-register__panel-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .loan-register__panel-head > .btn {
+        width: 100%;
+        justify-content: center;
+        display: flex;
+    }
+
+    /* Indicador de scroll visible */
+    .loan-register__scroll-hint {
+        display: flex;
+    }
+
     .loan-register__table-wrap {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
     }
 
     .loan-register__table {
         min-width: 820px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .loan-register__stats {
+        grid-template-columns: 1fr;
+    }
+
+    .loan-register__hero {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .loan-register__stat {
+        padding: 13px 15px;
+        border-radius: 14px;
+    }
+
+    .loan-register__stat strong {
+        font-size: 16px;
+    }
+
+    .loan-register__table-wrap {
+        border-radius: 14px;
+    }
+
+    .loan-register__table {
+        min-width: 700px !important;
+    }
+
+    .loan-register__panel-head > .btn {
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
 }

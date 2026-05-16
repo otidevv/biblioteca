@@ -58,7 +58,11 @@
                 </button>
             </div>
 
-            <div class="loan-register__table-wrap admin-table-shell table-responsive">
+            <div class="loan-register__table-wrap admin-table-shell table-responsive" role="region" aria-label="Tabla de préstamos activos">
+                <div class="loan-register__scroll-hint" aria-hidden="true">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Desliza para ver más columnas</span>
+                </div>
                 <table id="tabla-prestamos" class="table table-hover table-bordered align-middle loan-register__table datatable w-100">
                     <thead>
                         <tr>
@@ -85,48 +89,66 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow">
 
-      <div class="modal-header" style="background:var(--admin-accent,#2563eb);color:#fff;">
+      <div class="modal-header pd-modal-header" style="background:var(--admin-accent,#2563eb);color:#fff;">
         <div>
           <span style="font-size:.75rem;opacity:.8;display:block;letter-spacing:.05em;">CIRCULACIÓN DIRECTA</span>
           <h5 class="modal-title mb-0" id="pdModalTitle" style="color:inherit;">Nuevo préstamo</h5>
         </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="pd-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
 
       {{-- Indicador de pasos --}}
-      <div class="d-flex border-bottom" id="pd-steps-bar">
-        <div class="pd-step-tab active flex-fill text-center py-2 px-1" data-step="1">
-          <small class="d-block text-muted pd-step-num">Paso 1</small>
-          <strong class="pd-step-label" style="font-size:.85rem;">Lector</strong>
+      <div class="pd-steps-bar" id="pd-steps-bar">
+        <div class="pd-step-tab pd-step--active" data-step="1">
+          <span class="pd-step-bubble">1</span>
+          <span class="pd-step-info">
+            <span class="pd-step-num">Paso 1</span>
+            <strong class="pd-step-label">Lector</strong>
+          </span>
         </div>
-        <div class="pd-step-tab flex-fill text-center py-2 px-1" data-step="2">
-          <small class="d-block text-muted pd-step-num">Paso 2</small>
-          <strong class="pd-step-label" style="font-size:.85rem;">Ejemplar</strong>
+        <span class="pd-step-connector" aria-hidden="true"></span>
+        <div class="pd-step-tab" data-step="2">
+          <span class="pd-step-bubble">2</span>
+          <span class="pd-step-info">
+            <span class="pd-step-num">Paso 2</span>
+            <strong class="pd-step-label">Ejemplar</strong>
+          </span>
         </div>
-        <div class="pd-step-tab flex-fill text-center py-2 px-1" data-step="3">
-          <small class="d-block text-muted pd-step-num">Paso 3</small>
-          <strong class="pd-step-label" style="font-size:.85rem;">Detalles</strong>
+        <span class="pd-step-connector" aria-hidden="true"></span>
+        <div class="pd-step-tab" data-step="3">
+          <span class="pd-step-bubble">3</span>
+          <span class="pd-step-info">
+            <span class="pd-step-num">Paso 3</span>
+            <strong class="pd-step-label">Detalles</strong>
+          </span>
         </div>
       </div>
 
       {{-- Paso 1: buscar lector --}}
       <div class="modal-body pd-step-body" id="pd-body-1">
-        <p class="text-muted mb-3">Ingresa el nombre, DNI o correo del estudiante para buscarlo en el sistema.</p>
+        <div class="pd-body-intro">
+          <i class="bi bi-person-lines-fill"></i>
+          <span>Ingresa el nombre, DNI o correo del estudiante para buscarlo en el sistema.</span>
+        </div>
         <div class="input-group mb-3">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
           <input type="text" id="pd-lector-q" class="form-control" placeholder="Nombre, DNI o correo...">
           <button class="btn btn-outline-secondary" id="pd-lector-buscar" type="button">Buscar</button>
         </div>
         <div id="pd-lector-results"></div>
-        <div id="pd-lector-sel" class="d-none mt-2 p-3 rounded border border-success bg-success bg-opacity-10">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-person-check-fill text-success fs-5"></i>
-            <div>
-              <strong id="pd-lector-sel-nombre"></strong>
-              <small class="text-muted d-block" id="pd-lector-sel-info"></small>
+        <div id="pd-lector-sel" class="d-none mt-2 pd-sel-card">
+          <div class="d-flex align-items-center gap-3">
+            <div class="pd-sel-card__avatar flex-shrink-0">
+              <i class="bi bi-person-check-fill fs-5"></i>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="pd-lector-cambiar">
-              <i class="bi bi-x"></i> Cambiar
+            <div class="flex-grow-1 min-width-0">
+              <strong class="pd-sel-card__name" id="pd-lector-sel-nombre"></strong>
+              <small class="pd-sel-card__sub d-block" id="pd-lector-sel-info"></small>
+            </div>
+            <button type="button" class="pd-sel-card__btn ms-auto flex-shrink-0" id="pd-lector-cambiar">
+              <i class="bi bi-arrow-repeat"></i> Cambiar
             </button>
           </div>
         </div>
@@ -134,7 +156,10 @@
 
       {{-- Paso 2: buscar ejemplar --}}
       <div class="modal-body pd-step-body d-none" id="pd-body-2">
-        <p class="text-muted mb-3">Escribe el título del libro o el código del ejemplar para ver los disponibles.</p>
+        <div class="pd-body-intro">
+          <i class="bi bi-book-fill"></i>
+          <span>Escribe el título del libro o el código del ejemplar para ver los disponibles.</span>
+        </div>
 
         <div class="row g-2 mb-3">
           <div class="col-md-5">
@@ -155,20 +180,20 @@
 
         <div id="pd-libro-results" style="max-height:340px;overflow-y:auto;"></div>
 
-        <div id="pd-ejemplar-sel" class="d-none mt-3 p-3 rounded-3 border border-success bg-success bg-opacity-10">
-          <div class="d-flex align-items-start gap-3">
-            <div class="rounded-2 p-2 bg-success bg-opacity-25 flex-shrink-0">
-              <i class="bi bi-book-half text-success fs-5"></i>
+        <div id="pd-ejemplar-sel" class="d-none mt-3 pd-sel-card">
+          <div class="d-flex align-items-center gap-3">
+            <div class="pd-sel-card__avatar pd-sel-card__avatar--book flex-shrink-0">
+              <i class="bi bi-book-half fs-5"></i>
             </div>
             <div class="flex-grow-1 min-width-0">
-              <strong id="pd-ejemplar-sel-libro" class="d-block"></strong>
+              <strong class="pd-sel-card__name d-block" id="pd-ejemplar-sel-libro"></strong>
               <div class="d-flex flex-wrap gap-2 mt-1">
-                <span class="badge bg-secondary" id="pd-ejemplar-sel-bib"></span>
-                <code class="text-muted small" id="pd-ejemplar-sel-codigo"></code>
+                <span class="pd-sel-card__tag" id="pd-ejemplar-sel-bib"></span>
+                <code class="pd-sel-card__sub" id="pd-ejemplar-sel-codigo"></code>
               </div>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" id="pd-ejemplar-cambiar">
-              <i class="bi bi-x"></i> Cambiar
+            <button type="button" class="pd-sel-card__btn flex-shrink-0" id="pd-ejemplar-cambiar">
+              <i class="bi bi-arrow-repeat"></i> Cambiar
             </button>
           </div>
         </div>

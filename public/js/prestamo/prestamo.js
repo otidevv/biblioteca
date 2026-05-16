@@ -222,10 +222,19 @@ $(document).ready(function () {
         $('.pd-step-body').addClass('d-none');
         $('#pd-body-' + n).removeClass('d-none');
 
-        $('.pd-step-tab').removeClass('active fw-bold').css('border-bottom', '');
-        $('.pd-step-tab[data-step="' + n + '"]')
-            .addClass('active fw-bold')
-            .css('border-bottom', '3px solid var(--admin-accent,#2563eb)');
+        $('.pd-step-tab').each(function () {
+            const step = parseInt($(this).data('step'));
+            const $bubble = $(this).find('.pd-step-bubble');
+            $(this).removeClass('pd-step--active pd-step--done active fw-bold').css('border-bottom', '');
+
+            if (step < n) {
+                $(this).addClass('pd-step--done');
+                $bubble.html('<i class="bi bi-check-lg"></i>');
+            } else {
+                $bubble.text(step);
+                if (step === n) $(this).addClass('pd-step--active');
+            }
+        });
 
         $('#pd-btn-prev').prop('disabled', n === 1);
         $('#pd-btn-next').toggleClass('d-none', n === 3);
@@ -241,50 +250,38 @@ $(document).ready(function () {
         const detalle = partes.slice(1).join(' · ');
 
         return $('<div>')
-            .addClass('pd-lector-item d-flex align-items-center gap-3 p-3 border-bottom')
-            .css({ cursor: 'pointer', transition: 'background .15s' })
-            .on('mouseenter', function () { $(this).css('background', '#f0f7ff'); })
-            .on('mouseleave', function () { $(this).css('background', ''); })
+            .addClass('pd-result-item pd-lector-item')
             .attr('data-id', lector.id)
             .attr('data-text', lector.text)
             .html(
-                '<div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">' +
-                    '<i class="bi bi-person-fill text-primary"></i>' +
+                '<div class="pd-result-avatar"><i class="bi bi-person-fill"></i></div>' +
+                '<div class="pd-result-main">' +
+                    '<strong class="pd-result-name">' + esc(nombre) + '</strong>' +
+                    (detalle ? '<span class="pd-result-sub">' + esc(detalle) + '</span>' : '') +
                 '</div>' +
-                '<div class="min-width-0">' +
-                    '<strong class="d-block">' + esc(nombre) + '</strong>' +
-                    (detalle ? '<small class="text-muted">' + esc(detalle) + '</small>' : '') +
-                '</div>' +
-                '<i class="bi bi-chevron-right text-muted ms-auto"></i>'
+                '<i class="bi bi-chevron-right pd-result-chevron"></i>'
             );
     }
 
     // ── Tarjeta ejemplar ──
     function pdEjemplarCard(e) {
         return $('<div>')
-            .addClass('pd-ejemplar-item p-3 border-bottom')
-            .css({ cursor: 'pointer', transition: 'background .15s' })
-            .on('mouseenter', function () { $(this).css('background', '#f0f7ff'); })
-            .on('mouseleave', function () { $(this).css('background', ''); })
+            .addClass('pd-result-item pd-ejemplar-item')
             .attr('data-id', e.id)
             .attr('data-libro', e.libro)
             .attr('data-codigo', e.codigo)
             .attr('data-bib', e.biblioteca)
             .html(
-                '<div class="d-flex justify-content-between align-items-start gap-2">' +
-                    '<div class="flex-grow-1 min-width-0">' +
-                        '<strong class="d-block lh-sm mb-1" style="font-size:.9rem;">' + esc(e.libro) + '</strong>' +
-                        '<div class="d-flex flex-wrap align-items-center gap-2">' +
-                            '<span class="badge text-bg-primary" style="font-size:.72rem;font-weight:500;">' +
-                                '<i class="bi bi-building me-1"></i>' + esc(e.biblioteca) +
-                            '</span>' +
-                            '<code class="text-muted" style="font-size:.78rem;">Cód: ' + esc(e.codigo) + '</code>' +
-                        '</div>' +
-                    '</div>' +
-                    '<span class="badge text-bg-success flex-shrink-0 align-self-start">' +
-                        '<i class="bi bi-check-circle me-1"></i>Disponible' +
+                '<div class="pd-result-avatar pd-result-avatar--book"><i class="bi bi-book-half"></i></div>' +
+                '<div class="pd-result-main">' +
+                    '<strong class="pd-result-name">' + esc(e.libro) + '</strong>' +
+                    '<span class="pd-result-sub">' +
+                        '<i class="bi bi-building" style="margin-right:3px;"></i>' + esc(e.biblioteca) +
+                        '<span style="margin:0 5px;opacity:.4;">·</span>' +
+                        '<code>Cód: ' + esc(e.codigo) + '</code>' +
                     '</span>' +
-                '</div>'
+                '</div>' +
+                '<span class="pd-result-badge"><i class="bi bi-check-circle"></i>Disponible</span>'
             );
     }
 
@@ -336,7 +333,7 @@ $(document).ready(function () {
             })
                 .then(r => r.json())
                 .then(data => {
-                    const $wrap = $('<div class="border rounded-2 overflow-hidden">');
+                    const $wrap = $('<div class="pd-results-wrap">');
                     if (! data.results || data.results.length === 0) {
                         $wrap.append('<div class="p-3 text-muted small text-center">No se encontraron lectores.</div>');
                     } else {
@@ -383,7 +380,7 @@ $(document).ready(function () {
             fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(r => r.json())
                 .then(data => {
-                    const $wrap = $('<div class="border rounded-2 overflow-hidden">');
+                    const $wrap = $('<div class="pd-results-wrap">');
                     if (! Array.isArray(data) || data.length === 0) {
                         $wrap.append(
                             '<div class="p-4 text-center">' +
