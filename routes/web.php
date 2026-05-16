@@ -100,7 +100,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
     Route::get('/administracion/libros/importar', [LibroImportController::class, 'create'])
         ->name('administracion.libros.importar');
     Route::post('/administracion/libros/importar', [LibroImportController::class, 'store'])
-        ->name('administracion.libros.importar');
+        ->name('administracion.libros.importar.store');
     Route::get('/administracion/libros/traslados', [AdministracionController::class, 'trasladosEjemplares'])
         ->name('administracion.libros.traslados');
 

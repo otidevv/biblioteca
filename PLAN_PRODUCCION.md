@@ -203,14 +203,14 @@ Después de aplicar todos los cambios, verificar:
 | `.env` en `.gitignore` | OK |
 | `BCRYPT_ROUNDS=12` | OK |
 | `SESSION_DRIVER=database` | OK |
-| `APP_DEBUG=false` | **PENDIENTE** |
-| `APP_ENV=production` | **PENDIENTE** |
-| `APP_URL` correcto | **PENDIENTE** |
-| `display_errors=Off` en PHP | **PENDIENTE** |
-| Redirect HTTP→HTTPS | **PENDIENTE** |
-| Caché de Laravel compilado | **PENDIENTE** |
-| `EXTERNAL_API_VERIFY_SSL=true` | **PENDIENTE** |
-| `SESSION_ENCRYPT=true` | **PENDIENTE** |
-| Archivos debug eliminados | **PENDIENTE** |
-| Log rotación diaria | **PENDIENTE** |
+| `APP_DEBUG=false` | OK |
+| `APP_ENV=production` | OK |
+| `APP_URL` correcto | OK |
+| `display_errors=Off` en PHP | OK |
+| Redirect HTTP→HTTPS | OK |
+| Caché de Laravel compilado | OK |
+| `EXTERNAL_API_VERIFY_SSL=true` | OK |
+| `SESSION_ENCRYPT=true` | OK |
+| Archivos debug eliminados | OK (no existían) |
+| Log rotación diaria | OK |
 | Renovación SSL (oct 2026) | **PROGRAMAR** |
