@@ -4,12 +4,12 @@
 @section('meta_description', 'Consulta el catálogo de libros de la Biblioteca UNAMAD, filtra por título, autor, idioma y materia.')
 
 @section('css')
-<link href="{{ asset('css/pagina/catalogo.css') }}" rel="stylesheet">
-<link href="{{ asset('css/pagina/libros-grid.css') }}" rel="stylesheet">
+<link href="{{ asset('css/pagina/catalogo.css') }}?v={{ filemtime(public_path('css/pagina/catalogo.css')) }}" rel="stylesheet">
+<link href="{{ asset('css/pagina/libros-grid.css') }}?v={{ filemtime(public_path('css/pagina/libros-grid.css')) }}" rel="stylesheet">
 @endsection
 
 @section('js')
-<script src="{{ asset('js/pagina/catalogo.js') }}"></script>
+<script src="{{ asset('js/pagina/catalogo.js') }}?v={{ filemtime(public_path('js/pagina/catalogo.js')) }}"></script>
 @endsection
 
 
