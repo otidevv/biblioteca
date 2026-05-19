@@ -4,6 +4,13 @@ $(document).ready(function () {
     let requestActiva = null;
     let debounceTimer = null;
 
+    function contextoActual() {
+        return {
+            titulo:     $('#titulo').val().trim(),
+            codigo_ant: $('#codigo_ant').val().trim(),
+        };
+    }
+
     function inicializarSelect2() {
         $('#autor_id').select2({
             placeholder: 'Seleccione autores',
@@ -13,12 +20,12 @@ $(document).ready(function () {
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
-                    return { q: params.term };
+                    return Object.assign({ q: params.term }, contextoActual());
                 },
                 processResults: function (data) {
                     return { results: data };
                 },
-                cache: true
+                cache: false
             }
         });
 
@@ -30,12 +37,12 @@ $(document).ready(function () {
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
-                    return { q: params.term };
+                    return Object.assign({ q: params.term }, contextoActual());
                 },
                 processResults: function (data) {
                     return { results: data };
                 },
-                cache: true
+                cache: false
             }
         });
 
@@ -47,15 +54,107 @@ $(document).ready(function () {
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
-                    return { q: params.term };
+                    return Object.assign({ q: params.term }, contextoActual());
                 },
                 processResults: function (data) {
                     return { results: data };
                 },
-                cache: true
+                cache: false
             }
         });
     }
+
+    // ── Tabs ──
+    $('.catalog-tab-btn').on('click', function () {
+        const tab = $(this).data('tab');
+        $('.catalog-tab-btn').removeClass('active');
+        $(this).addClass('active');
+        $('.catalog-tab-panel').removeClass('active');
+        $('#tab-' + tab).addClass('active');
+    });
+
+    // ── Badge: autor activo en Tab 2 ──
+    function actualizarAutorBadge() {
+        const val = $('#autor_id').val();
+        if (val) {
+            $('#autorActiveName').text($('#autor_id option:selected').text());
+            $('#autorActiveBadge').addClass('visible');
+        } else {
+            $('#autorActiveBadge').removeClass('visible');
+        }
+    }
+
+    function limpiarSelects() {
+        ['#autor_id', '#idioma_id', '#materia_id'].forEach(function (sel) {
+            $(sel).val(null).trigger('change');
+        });
+        $('#autorAlphaBtns .autor-alpha-btn').removeClass('active');
+        $('#autorAlphaResults').empty().removeClass('visible');
+        $('#autorActiveBadge').removeClass('visible');
+    }
+
+    // ── Letter picker ──
+    $('#autorAlphaBtns').on('click', '.autor-alpha-btn', function () {
+        const $btn  = $(this);
+        const letra = $btn.data('letra');
+
+        if ($btn.hasClass('active')) {
+            $btn.removeClass('active');
+            $('#autorAlphaResults').empty().removeClass('visible');
+            return;
+        }
+
+        $('#autorAlphaBtns .autor-alpha-btn').removeClass('active');
+        $btn.addClass('active');
+
+        const params = Object.assign({ letra: letra }, contextoActual());
+
+        $.get('/pagina/autores', params, function (data) {
+            const $results = $('#autorAlphaResults');
+            $results.empty();
+
+            if (!data.length) {
+                $results.append('<span class="autor-alpha-empty">Sin autores para esta letra</span>');
+            } else {
+                data.forEach(function (autor) {
+                    $('<button type="button" class="autor-alpha-chip"></button>')
+                        .text(autor.text)
+                        .data('autor-id', autor.id)
+                        .appendTo($results);
+                });
+            }
+
+            $results.addClass('visible');
+        });
+    });
+
+    $('#autorAlphaResults').on('click', '.autor-alpha-chip', function () {
+        const id   = $(this).data('autor-id');
+        const text = $(this).text();
+
+        $('#autorAlphaResults .autor-alpha-chip').removeClass('selected');
+        $(this).addClass('selected');
+
+        const option = new Option(text, id, true, true);
+        $('#autor_id').append(option).trigger('change');
+
+        actualizarAutorBadge();
+
+        clearTimeout(debounceTimer);
+        const url = $form.attr('action') + '?' + buildParams();
+        cargarLibros(url);
+    });
+
+    $('#autorActiveClear').on('click', function () {
+        $('#autor_id').val(null).trigger('change');
+        $('#autorAlphaBtns .autor-alpha-btn').removeClass('active');
+        $('#autorAlphaResults').empty().removeClass('visible');
+        $('#autorActiveBadge').removeClass('visible');
+
+        clearTimeout(debounceTimer);
+        const url = $form.attr('action') + '?' + buildParams();
+        cargarLibros(url);
+    });
 
     function cargarLibros(url) {
         if (!$contenedor.length) {
@@ -108,10 +207,17 @@ $(document).ready(function () {
         const materiaId = $('#materia_id').val();
         if (materiaId) params.set('materia_id', materiaId);
 
+        const codigoAnt = $('#codigo_ant').val().trim();
+        if (codigoAnt) params.set('codigo_ant', codigoAnt);
+
+        const perPage = $('#perPage').val();
+        if (perPage && perPage !== '8') params.set('per_page', perPage);
+
         return params.toString();
     }
 
     inicializarSelect2();
+    actualizarAutorBadge();
 
     $('#titulo').on('input', function () {
         clearTimeout(debounceTimer);
@@ -119,14 +225,40 @@ $(document).ready(function () {
 
         if (valor.length === 0 || valor.length >= 2) {
             debounceTimer = setTimeout(function () {
+                limpiarSelects();
                 const url = $form.attr('action') + '?' + buildParams();
                 cargarLibros(url);
             }, 500);
         }
     });
 
-    // select2:select fires after the value is set; select2:clear fires after clearing with X
-    $('#autor_id, #idioma_id, #materia_id').on('select2:select select2:clear', function () {
+    $('#codigo_ant').on('input', function () {
+        clearTimeout(debounceTimer);
+        const valor = $(this).val().trim();
+
+        if (valor.length === 0 || valor.length >= 2) {
+            debounceTimer = setTimeout(function () {
+                limpiarSelects();
+                const url = $form.attr('action') + '?' + buildParams();
+                cargarLibros(url);
+            }, 500);
+        }
+    });
+
+    $('#perPage').on('change', function () {
+        clearTimeout(debounceTimer);
+        const url = $form.attr('action') + '?' + buildParams();
+        cargarLibros(url);
+    });
+
+    $('#autor_id').on('select2:select select2:clear', function () {
+        clearTimeout(debounceTimer);
+        actualizarAutorBadge();
+        const url = $form.attr('action') + '?' + buildParams();
+        cargarLibros(url);
+    });
+
+    $('#idioma_id, #materia_id').on('select2:select select2:clear', function () {
         clearTimeout(debounceTimer);
         const url = $form.attr('action') + '?' + buildParams();
         cargarLibros(url);

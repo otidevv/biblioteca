@@ -20,9 +20,36 @@ class PaginaController extends Controller
     // metodos para select2 
     // ================== ENDPOINTS PARA SELECT2 ==================
 
+    private function aplicarContextoCatalogo($query, Request $request): void
+    {
+        $titulo    = $request->filled('titulo')    ? trim((string) $request->titulo)    : null;
+        $codigoAnt = $request->filled('codigo_ant') ? trim((string) $request->codigo_ant) : null;
+
+        if ($titulo || $codigoAnt) {
+            $query->whereHas('libros', function ($libros) use ($titulo, $codigoAnt) {
+                if ($titulo) {
+                    $libros->where(function ($q) use ($titulo) {
+                        $q->where('titulo', 'like', "%$titulo%")
+                          ->orWhere('palabras_clave', 'like', "%$titulo%")
+                          ->orWhere('isbn', 'like', "%$titulo%");
+                    });
+                }
+                if ($codigoAnt) {
+                    $libros->where('codigo_ant', 'like', "%$codigoAnt%");
+                }
+                $libros->whereHas('ejemplares', fn($ej) => $ej->whereNotNull('biblioteca_id'));
+            });
+        } else {
+            $query->whereHas('libros', fn($libros) => $libros->whereHas('ejemplares', fn($ej) => $ej->whereNotNull('biblioteca_id')));
+        }
+    }
+
     public function listarAutores(Request $request)
     {
-        $q = $request->filled('q') ? $request->get('q') : null;
+        $q     = $request->filled('q') ? $request->get('q') : null;
+        $letra = ($request->filled('letra') && $request->letra !== 'todos')
+            ? strtoupper(substr((string) $request->letra, 0, 1))
+            : null;
 
         $autores = Autor::query()
             ->when($q, function($query) use ($q) {
@@ -33,10 +60,16 @@ class PaginaController extends Controller
                         ->orWhereRaw("CONCAT(apellidos, ' ', nombres) LIKE ?", ["%$q%"]);
                 });
             })
-            ->whereHas('libros', fn($libros) => $libros->whereHas('ejemplares', fn($ej) => $ej->whereNotNull('biblioteca_id')))
-            ->orderBy('nombres')
-            ->limit(20)
-            ->get();
+            ->when($letra, fn($query) => $query->where(function ($sub) use ($letra) {
+                $sub->where('apellidos', 'like', "$letra%")
+                    ->orWhere('nombres', 'like', "$letra%");
+            }))
+            ->orderBy('apellidos');
+
+        $this->aplicarContextoCatalogo($autores, $request);
+
+        $limite  = $letra ? 50 : 20;
+        $autores = $autores->limit($limite)->get();
 
         return response()->json(
             $autores->map(fn($a) => [
@@ -49,10 +82,13 @@ class PaginaController extends Controller
     public function listarMaterias(Request $request)
     {
         $q = $request->get('q');
+
         $materias = Materia::query()
-            ->when($q, fn($query) => $query->where('nombre','like',"%$q%"))
-            ->limit(20)
-            ->get();
+            ->when($q, fn($query) => $query->where('nombre', 'like', "%$q%"));
+
+        $this->aplicarContextoCatalogo($materias, $request);
+
+        $materias = $materias->limit(20)->get();
 
         return response()->json(
             $materias->map(fn($m) => [
@@ -65,10 +101,13 @@ class PaginaController extends Controller
     public function listarIdiomas(Request $request)
     {
         $q = $request->get('q');
+
         $idiomas = Idioma::query()
-            ->when($q, fn($query) => $query->where('nombre','like',"%$q%"))
-            ->limit(20)
-            ->get();
+            ->when($q, fn($query) => $query->where('nombre', 'like', "%$q%"));
+
+        $this->aplicarContextoCatalogo($idiomas, $request);
+
+        $idiomas = $idiomas->limit(20)->get();
 
         return response()->json(
             $idiomas->map(fn($i) => [

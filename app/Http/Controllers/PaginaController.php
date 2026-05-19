@@ -133,7 +133,12 @@ class PaginaController extends Controller
             });
         }
 
-        $libros = $query->distinct('libros.id')->paginate(8)->withQueryString();
+        if ($request->filled('codigo_ant')) {
+            $query->where('codigo_ant', 'like', '%' . trim((string) $request->codigo_ant) . '%');
+        }
+
+        $perPage = in_array((int) $request->per_page, [8, 16, 24, 32]) ? (int) $request->per_page : 8;
+        $libros  = $query->distinct('libros.id')->paginate($perPage)->withQueryString();
 
         // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
         if ($request->ajax()) {

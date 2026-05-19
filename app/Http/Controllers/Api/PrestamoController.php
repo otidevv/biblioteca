@@ -80,16 +80,11 @@ class PrestamoController extends Controller
                 return '<div class="loan-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>';
             })
             ->addColumn('ejemplar', function ($row) {
-                $codigoDewey = trim((string) ($row->ejemplar->codigo_dewey ?? ''));
-                $codigoAnt = trim((string) ($row->ejemplar->codigo_ant ?? ''));
+                $codigoInterno = trim((string) ($row->ejemplar->libro->codigo_ant ?? ''));
+                $codigo        = $codigoInterno !== '' ? $codigoInterno : '-';
+                $biblioteca    = $row->ejemplar->biblioteca->nombre ?? '';
 
-                $codigo = $codigoDewey !== ''
-                    ? $codigoDewey . ($row->ejemplar->tipo ?? '') . $row->ejemplar->codigo_interno
-                    : ($codigoAnt !== '' ? $codigoAnt : '-');
-
-                $biblioteca = $row->ejemplar->biblioteca->nombre ?? '';
-
-                return '<span class="loan-table__code">' . e($codigo) . '</span>' .
+                return '<span class="loan-table__code"><i class="bi bi-hash me-1"></i>' . e($codigo) . '</span>' .
                     ($biblioteca
                         ? '<small class="loan-table__bib"><i class="bi bi-building me-1"></i>' . e($biblioteca) . '</small>'
                         : '');
