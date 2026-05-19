@@ -374,15 +374,19 @@ class PrestamoController extends Controller
             ->get();
 
         return response()->json($query->map(function ($e) {
-            $codigo = $e->codigo_dewey
+            $codigoEjemplar = $e->codigo_dewey
                 ? $e->codigo_dewey . ($e->tipo ?? '') . $e->codigo_interno
-                : ($e->codigo_ant ?? '-');
+                : null;
+
+            $copia = trim(($e->tipo ?? '') . ($e->codigo_interno ?? ''));
 
             return [
-                'id'         => $e->id,
-                'libro'      => $e->libro->titulo ?? '—',
-                'codigo'     => $codigo,
-                'biblioteca' => $e->biblioteca->nombre ?? '—',
+                'id'           => $e->id,
+                'libro'        => $e->libro->titulo ?? '—',
+                'codigo'       => $codigoEjemplar,
+                'codigo_libro' => $e->libro->codigo_ant ?? '',
+                'copia'        => $copia ?: null,
+                'biblioteca'   => $e->biblioteca->nombre ?? '—',
             ];
         }));
     }
