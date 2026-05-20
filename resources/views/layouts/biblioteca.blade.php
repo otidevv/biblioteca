@@ -47,261 +47,409 @@ body {
     min-height: 100vh;
 }
 
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
 .library-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
     width: var(--sidebar-width);
-    padding: 1.5rem;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     background:
-        linear-gradient(180deg, rgba(15, 48, 37, 0.98) 0%, rgba(24, 77, 59, 0.96) 52%, rgba(47, 122, 93, 0.94) 100%);
+        radial-gradient(ellipse at top left, rgba(255,255,255,0.07) 0%, transparent 50%),
+        linear-gradient(175deg, #0c2e22 0%, #163d2d 35%, #1a5040 65%, #1e6048 100%);
     color: #fff;
-    box-shadow: 18px 0 50px rgba(10, 26, 20, 0.18);
+    box-shadow: 4px 0 40px rgba(6, 18, 13, 0.32), 1px 0 0 rgba(255,255,255,0.05);
     z-index: 1040;
-    transition: transform 0.28s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     isolation: isolate;
+    overflow: hidden;
 }
 
-.library-sidebar::after {
+/* Scrollable inner wrapper */
+.library-sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding: 1.25rem 1rem 1rem;
+}
+
+.library-sidebar-inner::-webkit-scrollbar {
+    width: 3px;
+}
+.library-sidebar-inner::-webkit-scrollbar-track {
+    background: transparent;
+}
+.library-sidebar-inner::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+}
+
+/* Decorative top glow line */
+.library-sidebar::before {
     content: "";
     position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 24%),
-        linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.04) 100%);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(216,177,92,0.7) 40%, rgba(255,255,255,0.35) 60%, transparent);
     pointer-events: none;
-    z-index: -1;
+    z-index: 2;
 }
 
+/* ── Brand ── */
 .library-brand {
-    padding: 1.1rem 1.15rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 1.4rem;
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 0.9rem 0.85rem;
+    border-radius: 1.1rem;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
 }
 
 .library-brand-header {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    margin-bottom: 0.95rem;
+    display: contents;
 }
 
 .library-brand-mark {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    border-radius: 18px;
+    border-radius: 13px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.28),
-        0 14px 28px rgba(0, 0, 0, 0.18);
-}
-
-.library-brand-mark::before {
-    content: "";
-    position: absolute;
-    inset: 6px;
-    border-radius: 14px;
-    border: 1px solid rgba(24, 77, 59, 0.12);
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 .library-brand-logo {
-    position: relative;
-    z-index: 1;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    padding: 0.45rem;
+    padding: 0.35rem;
 }
 
 .library-brand-copy {
     min-width: 0;
+    flex: 1;
 }
 
 .library-brand-copy h1 {
-    margin: 0;
-    font-size: 1.08rem;
+    margin: 0 0 0.15rem;
+    font-size: 0.92rem;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .library-brand-copy small {
     display: block;
-    margin-top: 0.18rem;
-    color: rgba(255, 255, 255, 0.76);
-    font-size: 0.72rem;
-    line-height: 1.35;
+    color: rgba(255,255,255,0.58);
+    font-size: 0.68rem;
+    line-height: 1.3;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.07em;
 }
 
-.library-brand p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 0.92rem;
-    line-height: 1.5;
+/* ── Mobile close button ── */
+.library-sidebar-close {
+    display: none;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    font-size: 1.1rem;
+    z-index: 3;
+    transition: background 0.18s;
 }
 
-.library-nav {
-    display: grid;
+.library-sidebar-close:hover {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+}
+
+/* ── Section labels ── */
+.library-nav-section {
+    margin-bottom: 0.35rem;
+}
+
+.library-nav-section + .library-nav-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.library-nav-section-label {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+    padding: 0 0.5rem 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(216,177,92,0.75);
+}
+
+.library-nav-section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(216,177,92,0.2);
+}
+
+/* ── Nav ── */
+.library-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
 }
 
 .library-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
-    padding: 0.9rem 1rem;
-    border-radius: 1rem;
-    color: rgba(255, 255, 255, 0.85);
+    gap: 0.8rem;
+    padding: 0.72rem 0.75rem;
+    border-radius: 0.9rem;
+    color: rgba(255,255,255,0.78);
     text-decoration: none;
-    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    position: relative;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.library-nav-link:focus-visible,
-.library-login-btn:focus-visible,
-.library-logout-btn:focus-visible,
-.library-menu-btn:focus-visible {
+.library-nav-link::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--library-gold);
+    opacity: 0;
+    transform: scaleY(0.4);
+    transition: opacity 0.18s, transform 0.18s;
+}
+
+.library-nav-link:focus-visible {
     outline: 3px solid rgba(242, 207, 130, 0.9);
-    outline-offset: 3px;
+    outline-offset: 2px;
 }
 
 .library-nav-icon {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    border-radius: 14px;
-    font-size: 1.1rem;
+    border-radius: 11px;
+    font-size: 1rem;
     color: #fff;
-    background: linear-gradient(135deg, rgba(216, 177, 92, 0.34), rgba(255, 255, 255, 0.08));
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
+/* Icon colors per section */
 .library-nav-link.nav-home .library-nav-icon {
-    background: linear-gradient(135deg, rgba(72, 166, 120, 0.95), rgba(20, 86, 63, 0.95));
+    background: linear-gradient(135deg, #3da876, #1a6647);
 }
-
 .library-nav-link.nav-catalog .library-nav-icon {
-    background: linear-gradient(135deg, rgba(56, 126, 201, 0.95), rgba(28, 74, 135, 0.95));
+    background: linear-gradient(135deg, #3b82c4, #1c4a87);
 }
-
 .library-nav-link.nav-events .library-nav-icon {
-    background: linear-gradient(135deg, rgba(223, 150, 63, 0.95), rgba(180, 90, 28, 0.95));
+    background: linear-gradient(135deg, #d9923f, #a0561c);
 }
-
 .library-nav-link.nav-libraries .library-nav-icon {
-    background: linear-gradient(135deg, rgba(26, 127, 110, 0.95), rgba(17, 94, 89, 0.95));
+    background: linear-gradient(135deg, #1a7f6e, #115e59);
 }
-
 .library-nav-link.nav-scientific .library-nav-icon {
-    background: linear-gradient(135deg, rgba(35, 118, 182, 0.95), rgba(18, 70, 120, 0.95));
+    background: linear-gradient(135deg, #2376b6, #124678);
 }
-
 .library-nav-link.nav-reservations .library-nav-icon {
-    background: linear-gradient(135deg, rgba(167, 92, 214, 0.95), rgba(108, 47, 149, 0.95));
+    background: linear-gradient(135deg, #a75cd6, #6c2f95);
 }
-
 .library-nav-link.nav-loans .library-nav-icon {
-    background: linear-gradient(135deg, rgba(228, 91, 109, 0.95), rgba(151, 34, 61, 0.95));
+    background: linear-gradient(135deg, #e45b6d, #97223d);
 }
 
+/* Nav text */
 .library-nav-text {
     display: flex;
     flex-direction: column;
     line-height: 1.15;
+    min-width: 0;
 }
-
 .library-nav-text strong {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-
 .library-nav-text small {
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 0.76rem;
-    margin-top: 0.15rem;
+    color: rgba(255,255,255,0.52);
+    font-size: 0.72rem;
+    margin-top: 0.12rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.library-nav-link:hover,
+/* Hover & Active states */
+.library-nav-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.09);
+}
+
 .library-nav-link.is-active {
     color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateX(4px);
+    background: rgba(255,255,255,0.12);
+}
+
+.library-nav-link.is-active::before {
+    opacity: 1;
+    transform: scaleY(1);
 }
 
 .library-nav-link:hover .library-nav-icon,
 .library-nav-link.is-active .library-nav-icon {
-    transform: scale(1.08);
-    box-shadow:
-        0 12px 24px rgba(8, 18, 14, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transform: scale(1.07);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
+/* Brighten icon on hover/active */
 .library-nav-link.nav-home:hover .library-nav-icon,
 .library-nav-link.nav-home.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #7fe0a8, #1d7f59);
+    background: linear-gradient(135deg, #5dcf95, #1d8f5f);
 }
-
 .library-nav-link.nav-catalog:hover .library-nav-icon,
 .library-nav-link.nav-catalog.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #74c0ff, #2f6fd4);
+    background: linear-gradient(135deg, #5db0f5, #2a60c5);
 }
-
 .library-nav-link.nav-events:hover .library-nav-icon,
 .library-nav-link.nav-events.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #ffd37a, #d97a25);
+    background: linear-gradient(135deg, #f5be65, #c46e1a);
 }
-
 .library-nav-link.nav-libraries:hover .library-nav-icon,
 .library-nav-link.nav-libraries.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #59d0c1, #16796f);
+    background: linear-gradient(135deg, #3dc8b8, #147a70);
 }
-
 .library-nav-link.nav-scientific:hover .library-nav-icon,
 .library-nav-link.nav-scientific.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #60b4ff, #1a5fa8);
+    background: linear-gradient(135deg, #4aaef5, #1652a0);
 }
-
 .library-nav-link.nav-reservations:hover .library-nav-icon,
 .library-nav-link.nav-reservations.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #d6a7ff, #8a47c7);
+    background: linear-gradient(135deg, #c285f0, #8040c0);
 }
-
 .library-nav-link.nav-loans:hover .library-nav-icon,
 .library-nav-link.nav-loans.is-active .library-nav-icon {
-    background: linear-gradient(135deg, #ff9aa9, #d64566);
+    background: linear-gradient(135deg, #f58091, #c53558);
 }
 
 .library-nav-link.is-active .library-nav-text small,
 .library-nav-link:hover .library-nav-text small {
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255,255,255,0.75);
 }
 
+/* ── Sidebar Footer ── */
 .library-sidebar-footer {
     margin-top: auto;
-    padding: 1rem 1.05rem;
-    border-radius: 1.2rem;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
 }
 
-.library-sidebar-footer small {
-    color: rgba(255, 255, 255, 0.74);
+.library-sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.9rem;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.library-sidebar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #0c2e22;
+    background: linear-gradient(135deg, #f0d58f, #d8b15c);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.library-sidebar-user-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.library-sidebar-user-info strong {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(255,255,255,0.95);
+}
+
+.library-sidebar-user-info small {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.7rem;
+}
+
+.library-sidebar-guest {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.9rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.library-sidebar-guest i {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.9rem;
+}
+
+.library-sidebar-guest span {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.5);
 }
 
 .library-main {
@@ -607,57 +755,209 @@ body {
     pointer-events: none;
 }
 
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
 .library-footer {
+    position: relative;
+    overflow: hidden;
     margin-top: 1.2rem;
-    padding: 1.15rem 1.3rem;
-    border-radius: 1.4rem;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(249, 246, 238, 0.82));
-    box-shadow: 0 12px 30px rgba(24, 77, 59, 0.07);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background:
+        radial-gradient(circle at bottom left, rgba(216, 177, 92, 0.1), transparent 35%),
+        linear-gradient(175deg, rgba(255,255,255,0.78), rgba(245,242,234,0.88));
+    box-shadow: 0 12px 36px rgba(24, 77, 59, 0.07);
+}
+
+.library-footer::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(24,77,59,0.2) 30%, rgba(216,177,92,0.5) 55%, rgba(24,77,59,0.15) 80%, transparent);
+    pointer-events: none;
+}
+
+.library-footer-inner {
+    padding: 1.75rem 1.75rem 0;
 }
 
 .library-footer-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
-    gap: 1.1rem;
+    grid-template-columns: 1.8fr 1fr 1fr;
+    gap: 2rem;
     align-items: start;
 }
 
-.library-footer h6 {
-    margin-bottom: 0.55rem;
-    color: #173d2f;
+/* Brand column */
+.library-footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.library-footer-brand-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.library-footer-logo {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(24,77,59,0.12);
+    box-shadow: 0 4px 12px rgba(24,77,59,0.1);
+    padding: 0.3rem;
+}
+
+.library-footer-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.library-footer-brand-copy strong {
+    display: block;
+    font-size: 0.95rem;
     font-weight: 800;
+    color: #143529;
 }
 
-.library-footer p,
-.library-footer small,
-.library-footer a {
-    color: #61746d;
+.library-footer-brand-copy small {
+    font-size: 0.72rem;
+    color: #7a8f87;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
-.library-footer a {
-    text-decoration: none;
+.library-footer-brand-desc {
+    font-size: 0.85rem;
+    color: #62756d;
+    line-height: 1.65;
+    margin: 0;
 }
 
-.library-footer a:hover {
-    color: #1f674d;
+.library-footer-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: #7a8f87;
+    font-weight: 500;
 }
 
+.library-footer-location i {
+    color: #d8b15c;
+    font-size: 0.85rem;
+}
+
+/* Column headings */
+.library-footer-col h6 {
+    margin: 0 0 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #143529;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.library-footer-col h6::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(24,77,59,0.1);
+}
+
+/* Links list */
 .library-footer-list {
-    display: grid;
-    gap: 0.45rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
+.library-footer-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #62756d;
+    text-decoration: none;
+    transition: color 0.15s, gap 0.15s;
+}
+
+.library-footer-list a::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(24,77,59,0.25);
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.library-footer-list a:hover {
+    color: #1a7357;
+    gap: 0.55rem;
+}
+
+.library-footer-list a:hover::before {
+    background: #d8b15c;
+}
+
+/* Contact items */
+.library-footer-contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.84rem;
+    color: #62756d;
+    line-height: 1.45;
+}
+
+.library-footer-contact-item i {
+    font-size: 0.9rem;
+    color: #1a7357;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Bottom bar */
 .library-footer-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-top: 0.95rem;
-    margin-top: 0.95rem;
-    border-top: 1px solid rgba(24, 77, 59, 0.1);
-    color: #6a7b74;
-    font-size: 0.88rem;
+    padding: 1rem 1.75rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(24, 77, 59, 0.08);
+    background: rgba(24,77,59,0.03);
+    border-radius: 0 0 1.5rem 1.5rem;
+}
+
+.library-footer-bottom-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #7a8f87;
+}
+
+.library-footer-bottom-left i {
+    color: #d8b15c;
+    font-size: 0.85rem;
+}
+
+.library-footer-bottom-right {
+    font-size: 0.78rem;
+    color: #9aaba4;
 }
 
 .hero,
@@ -796,42 +1096,65 @@ body.library-dark {
 
 body.library-dark .library-sidebar {
     background:
-        radial-gradient(circle at top left, rgba(250, 204, 102, 0.12), transparent 22%),
-        linear-gradient(180deg, rgba(7, 16, 13, 0.98) 0%, rgba(10, 23, 19, 0.97) 55%, rgba(15, 33, 27, 0.96) 100%);
-    box-shadow: 18px 0 52px rgba(0, 0, 0, 0.34);
+        radial-gradient(ellipse at top left, rgba(250,204,102,0.06) 0%, transparent 40%),
+        linear-gradient(175deg, #060f0b 0%, #0a1a14 40%, #0e2218 70%, #112a1e 100%);
+    box-shadow: 4px 0 40px rgba(0,0,0,0.5), 1px 0 0 rgba(255,255,255,0.04);
 }
 
-body.library-dark .library-brand,
+body.library-dark .library-brand {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.07);
+}
+
 body.library-dark .library-sidebar-footer {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255,255,255,0.06);
+}
+
+body.library-dark .library-sidebar-user {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.07);
+}
+
+body.library-dark .library-sidebar-guest {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.06);
 }
 
 body.library-dark .library-brand-copy small,
-body.library-dark .library-brand p,
-body.library-dark .library-sidebar-footer small,
 body.library-dark .library-nav-text small {
-    color: rgba(220, 231, 226, 0.68);
+    color: rgba(200, 220, 212, 0.55);
 }
 
 body.library-dark .library-nav-link {
-    color: rgba(233, 241, 236, 0.8);
+    color: rgba(220, 238, 230, 0.75);
 }
 
-body.library-dark .library-nav-link:hover,
+body.library-dark .library-nav-link:hover {
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+}
+
 body.library-dark .library-nav-link.is-active {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
 }
 
 body.library-dark .library-nav-link.is-active .library-nav-text small,
 body.library-dark .library-nav-link:hover .library-nav-text small {
-    color: rgba(244, 248, 246, 0.82);
+    color: rgba(244, 248, 246, 0.78);
+}
+
+body.library-dark .library-nav-section + .library-nav-section {
+    border-top-color: rgba(255,255,255,0.06);
+}
+
+body.library-dark .library-sidebar-close {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.1);
 }
 
 body.library-dark .library-topbar,
-body.library-dark .library-content,
-body.library-dark .library-footer {
+body.library-dark .library-content {
     border-color: rgba(255, 255, 255, 0.08);
     background:
         linear-gradient(180deg, rgba(18, 30, 24, 0.9), rgba(11, 20, 16, 0.88)),
@@ -840,6 +1163,34 @@ body.library-dark .library-footer {
         0 18px 42px rgba(0, 0, 0, 0.34),
         inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
+
+body.library-dark .library-footer {
+    border-color: rgba(255, 255, 255, 0.07);
+    background:
+        radial-gradient(circle at bottom left, rgba(216,177,92,0.06), transparent 35%),
+        linear-gradient(175deg, rgba(16,26,22,0.95), rgba(10,18,14,0.97));
+    box-shadow: 0 18px 42px rgba(0,0,0,0.3);
+}
+
+body.library-dark .library-footer-brand-copy strong { color: #d8ede2; }
+body.library-dark .library-footer-brand-copy small  { color: #5a7068; }
+body.library-dark .library-footer-brand-desc        { color: #7a9490; }
+body.library-dark .library-footer-location          { color: #5a7068; }
+body.library-dark .library-footer-col h6            { color: #b0ccc4; }
+body.library-dark .library-footer-col h6::after     { background: rgba(255,255,255,0.07); }
+body.library-dark .library-footer-list a            { color: #7a9490; }
+body.library-dark .library-footer-list a:hover      { color: #6ddca8; }
+body.library-dark .library-footer-contact-item      { color: #7a9490; }
+body.library-dark .library-footer-contact-item i    { color: #3dbb80; }
+body.library-dark .library-footer-logo              { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08); }
+
+body.library-dark .library-footer-bottom {
+    border-top-color: rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.15);
+}
+
+body.library-dark .library-footer-bottom-left  { color: #5a7068; }
+body.library-dark .library-footer-bottom-right { color: #3d5550; }
 
 body.library-dark .library-content::before {
     background: radial-gradient(circle, rgba(216, 177, 92, 0.1), transparent 68%);
@@ -852,7 +1203,6 @@ body.library-dark .library-content h3,
 body.library-dark .library-content h4,
 body.library-dark .library-content h5,
 body.library-dark .library-content h6,
-body.library-dark .library-footer h6,
 body.library-dark .library-alert-copy strong,
 body.library-dark .library-alert-menu-header strong,
 body.library-dark .library-user-chip,
@@ -865,9 +1215,6 @@ body.library-dark .library-topbar-title span,
 body.library-dark .library-topbar-title-kicker,
 body.library-dark .library-content p,
 body.library-dark .library-content small,
-body.library-dark .library-footer p,
-body.library-dark .library-footer small,
-body.library-dark .library-footer a,
 body.library-dark .library-alert-copy p,
 body.library-dark .library-alert-copy small,
 body.library-dark .text-muted {
@@ -992,21 +1339,22 @@ body.library-dark .library-logout-btn {
     background: linear-gradient(135deg, #1b5b43, #0f3528);
 }
 
-body.library-dark .library-footer-bottom {
-    border-top-color: rgba(255, 255, 255, 0.08);
-}
-
 body.library-dark .overlay.active {
     background: rgba(2, 7, 5, 0.58);
 }
 
 @media (max-width: 991.98px) {
     .library-sidebar {
-        transform: translateX(-100%);
+        transform: translateX(-105%);
+        width: min(var(--sidebar-width), 82vw);
     }
 
     .library-sidebar.active {
         transform: translateX(0);
+    }
+
+    .library-sidebar-close {
+        display: inline-flex;
     }
 
     .library-main {
@@ -1102,12 +1450,32 @@ body.library-dark .overlay.active {
 
 @media (max-width: 991.98px) {
     .library-footer-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .library-footer-brand {
+        grid-column: 1 / -1;
     }
 
     .library-footer-bottom {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.35rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .library-footer-inner {
+        padding: 1.25rem 1.25rem 0;
+    }
+
+    .library-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .library-footer-bottom {
+        padding: 0.85rem 1.25rem;
     }
 }
 </style>
@@ -1188,6 +1556,13 @@ body.library-dark .overlay.active {
             'title' => 'Otras bibliotecas',
             'subtitle' => 'Explora enlaces oficiales de otras bibliotecas para ampliar tu consulta.',
         ];
+    } elseif (request()->routeIs('bibliotecas.cientificas')) {
+        $topbarMeta = [
+            'kicker' => 'Recursos suscritos',
+            'icon' => 'bi-journal-medical',
+            'title' => 'Bibliotecas Científicas',
+            'subtitle' => 'Accede a ScienceDirect, Scopus e IOPScience con tu credencial institucional.',
+        ];
     }
 ?>
 
@@ -1197,90 +1572,112 @@ body.library-dark .overlay.active {
 
 <div class="library-shell">
     <aside class="library-sidebar" id="sidebar" aria-label="Menu principal">
-        <div class="library-brand">
-            <div class="library-brand-header">
+        <button type="button" class="library-sidebar-close" onclick="toggleSidebar()" aria-label="Cerrar menú">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="library-sidebar-inner">
+            {{-- Brand --}}
+            <div class="library-brand">
                 <div class="library-brand-mark">
                     <img src="{{ asset('img/logo_unamad.png') }}" alt="Logo UNAMAD" class="library-brand-logo">
                 </div>
                 <div class="library-brand-copy">
                     <h1>Biblioteca UNAMAD</h1>
-                    <small>Universidad Nacional Amazónica de Madre de Dios</small>
+                    <small>Univ. Nac. Amazónica de Madre de Dios</small>
                 </div>
             </div>
-            <p>Explora catálogos, reservas y préstamos desde una experiencia más clara y ordenada.</p>
-        </div>
 
-        <nav class="library-nav" aria-label="Navegación principal">
-            <a href="{{ route('home') }}" class="library-nav-link nav-home {{ request()->routeIs('home') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-house-heart-fill"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Inicio</strong>
-                    <small>Portada principal</small>
-                </span>
-            </a>
-            <a href="{{ route('catalogo') }}" class="library-nav-link nav-catalog {{ request()->routeIs('catalogo') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-collection-fill"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Catálogo</strong>
-                    <small>Búsqueda de libros</small>
-                </span>
-            </a>
-            <a href="{{ route('evento') }}" class="library-nav-link nav-events {{ request()->routeIs('evento') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-stars"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Eventos</strong>
-                    <small>Novedades y agenda</small>
-                </span>
-            </a>
-            <a href="{{ route('otras.bibliotecas') }}" class="library-nav-link nav-libraries {{ request()->routeIs('otras.bibliotecas') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-link-45deg"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Otras bibliotecas</strong>
-                    <small>Links de consulta</small>
-                </span>
-            </a>
-            <a href="{{ route('bibliotecas.cientificas') }}" class="library-nav-link nav-scientific {{ request()->routeIs('bibliotecas.cientificas') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-journal-medical"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Bases Científicas</strong>
-                    <small>ScienceDirect · Scopus · IOP</small>
-                </span>
-            </a>
-            @auth
-            <a href="{{ route('mis.reservas') }}" class="library-nav-link nav-reservations {{ request()->routeIs('mis.reservas') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-bookmark-star-fill"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Mis Reservas</strong>
-                    <small>Solicitudes activas</small>
-                </span>
-            </a>
-            <a href="{{ route('prestamos') }}" class="library-nav-link nav-loans {{ request()->routeIs('prestamos') ? 'is-active' : '' }}">
-                <span class="library-nav-icon">
-                    <i class="bi bi-arrow-left-right"></i>
-                </span>
-                <span class="library-nav-text">
-                    <strong>Préstamos</strong>
-                    <small>Control de movimientos</small>
-                </span>
-            </a>
-            @endauth
-        </nav>
+            {{-- Navigation --}}
+            <nav class="library-nav" aria-label="Navegación principal">
 
-        <div class="library-sidebar-footer">
-            <strong class="d-block mb-1">Ambiente de lectura</strong>
-            <small>Un espacio pensado para consultar libros, revisar disponibilidad y gestionar movimientos sin perder contexto.</small>
+                {{-- Sección: General --}}
+                <div class="library-nav-section">
+                    <div class="library-nav-section-label">Menú principal</div>
+                    <a href="{{ route('home') }}" class="library-nav-link nav-home {{ request()->routeIs('home') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-house-heart-fill"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Inicio</strong>
+                            <small>Portada principal</small>
+                        </span>
+                    </a>
+                    <a href="{{ route('catalogo') }}" class="library-nav-link nav-catalog {{ request()->routeIs('catalogo') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-collection-fill"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Catálogo</strong>
+                            <small>Búsqueda de libros</small>
+                        </span>
+                    </a>
+                    <a href="{{ route('evento') }}" class="library-nav-link nav-events {{ request()->routeIs('evento') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-stars"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Eventos</strong>
+                            <small>Novedades y agenda</small>
+                        </span>
+                    </a>
+                </div>
+
+                {{-- Sección: Recursos --}}
+                <div class="library-nav-section">
+                    <div class="library-nav-section-label">Recursos</div>
+                    <a href="{{ route('otras.bibliotecas') }}" class="library-nav-link nav-libraries {{ request()->routeIs('otras.bibliotecas') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-link-45deg"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Otras bibliotecas</strong>
+                            <small>Links de consulta</small>
+                        </span>
+                    </a>
+                    <a href="{{ route('bibliotecas.cientificas') }}" class="library-nav-link nav-scientific {{ request()->routeIs('bibliotecas.cientificas') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-journal-medical"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Bibliotecas Científicas</strong>
+                            <small>Scopus · ScienceDirect · IOP</small>
+                        </span>
+                    </a>
+                </div>
+
+                {{-- Sección: Mi espacio (solo autenticados) --}}
+                @auth
+                <div class="library-nav-section">
+                    <div class="library-nav-section-label">Mi espacio</div>
+                    <a href="{{ route('mis.reservas') }}" class="library-nav-link nav-reservations {{ request()->routeIs('mis.reservas') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-bookmark-star-fill"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Mis Reservas</strong>
+                            <small>Solicitudes activas</small>
+                        </span>
+                    </a>
+                    <a href="{{ route('prestamos') }}" class="library-nav-link nav-loans {{ request()->routeIs('prestamos') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-arrow-left-right"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Préstamos</strong>
+                            <small>Control de movimientos</small>
+                        </span>
+                    </a>
+                </div>
+                @endauth
+
+            </nav>
+
+            {{-- Footer --}}
+            <div class="library-sidebar-footer">
+                @auth
+                <div class="library-sidebar-user">
+                    <div class="library-sidebar-avatar">
+                        {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                    </div>
+                    <div class="library-sidebar-user-info">
+                        <strong>{{ Auth::user()->name ?? 'Usuario' }}</strong>
+                        <small>Sesión activa</small>
+                    </div>
+                </div>
+                @else
+                <div class="library-sidebar-guest">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Ingresa para ver tus reservas y préstamos</span>
+                </div>
+                @endauth
+            </div>
         </div>
     </aside>
 
@@ -1412,42 +1809,79 @@ body.library-dark .overlay.active {
         </section>
 
         <footer class="library-footer" aria-label="Pie de página institucional">
-            <div class="library-footer-grid">
-                <div>
-                    <h6>Biblioteca UNAMAD</h6>
-                    <p class="mb-2">
-                        Plataforma de consulta para explorar catálogos, revisar disponibilidad bibliográfica
-                        y gestionar reservas y préstamos en la Universidad Nacional Amazónica de Madre de Dios.
-                    </p>
-                    <small>Madre de Dios, Perú</small>
-                </div>
+            <div class="library-footer-inner">
+                <div class="library-footer-grid">
 
-                <div>
-                    <h6>Enlaces rápidos</h6>
-                    <div class="library-footer-list">
-                        <a href="{{ route('home') }}">Inicio</a>
-                        <a href="{{ route('catalogo') }}">Catálogo</a>
-                        <a href="{{ route('evento') }}">Eventos</a>
-                        <a href="{{ route('otras.bibliotecas') }}">Otras bibliotecas</a>
-                        @auth
-                        <a href="{{ route('mis.reservas') }}">Mis reservas</a>
-                        @endauth
+                    {{-- Columna marca --}}
+                    <div class="library-footer-brand">
+                        <div class="library-footer-brand-header">
+                            <div class="library-footer-logo">
+                                <img src="{{ asset('img/logo_unamad.png') }}" alt="Logo UNAMAD">
+                            </div>
+                            <div class="library-footer-brand-copy">
+                                <strong>Biblioteca UNAMAD</strong>
+                                <small>Sistema Bibliotecario Institucional</small>
+                            </div>
+                        </div>
+                        <p class="library-footer-brand-desc">
+                            Plataforma de consulta bibliográfica de la Universidad Nacional Amazónica de
+                            Madre de Dios. Explora el catálogo, gestiona reservas, accede a bases de datos
+                            científicas y mantente al tanto de los eventos de la biblioteca.
+                        </p>
+                        <span class="library-footer-location">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            Puerto Maldonado, Madre de Dios — Perú
+                        </span>
                     </div>
-                </div>
 
-                <div>
-                    <h6>Contacto</h6>
-                    <div class="library-footer-list">
-                        <span><i class="bi bi-geo-alt me-2"></i>Universidad Nacional Amazónica de Madre de Dios</span>
-                        <span><i class="bi bi-envelope me-2"></i>biblioteca@unamad.edu.pe</span>
-                        <span><i class="bi bi-clock me-2"></i>Consulta digital disponible todo el día</span>
+                    {{-- Columna enlaces --}}
+                    <div class="library-footer-col">
+                        <h6>Navegación</h6>
+                        <div class="library-footer-list">
+                            <a href="{{ route('home') }}">Inicio</a>
+                            <a href="{{ route('catalogo') }}">Catálogo de libros</a>
+                            <a href="{{ route('evento') }}">Eventos y agenda</a>
+                            <a href="{{ route('otras.bibliotecas') }}">Otras bibliotecas</a>
+                            <a href="{{ route('bibliotecas.cientificas') }}">Bibliotecas científicas</a>
+                            @auth
+                            <a href="{{ route('mis.reservas') }}">Mis reservas</a>
+                            <a href="{{ route('prestamos') }}">Mis préstamos</a>
+                            @endauth
+                        </div>
                     </div>
+
+                    {{-- Columna contacto --}}
+                    <div class="library-footer-col">
+                        <h6>Contacto</h6>
+                        <div style="display:flex;flex-direction:column;gap:0.65rem;">
+                            <div class="library-footer-contact-item">
+                                <i class="bi bi-building"></i>
+                                <span>Universidad Nacional Amazónica de Madre de Dios</span>
+                            </div>
+                            <div class="library-footer-contact-item">
+                                <i class="bi bi-envelope-fill"></i>
+                                <span>biblioteca@unamad.edu.pe</span>
+                            </div>
+                            <div class="library-footer-contact-item">
+                                <i class="bi bi-clock-fill"></i>
+                                <span>Plataforma disponible las 24 horas</span>
+                            </div>
+                            <div class="library-footer-contact-item">
+                                <i class="bi bi-wifi"></i>
+                                <span>Acceso a bibliotecas científicas desde la red institucional</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             <div class="library-footer-bottom">
-                <span>&copy; {{ now()->year }} Biblioteca UNAMAD. Todos los derechos reservados.</span>
-                <span>Diseñado para una experiencia de consulta clara, accesible e institucional.</span>
+                <div class="library-footer-bottom-left">
+                    <i class="bi bi-c-circle"></i>
+                    <span>{{ now()->year }} Biblioteca UNAMAD &mdash; Todos los derechos reservados.</span>
+                </div>
+                <span class="library-footer-bottom-right">Sistema Bibliotecario Institucional</span>
             </div>
         </footer>
     </main>

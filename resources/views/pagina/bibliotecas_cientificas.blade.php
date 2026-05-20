@@ -1,7 +1,7 @@
 @extends('layouts.biblioteca')
 
-@section('title', 'Biblioteca UNAMAD | Bases de Datos Científicas')
-@section('meta_description', 'Accede a las bases de datos científicas suscritas por UNAMAD: ScienceDirect, Scopus e IOPScience.')
+@section('title', 'Biblioteca UNAMAD | Bibliotecas Científicas')
+@section('meta_description', 'Accede a las bibliotecas científicas suscritas por UNAMAD: ScienceDirect, Scopus e IOPScience.')
 
 @section('content')
 <style>
@@ -209,7 +209,7 @@
 .sci-access-badge-text small {
     font-size: 0.78rem;
     color: #526761;
-    font-family: monospace;
+    line-height: 1.4;
 }
 
 /* ── Vigencia ── */
@@ -266,26 +266,57 @@
     font-size: 1rem;
 }
 
-/* ── Nota informativa ── */
+/* ── Badge: variante red vs cuenta ── */
+.sci-access-badge--red {
+    background: rgba(35, 118, 182, 0.07);
+    border-color: rgba(35, 118, 182, 0.18);
+}
+.sci-access-badge--red i { color: #1a6eb0; }
+.sci-access-badge--red .sci-access-badge-text strong { color: #0f3f6a; }
+
+.sci-access-badge--cuenta {
+    background: rgba(24, 77, 59, 0.06);
+    border-color: rgba(24, 77, 59, 0.14);
+}
+.sci-access-badge--cuenta i { color: #1a7357; }
+
+/* ── Notas informativas ── */
 .sci-nota {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 1.1rem 1.25rem;
+    padding: 1rem 1.25rem;
     border-radius: 1rem;
-    background: rgba(216,177,92,0.1);
-    border: 1px solid rgba(216,177,92,0.3);
     font-size: 0.875rem;
-    color: #6b5020;
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
 .sci-nota i {
     font-size: 1.1rem;
-    color: #c89f40;
-    margin-top: 1px;
+    margin-top: 2px;
     flex-shrink: 0;
 }
+
+.sci-nota--cuenta {
+    background: rgba(24, 77, 59, 0.07);
+    border: 1px solid rgba(24, 77, 59, 0.15);
+    color: #1a4030;
+}
+.sci-nota--cuenta i { color: #1a7357; }
+
+.sci-nota--red {
+    background: rgba(35, 118, 182, 0.07);
+    border: 1px solid rgba(35, 118, 182, 0.18);
+    color: #0f3f6a;
+}
+.sci-nota--red i { color: #1a6eb0; }
+
+.sci-nota--ayuda {
+    background: rgba(216, 177, 92, 0.1);
+    border: 1px solid rgba(216, 177, 92, 0.28);
+    color: #6b5020;
+}
+.sci-nota--ayuda i { color: #c89f40; }
 
 /* ── Dark mode ── */
 .library-dark .sci-hero {
@@ -337,11 +368,27 @@
     color: #d8b15c;
 }
 
-.library-dark .sci-nota {
+.library-dark .sci-nota--cuenta {
+    background: rgba(26,115,87,0.1);
+    border-color: rgba(26,115,87,0.2);
+    color: #7ecfaa;
+}
+.library-dark .sci-nota--red {
+    background: rgba(35,118,182,0.1);
+    border-color: rgba(35,118,182,0.2);
+    color: #7ab8e8;
+}
+.library-dark .sci-nota--ayuda {
     background: rgba(216,177,92,0.07);
     border-color: rgba(216,177,92,0.18);
     color: #c4a852;
 }
+.library-dark .sci-access-badge--red {
+    background: rgba(35,118,182,0.12);
+    border-color: rgba(35,118,182,0.2);
+}
+.library-dark .sci-access-badge--red .sci-access-badge-text strong { color: #7ab8e8; }
+.library-dark .sci-access-badge--red i { color: #5aaae0; }
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
@@ -359,7 +406,7 @@
             <i class="bi bi-journal-medical"></i>
             Recursos de investigación
         </div>
-        <h2>Bases de Datos Científicas</h2>
+        <h2>Bibliotecas Científicas</h2>
         <p>
             Accede a las plataformas de investigación suscritas por UNAMAD. Consulta artículos,
             revistas y libros científicos revisados por pares de las principales editoriales mundiales.
@@ -397,9 +444,9 @@
             <div class="sci-card-body">
                 <p class="sci-card-description">{{ $base['descripcion'] }}</p>
 
-                <div class="sci-access-badge">
-                    @if ($base['acceso'] === 'Correo institucional')
-                        <i class="bi bi-envelope-fill"></i>
+                <div class="sci-access-badge sci-access-badge--{{ $base['tipo_acceso'] }}">
+                    @if ($base['tipo_acceso'] === 'cuenta')
+                        <i class="bi bi-person-fill-check"></i>
                     @else
                         <i class="bi bi-wifi"></i>
                     @endif
@@ -429,15 +476,33 @@
         @endforeach
     </div>
 
-    {{-- Nota informativa --}}
-    <div class="sci-nota">
-        <i class="bi bi-info-circle-fill"></i>
-        <span>
-            <strong>Importante:</strong> Para acceder a ScienceDirect y Scopus necesitas iniciar sesión con tu correo
-            institucional <strong>@unamad.edu.pe</strong>. IOPScience se accede automáticamente desde la red de la
-            universidad (IP pública <strong>200.62.141.160/27</strong>). Si tienes dificultades de acceso, comunícate
-            con la Biblioteca Central de UNAMAD.
-        </span>
+    {{-- Notas informativas --}}
+    <div style="display:grid; gap:0.75rem;">
+        <div class="sci-nota sci-nota--cuenta">
+            <i class="bi bi-person-fill-check"></i>
+            <span>
+                <strong>ScienceDirect y Scopus — acceso por cuenta:</strong>
+                Ingresa a la plataforma, haz clic en <em>"Register"</em> o <em>"Create account"</em>
+                y usa tu correo <strong>@unamad.edu.pe</strong> para registrarte. Una vez creada la cuenta,
+                tendrás acceso completo de forma gratuita.
+            </span>
+        </div>
+        <div class="sci-nota sci-nota--red">
+            <i class="bi bi-wifi"></i>
+            <span>
+                <strong>IOPScience — acceso por red institucional:</strong>
+                Solo necesitas estar conectado al <strong>WiFi o la red de cable de UNAMAD</strong>.
+                El acceso es automático, sin contraseña ni registro. No funcionará desde redes externas
+                (tu casa, datos móviles, etc.).
+            </span>
+        </div>
+        <div class="sci-nota sci-nota--ayuda">
+            <i class="bi bi-headset"></i>
+            <span>
+                ¿Tienes dificultades para acceder? Comunícate con la
+                <strong>Biblioteca Central de UNAMAD</strong> para recibir orientación personalizada.
+            </span>
+        </div>
     </div>
 
 </div>
