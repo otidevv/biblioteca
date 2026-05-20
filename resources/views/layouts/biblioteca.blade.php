@@ -207,6 +207,10 @@ body {
     background: linear-gradient(135deg, rgba(26, 127, 110, 0.95), rgba(17, 94, 89, 0.95));
 }
 
+.library-nav-link.nav-scientific .library-nav-icon {
+    background: linear-gradient(135deg, rgba(35, 118, 182, 0.95), rgba(18, 70, 120, 0.95));
+}
+
 .library-nav-link.nav-reservations .library-nav-icon {
     background: linear-gradient(135deg, rgba(167, 92, 214, 0.95), rgba(108, 47, 149, 0.95));
 }
@@ -265,6 +269,11 @@ body {
 .library-nav-link.nav-libraries:hover .library-nav-icon,
 .library-nav-link.nav-libraries.is-active .library-nav-icon {
     background: linear-gradient(135deg, #59d0c1, #16796f);
+}
+
+.library-nav-link.nav-scientific:hover .library-nav-icon,
+.library-nav-link.nav-scientific.is-active .library-nav-icon {
+    background: linear-gradient(135deg, #60b4ff, #1a5fa8);
 }
 
 .library-nav-link.nav-reservations:hover .library-nav-icon,
@@ -1236,6 +1245,15 @@ body.library-dark .overlay.active {
                 <span class="library-nav-text">
                     <strong>Otras bibliotecas</strong>
                     <small>Links de consulta</small>
+                </span>
+            </a>
+            <a href="{{ route('bibliotecas.cientificas') }}" class="library-nav-link nav-scientific {{ request()->routeIs('bibliotecas.cientificas') ? 'is-active' : '' }}">
+                <span class="library-nav-icon">
+                    <i class="bi bi-journal-medical"></i>
+                </span>
+                <span class="library-nav-text">
+                    <strong>Bases Científicas</strong>
+                    <small>ScienceDirect · Scopus · IOP</small>
                 </span>
             </a>
             @auth

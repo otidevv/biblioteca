@@ -298,6 +298,7 @@ Route::middleware('registrar.visita')->group(function () {
     Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
     Route::get('/otras-bibliotecas', [PaginaController::class, 'otrasBibliotecas'])->name('otras.bibliotecas');
     Route::get('/evento', [PaginaController::class, 'eventos'])->name('evento');
+    Route::get('/bibliotecas-cientificas', [PaginaController::class, 'bibliotecasCientificas'])->name('bibliotecas.cientificas');
 });
 Route::middleware('auth')
     ->get('/prestamos', [PaginaController::class, 'misPrestamos'])

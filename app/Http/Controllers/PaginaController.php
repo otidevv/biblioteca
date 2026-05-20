@@ -669,4 +669,42 @@ class PaginaController extends Controller
         return view('pagina.otras_bibliotecas', compact('bibliotecasExternas'));
     }
 
+    public function bibliotecasCientificas()
+    {
+        $bases = [
+            [
+                'nombre'     => 'ScienceDirect',
+                'descripcion'=> 'Plataforma de Elsevier con acceso a revistas científicas, libros y artículos de investigación en ciencias, tecnología, medicina y ciencias sociales.',
+                'acceso'     => 'Correo institucional',
+                'detalle'    => '@unamad.edu.pe',
+                'url'        => 'https://www.sciencedirect.com/',
+                'logo'       => 'img/bibliotecas_cientificas/ScienceDirect_logo.png',
+                'color'      => '#e85e1b',
+                'vigencia'   => null,
+            ],
+            [
+                'nombre'     => 'Scopus',
+                'descripcion'=> 'Base de datos bibliográfica de Elsevier que indexa literatura científica revisada por pares: revistas, libros y actas de conferencias.',
+                'acceso'     => 'Correo institucional',
+                'detalle'    => '@unamad.edu.pe',
+                'url'        => 'https://www.scopus.com/',
+                'logo'       => 'img/bibliotecas_cientificas/Scopus_logo.png',
+                'color'      => '#e85e1b',
+                'vigencia'   => null,
+            ],
+            [
+                'nombre'     => 'IOPScience',
+                'descripcion'=> 'Plataforma del Institute of Physics con publicaciones en física, ingeniería, astrofísica y ciencias relacionadas.',
+                'acceso'     => 'IP institucional',
+                'detalle'    => '200.62.141.160/27',
+                'url'        => 'https://iopscience.iop.org/',
+                'logo'       => 'img/bibliotecas_cientificas/IOPSCIENCE_logo.png',
+                'color'      => '#006eb6',
+                'vigencia'   => '19/05/2026 – 19/05/2027',
+            ],
+        ];
+
+        return view('pagina.bibliotecas_cientificas', compact('bases'));
+    }
+
 }
