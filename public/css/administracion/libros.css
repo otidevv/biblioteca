@@ -1,35 +1,65 @@
-.books-table-shell {
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
+/* ─── Panel header ───────────────────────────────────────── */
+
+.books-panel__header {
+    align-items: flex-end;
+    gap: 1.25rem;
 }
 
-.books-table-shell #tabla-libros {
-    min-width: 1120px;
+.books-panel__heading {
+    min-width: 0;
+}
+
+.books-panel__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.88rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.books-panel__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+/* ─── Table shell ────────────────────────────────────────── */
+
+.books-table-shell {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
 }
 
 .books-table-shell .dataTables_wrapper {
     width: 100%;
     overflow-x: auto !important;
-    overflow-y: hidden !important;
+    overflow-y: visible !important;
 }
 
 .books-table-shell .dataTables_scroll {
     overflow-x: auto !important;
-    overflow-y: hidden !important;
+    overflow-y: visible !important;
 }
 
 .books-table-shell .dataTables_scrollHead,
 .books-table-shell .dataTables_scrollBody {
     overflow-x: auto !important;
-    overflow-y: hidden !important;
+    overflow-y: visible !important;
 }
 
 .books-table-shell .dataTables_scrollHeadInner,
 .books-table-shell .dataTables_scrollHeadInner table,
 .books-table-shell .dataTables_scrollBody table {
-    min-width: 1120px !important;
-    width: 1120px !important;
+    min-width: 1100px !important;
 }
 
 .books-table-shell .table-responsive,
@@ -37,4 +67,307 @@
 .books-table-shell .table-bordered,
 .books-table-shell .datatable {
     overflow: auto !important;
+}
+
+/* ─── Column widths ──────────────────────────────────────── */
+
+#tabla-libros th,
+#tabla-libros td {
+    vertical-align: middle;
+}
+
+#tabla-libros thead th {
+    white-space: nowrap;
+}
+
+#tabla-libros thead th i {
+    opacity: 0.6;
+}
+
+/* Dewey */
+#tabla-libros th:nth-child(1),
+#tabla-libros td:nth-child(1) { min-width: 100px; }
+
+/* Codigo */
+#tabla-libros th:nth-child(2),
+#tabla-libros td:nth-child(2) { min-width: 100px; }
+
+/* ISBN */
+#tabla-libros th:nth-child(3),
+#tabla-libros td:nth-child(3) { min-width: 130px; }
+
+/* Tipo */
+#tabla-libros th:nth-child(4),
+#tabla-libros td:nth-child(4) { min-width: 110px; }
+
+/* Titulo */
+#tabla-libros th:nth-child(5),
+#tabla-libros td:nth-child(5) { min-width: 240px; max-width: 320px; white-space: normal; word-break: break-word; }
+
+/* Autor */
+#tabla-libros th:nth-child(6),
+#tabla-libros td:nth-child(6) { min-width: 160px; white-space: normal; }
+
+/* Ejemplares */
+#tabla-libros th:nth-child(7),
+#tabla-libros td:nth-child(7) { min-width: 160px; }
+
+/* Estado */
+#tabla-libros th:nth-child(8),
+#tabla-libros td:nth-child(8) { min-width: 100px; }
+
+/* Acciones */
+#tabla-libros th:nth-child(9),
+#tabla-libros td:nth-child(9) { width: 110px; text-align: center; }
+
+/* ─── Code cell (Dewey + Codigo) ─────────────────────────── */
+
+.books-code-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.books-code-cell__dewey {
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #0f172a;
+}
+
+.books-code-cell__codigo {
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* ─── Mono cell (ISBN) ───────────────────────────────────── */
+
+.books-cell__mono {
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    color: #334155;
+    letter-spacing: 0.02em;
+}
+
+.books-cell__empty {
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+/* ─── Tipo badge ─────────────────────────────────────────── */
+
+.books-tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.32rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    background: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+    white-space: nowrap;
+}
+
+/* ─── Titulo cell ────────────────────────────────────────── */
+
+.books-titulo-cell {
+    display: block;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.4;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.books-titulo-cell__ellipsis {
+    color: #94a3b8;
+}
+
+/* ─── Autor cell ─────────────────────────────────────────── */
+
+.books-autor-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+}
+
+.books-autor-name {
+    display: block;
+    color: #334155;
+    font-size: 0.88rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ─── Ejemplares cell ────────────────────────────────────── */
+
+.books-exemplars-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 180px;
+}
+
+.books-exemplars-cell__total {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.books-exemplars-cell__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+/* ─── Library breakdown list ─────────────────────────────── */
+
+.books-bib-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+}
+
+.books-bib-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.24rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.books-bib-item i {
+    font-size: 0.72rem;
+    flex-shrink: 0;
+}
+
+.books-bib-item--mine {
+    background: rgba(22, 163, 74, 0.1);
+    color: #15803d;
+    border-left: 2px solid rgba(22, 163, 74, 0.45);
+}
+
+.books-bib-item--other {
+    background: rgba(148, 163, 184, 0.12);
+    color: #475569;
+    border-left: 2px solid rgba(148, 163, 184, 0.3);
+}
+
+/* ─── Estado badge ───────────────────────────────────────── */
+
+.books-estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    padding: 0.38rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.books-estado-badge--active {
+    background: rgba(22, 163, 74, 0.11);
+    color: #15803d;
+}
+
+.books-estado-badge--inactive {
+    background: rgba(148, 163, 184, 0.14);
+    color: #64748b;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 991.98px) {
+    .books-panel__header {
+        align-items: stretch;
+    }
+
+    .books-panel__actions {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .books-panel__actions .admin-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .books-panel__btn-text {
+        display: none;
+    }
+}
+
+/* ─── Dark mode ──────────────────────────────────────────── */
+
+.admin-shell.admin-dark .books-panel__eyebrow {
+    background: rgba(15, 118, 110, 0.18);
+    color: #2dd4bf;
+}
+
+.admin-shell.admin-dark .books-code-cell__dewey {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .books-code-cell__codigo {
+    color: #94a3b8;
+}
+
+.admin-shell.admin-dark .books-cell__mono {
+    color: #cbd5e1;
+}
+
+.admin-shell.admin-dark .books-cell__empty {
+    color: #475569;
+}
+
+.admin-shell.admin-dark .books-tipo-badge {
+    background: rgba(99, 102, 241, 0.16);
+    color: #a5b4fc;
+}
+
+.admin-shell.admin-dark .books-titulo-cell {
+    color: #f1f5f9;
+}
+
+.admin-shell.admin-dark .books-autor-name {
+    color: #cbd5e1;
+}
+
+.admin-shell.admin-dark .books-exemplars-cell__total {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .books-exemplars-cell__label {
+    color: #64748b;
+}
+
+.admin-shell.admin-dark .books-bib-item--mine {
+    background: rgba(22, 163, 74, 0.15);
+    color: #4ade80;
+    border-left-color: rgba(74, 222, 128, 0.4);
+}
+
+.admin-shell.admin-dark .books-bib-item--other {
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+    border-left-color: rgba(148, 163, 184, 0.25);
+}
+
+.admin-shell.admin-dark .books-estado-badge--active {
+    background: rgba(22, 163, 74, 0.16);
+    color: #4ade80;
+}
+
+.admin-shell.admin-dark .books-estado-badge--inactive {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
 }

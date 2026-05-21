@@ -1,19 +1,33 @@
+/* ─── Layout ─────────────────────────────────────────────── */
+
 .transfer-dashboard {
     display: grid;
     gap: 1.5rem;
 }
 
+/* ─── Hero ───────────────────────────────────────────────── */
+
 .transfer-dashboard__hero {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.5rem;
+    background:
+        radial-gradient(circle at top left, rgba(13, 148, 136, 0.1), transparent 45%),
+        linear-gradient(135deg, #ffffff 0%, #f5fbfb 100%);
+    border: 1px solid rgba(13, 148, 136, 0.1);
+}
+
+.transfer-dashboard__hero-body {
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .transfer-dashboard__eyebrow {
     display: inline-flex;
     align-items: center;
-    padding: 0.42rem 0.82rem;
+    gap: 0.45rem;
+    padding: 0.42rem 0.88rem;
     border-radius: 999px;
     background: rgba(15, 118, 110, 0.12);
     color: #0f766e;
@@ -23,15 +37,182 @@
     text-transform: uppercase;
 }
 
-.transfer-dashboard__actions {
+.transfer-dashboard__hero-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* Summary cards in hero */
+.transfer-dashboard__summary {
     display: flex;
     gap: 0.75rem;
-    flex-wrap: wrap;
 }
+
+.transfer-dashboard__summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    min-width: 130px;
+}
+
+.transfer-dashboard__summary-item--pending {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.transfer-dashboard__summary-item--pending > i {
+    color: #d97706;
+    font-size: 1.25rem;
+}
+
+.transfer-dashboard__summary-item--sent {
+    background: rgba(59, 130, 246, 0.07);
+    border-color: rgba(59, 130, 246, 0.18);
+}
+
+.transfer-dashboard__summary-item--sent > i {
+    color: #3b82f6;
+    font-size: 1.25rem;
+}
+
+.transfer-dashboard__summary-label {
+    display: block;
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+}
+
+.transfer-dashboard__summary-count {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f172a;
+}
+
+.transfer-dashboard__hero-actions {
+    display: flex;
+    gap: 0.65rem;
+}
+
+/* ─── Panel buttons ──────────────────────────────────────── */
+
+.admin-btn--success {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(22, 163, 74, 0.22);
+}
+
+.admin-btn--success:hover {
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(22, 163, 74, 0.3);
+}
+
+.admin-btn--danger {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(220, 38, 38, 0.2);
+}
+
+.admin-btn--danger:hover {
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(220, 38, 38, 0.3);
+}
+
+/* ─── Panel ──────────────────────────────────────────────── */
 
 .transfer-dashboard__panel {
     width: 100%;
+    padding: 0;
+    overflow: hidden;
 }
+
+/* ─── Tabs nav ───────────────────────────────────────────── */
+
+.transfer-dashboard__tabs-wrap {
+    padding: 1.1rem 1.5rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.transfer-dashboard__tabs {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.transfer-dashboard__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    border: none;
+    border-radius: 12px 12px 0 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    position: relative;
+    bottom: -1px;
+}
+
+.transfer-dashboard__tab:hover {
+    color: #0f172a;
+    background: rgba(148, 163, 184, 0.08);
+}
+
+.transfer-dashboard__tab.active {
+    color: #0f172a;
+    background: #fff;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-bottom-color: #fff;
+}
+
+.transfer-dashboard__tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.transfer-dashboard__tab-badge--pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.transfer-dashboard__tab-badge--sent {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* ─── Tab content ────────────────────────────────────────── */
+
+.transfer-dashboard__tab-content {
+    padding: 1.5rem;
+}
+
+.transfer-dashboard__tab-header {
+    margin-bottom: 1.1rem;
+}
+
+/* ─── Bulk bar ───────────────────────────────────────────── */
 
 .transfer-dashboard__bulkbar {
     display: flex;
@@ -39,17 +220,51 @@
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1rem;
-    padding: 0.95rem 1.1rem;
-    border-radius: 18px;
-    border: 1px solid rgba(14, 165, 233, 0.16);
-    background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(224, 242, 254, 0.95));
+    padding: 0.9rem 1.1rem;
+    border-radius: 16px;
+    border: 1px solid transparent;
 }
+
+.transfer-dashboard__bulkbar--pending {
+    border-color: rgba(245, 158, 11, 0.22);
+    background: linear-gradient(135deg, rgba(255, 251, 235, 0.97), rgba(254, 243, 199, 0.88));
+}
+
+.transfer-dashboard__bulkbar--sent {
+    border-color: rgba(59, 130, 246, 0.2);
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.97), rgba(219, 234, 254, 0.88));
+}
+
+.transfer-dashboard__bulkbar-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.transfer-dashboard__bulk-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.transfer-dashboard__bulk-icon--pending { color: #d97706; }
+.transfer-dashboard__bulk-icon--sent    { color: #3b82f6; }
 
 .transfer-dashboard__bulkbar-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.65rem;
     flex-wrap: wrap;
+    align-items: center;
 }
+
+.transfer-dashboard__bulkbar-actions .admin-btn {
+    min-height: 38px;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+}
+
+/* ─── Table shell ────────────────────────────────────────── */
 
 .transfer-dashboard__table-shell {
     overflow-x: auto !important;
@@ -65,13 +280,145 @@
 }
 
 .transfer-dashboard__table-shell table {
-    min-width: 980px;
+    min-width: 880px;
 }
 
-@media (max-width: 991.98px) {
-    .transfer-dashboard__hero,
+.transfer-dashboard__table-shell thead th {
+    white-space: nowrap;
+}
+
+.transfer-dashboard__table-shell thead th i {
+    opacity: 0.6;
+}
+
+/* ─── Dark mode ──────────────────────────────────────────── */
+
+.admin-shell.admin-dark .transfer-dashboard__hero {
+    background:
+        radial-gradient(circle at top left, rgba(13, 148, 136, 0.1), transparent 45%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.94) 100%);
+    border-color: rgba(13, 148, 136, 0.14);
+}
+
+.admin-shell.admin-dark .transfer-dashboard__eyebrow {
+    background: rgba(15, 118, 110, 0.18);
+    color: #2dd4bf;
+}
+
+.admin-shell.admin-dark .transfer-dashboard__summary-item--pending {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.18);
+}
+
+.admin-shell.admin-dark .transfer-dashboard__summary-item--sent {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.16);
+}
+
+.admin-shell.admin-dark .transfer-dashboard__summary-count {
+    color: #f8fafc;
+}
+
+.admin-shell.admin-dark .transfer-dashboard__tabs-wrap {
+    border-bottom-color: rgba(148, 163, 184, 0.12);
+}
+
+.admin-shell.admin-dark .transfer-dashboard__tab {
+    color: #94a3b8;
+}
+
+.admin-shell.admin-dark .transfer-dashboard__tab:hover {
+    color: #e2e8f0;
+    background: rgba(148, 163, 184, 0.08);
+}
+
+.admin-shell.admin-dark .transfer-dashboard__tab.active {
+    color: #f8fafc;
+    background: rgba(15, 23, 42, 0.96);
+    border-color: rgba(148, 163, 184, 0.14);
+    border-bottom-color: rgba(15, 23, 42, 0.96);
+}
+
+.admin-shell.admin-dark .transfer-dashboard__tab-badge--pending {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+.admin-shell.admin-dark .transfer-dashboard__tab-badge--sent {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+}
+
+.admin-shell.admin-dark .transfer-dashboard__bulkbar--pending {
+    border-color: rgba(245, 158, 11, 0.2);
+    background: linear-gradient(135deg, rgba(30, 20, 5, 0.95), rgba(40, 28, 8, 0.9));
+}
+
+.admin-shell.admin-dark .transfer-dashboard__bulkbar--sent {
+    border-color: rgba(59, 130, 246, 0.2);
+    background: linear-gradient(135deg, rgba(10, 18, 35, 0.96), rgba(15, 23, 42, 0.92));
+}
+
+.admin-shell.admin-dark .transfer-dashboard__bulkbar-summary {
+    color: #e2e8f0;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 1199.98px) {
+    .transfer-dashboard__hero {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .transfer-dashboard__hero-aside {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .transfer-dashboard__summary {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .transfer-dashboard__summary-item {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .transfer-dashboard__hero-actions {
+        width: 100%;
+    }
+
+    .transfer-dashboard__hero-actions .admin-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .transfer-dashboard__tabs-wrap {
+        padding: 0.75rem 1rem 0;
+        overflow-x: auto;
+    }
+
+    .transfer-dashboard__tab-content {
+        padding: 1rem;
+    }
+
     .transfer-dashboard__bulkbar {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .transfer-dashboard__bulkbar-actions {
+        flex-direction: column;
+    }
+
+    .transfer-dashboard__bulkbar-actions .admin-btn {
+        width: 100%;
+        justify-content: center;
     }
 }

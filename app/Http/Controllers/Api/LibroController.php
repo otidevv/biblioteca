@@ -30,19 +30,26 @@ class LibroController extends Controller
     {
         $contexto = $this->bibliotecaService->resolverContextoBibliotecas($request->user());
 
-        $query = Libro::with(['autores','tipo_registro'])
+        $accesoGlobal          = $contexto['accesoGlobal'];
+        $bibliotecasAsignadas  = $contexto['bibliotecasAsignadas'];
+        $bibliotecasAsignadasIds = $bibliotecasAsignadas->pluck('id')->toArray();
+
+        $query = Libro::with([
+                        'autores',
+                        'tipo_registro',
+                        'ejemplares' => fn($q) => $q->select('id', 'libro_id', 'biblioteca_id')
+                                                     ->with('biblioteca:id,nombre'),
+                    ])
                     ->withCount('ejemplares');
 
-        if ($contexto['accesoGlobal']) {
+        if ($accesoGlobal) {
             $query->withCount([
                 'ejemplares as ejemplares_usuario_count'
             ]);
-        } elseif ($contexto['bibliotecasAsignadas']->isNotEmpty()) {
-            $bibliotecasIds = $contexto['bibliotecasAsignadas']->all();
-
+        } elseif ($bibliotecasAsignadas->isNotEmpty()) {
             $query->withCount([
-                'ejemplares as ejemplares_usuario_count' => function ($ejemplaresQuery) use ($bibliotecasIds) {
-                    $ejemplaresQuery->whereIn('biblioteca_id', $bibliotecasIds);
+                'ejemplares as ejemplares_usuario_count' => function ($ejemplaresQuery) use ($bibliotecasAsignadasIds) {
+                    $ejemplaresQuery->whereIn('biblioteca_id', $bibliotecasAsignadasIds);
                 }
             ]);
         } else {
@@ -85,9 +92,25 @@ class LibroController extends Controller
             }
         })
 
-        //  COLUMNA AUTORES (VISIBLE EN TABLA)
-        ->addColumn('autores', function($row){
-            return $row->autores->pluck('nombres')->join(', ');
+        ->addColumn('autores', function($row) {
+            return $row->autores
+                ->map(fn($a) => trim((string)$a->apellidos) . ':' . trim((string)$a->nombres))
+                ->join(',');
+        })
+
+        ->addColumn('bibliotecas_resumen', function($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
+            return $row->ejemplares
+                ->groupBy('biblioteca_id')
+                ->map(function($grupo) use ($accesoGlobal, $bibliotecasAsignadasIds) {
+                    $biblioteca = $grupo->first()->biblioteca;
+                    return [
+                        'nombre' => $biblioteca?->nombre ?? 'Sin biblioteca',
+                        'count'  => $grupo->count(),
+                        'es_mia' => $accesoGlobal || in_array($biblioteca?->id, $bibliotecasAsignadasIds),
+                    ];
+                })
+                ->values()
+                ->toArray();
         })
 
         ->addColumn('acciones', function($row){

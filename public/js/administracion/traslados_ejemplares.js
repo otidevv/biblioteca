@@ -30,6 +30,7 @@ $(document).ready(function () {
         drawCallback: function () {
             $('#checkAllPendientes').prop('checked', false);
             actualizarSeleccionTraslados('pendientes');
+            actualizarContadorHero('pendientes', this.api().page.info().recordsTotal);
         }
     });
 
@@ -61,6 +62,17 @@ $(document).ready(function () {
         drawCallback: function () {
             $('#checkAllEnviados').prop('checked', false);
             actualizarSeleccionTraslados('enviados');
+            actualizarContadorHero('enviados', this.api().page.info().recordsTotal);
+        }
+    });
+
+    // Redibuja la tabla al activar su tab (evita columnas desalineadas en scrollX)
+    $('#transferTabs button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const target = $(e.target).data('bs-target');
+        if (target === '#tab-pendientes') {
+            tablaTrasladosPendientes.columns.adjust();
+        } else {
+            tablaTrasladosEnviados.columns.adjust();
         }
     });
 
@@ -136,6 +148,18 @@ function recargarTablasTraslados() {
 
     if (tablaTrasladosEnviados) {
         tablaTrasladosEnviados.ajax.reload();
+    }
+}
+
+function actualizarContadorHero(tipo, total) {
+    if (tipo === 'pendientes') {
+        $('#hero-count-pendientes').text(total);
+        const $badge = $('#badge-pendientes');
+        total > 0 ? $badge.text(total).show() : $badge.hide();
+    } else {
+        $('#hero-count-enviados').text(total);
+        const $badge = $('#badge-enviados');
+        total > 0 ? $badge.text(total).show() : $badge.hide();
     }
 }
 
