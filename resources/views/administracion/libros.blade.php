@@ -42,6 +42,49 @@
             </div>
         </div>
 
+        <div class="books-filters">
+            <div class="books-filter-group">
+                <label class="books-filter-label" for="filtro-biblioteca">
+                    <i class="bi bi-building"></i> Biblioteca
+                </label>
+                <select id="filtro-biblioteca" class="books-filter-select form-select form-select-sm">
+                    <option value="">Todas las bibliotecas</option>
+                </select>
+            </div>
+            <div class="books-filter-group">
+                <label class="books-filter-label" for="filtro-tipo">
+                    <i class="bi bi-tag"></i> Tipo de registro
+                </label>
+                <select id="filtro-tipo" class="books-filter-select form-select form-select-sm">
+                    <option value="">Todos los tipos</option>
+                </select>
+            </div>
+            <div class="books-filter-group">
+                <label class="books-filter-label" for="filtro-estado">
+                    <i class="bi bi-circle-half"></i> Estado
+                </label>
+                <select id="filtro-estado" class="books-filter-select form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="1">Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+            </div>
+            <div class="books-filter-group books-filter-group--solo-ejemplares">
+                <label class="books-filter-label" for="filtro-con-ejemplares">
+                    <i class="bi bi-collection"></i> Ejemplares
+                </label>
+                <select id="filtro-con-ejemplares" class="books-filter-select form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="1">Con ejemplares</option>
+                    <option value="0">Sin ejemplares</option>
+                </select>
+            </div>
+            <button id="btn-limpiar-filtros" class="books-filter-clear admin-btn admin-btn--ghost" style="display:none" title="Limpiar filtros">
+                <i class="bi bi-x-circle"></i>
+                <span>Limpiar</span>
+            </button>
+        </div>
+
         <div class="admin-table-shell table-responsive books-table-shell">
             <table id="tabla-libros" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
                 <thead>

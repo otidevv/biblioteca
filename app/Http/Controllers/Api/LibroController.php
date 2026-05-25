@@ -32,7 +32,12 @@ class LibroController extends Controller
 
         $accesoGlobal          = $contexto['accesoGlobal'];
         $bibliotecasAsignadas  = $contexto['bibliotecasAsignadas'];
-        $bibliotecasAsignadasIds = $bibliotecasAsignadas->pluck('id')->toArray();
+        $bibliotecasAsignadasIds = $bibliotecasAsignadas->toArray();
+
+        $bibliotecaFiltro  = $request->input('biblioteca_id');
+        $tipoFiltro        = $request->input('tipo_registro_id');
+        $estadoFiltro      = $request->input('estado_filtro');
+        $conEjemplaresFiltro = $request->input('con_ejemplares');
 
         $query = Libro::with([
                         'autores',
@@ -41,6 +46,21 @@ class LibroController extends Controller
                                                      ->with('biblioteca:id,nombre'),
                     ])
                     ->withCount('ejemplares');
+
+        if ($bibliotecaFiltro) {
+            $query->whereHas('ejemplares', fn($q) => $q->where('biblioteca_id', $bibliotecaFiltro));
+        }
+        if ($tipoFiltro) {
+            $query->where('tipo_registro_id', $tipoFiltro);
+        }
+        if ($estadoFiltro !== null && $estadoFiltro !== '') {
+            $query->where('estado', $estadoFiltro);
+        }
+        if ($conEjemplaresFiltro === '1') {
+            $query->has('ejemplares');
+        } elseif ($conEjemplaresFiltro === '0') {
+            $query->doesntHave('ejemplares');
+        }
 
         if ($accesoGlobal) {
             $query->withCount([
@@ -106,7 +126,7 @@ class LibroController extends Controller
                     return [
                         'nombre' => $biblioteca?->nombre ?? 'Sin biblioteca',
                         'count'  => $grupo->count(),
-                        'es_mia' => $accesoGlobal || in_array($biblioteca?->id, $bibliotecasAsignadasIds),
+                        'es_mia' => in_array($biblioteca?->id, $bibliotecasAsignadasIds),
                     ];
                 })
                 ->values()

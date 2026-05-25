@@ -34,7 +34,38 @@ function formatEstado(data) {
         : '<span class="books-estado-badge books-estado-badge--inactive"><i class="bi bi-dash-circle-fill"></i> Inactivo</span>';
 }
 
+function cargarOpcionesFiltros() {
+    $.get('/api/bibliotecas/listar?draw=1&start=0&length=500', function(res) {
+        const sel = $('#filtro-biblioteca');
+        (res.data || [])
+            .filter(function(b) { return b.estado == 1 || b.estado == null; })
+            .sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); })
+            .forEach(function(bib) {
+                sel.append(new Option(bib.nombre, bib.id));
+            });
+    });
+
+    $.get('/api/tipo_registros/listar?draw=1&start=0&length=200', function(res) {
+        const sel = $('#filtro-tipo');
+        (res.data || [])
+            .sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); })
+            .forEach(function(tipo) {
+                const nombre = tipo.nombre
+                    ? tipo.nombre.replace(/-/g, ' ').replace(/_/g, ' ')
+                    : tipo.nombre;
+                sel.append(new Option(toTitleCase(nombre), tipo.id));
+            });
+    });
+}
+
+function hayFiltrosActivos() {
+    return $('#filtro-biblioteca').val() || $('#filtro-tipo').val() ||
+           $('#filtro-estado').val()     || $('#filtro-con-ejemplares').val();
+}
+
 $(document).ready(function () {
+    cargarOpcionesFiltros();
+
     tabla = $('#tabla-libros').DataTable({
         processing: true,
         serverSide: true,
@@ -47,7 +78,13 @@ $(document).ready(function () {
             url: "/api/inventario/libros/listar",
             type: "GET",
             xhrFields: { withCredentials: true },
-            error: default_error_handler
+            error: default_error_handler,
+            data: function(d) {
+                d.biblioteca_id    = $('#filtro-biblioteca').val();
+                d.tipo_registro_id = $('#filtro-tipo').val();
+                d.estado_filtro    = $('#filtro-estado').val();
+                d.con_ejemplares   = $('#filtro-con-ejemplares').val();
+            }
         },
 
         columns: [
@@ -105,7 +142,8 @@ $(document).ready(function () {
             },
             {
                 data: 'ejemplares_count',
-                name: 'count_ejemplares',
+                name: 'ejemplares_count',
+                orderable: false,
                 render: function(data, type, row) {
                     const total   = Number(data || 0);
                     const propios = Number(row.ejemplares_usuario_count || 0);
@@ -161,5 +199,16 @@ $(document).ready(function () {
             decorateTableActionButtons('#tabla-libros');
             $('#tabla-libros').css('width', '100%');
         }
+    });
+
+    $('#filtro-biblioteca, #filtro-tipo, #filtro-estado, #filtro-con-ejemplares').on('change', function() {
+        $('#btn-limpiar-filtros').toggle(!!hayFiltrosActivos());
+        tabla.ajax.reload();
+    });
+
+    $('#btn-limpiar-filtros').on('click', function() {
+        $('#filtro-biblioteca, #filtro-tipo, #filtro-estado, #filtro-con-ejemplares').val('');
+        $(this).hide();
+        tabla.ajax.reload();
     });
 });
