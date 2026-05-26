@@ -249,7 +249,11 @@ class PaginaController extends Controller
             ->limit(4)
             ->get();
 
-        return view('pagina.libro', compact('libro','libros','bibliotecas'));
+        $miComentario = auth()->check()
+            ? $libro->comentarios->firstWhere('user_id', auth()->id())
+            : null;
+
+        return view('pagina.libro', compact('libro','libros','bibliotecas','miComentario'));
     }
     public function misReservas()
     {        

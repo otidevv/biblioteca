@@ -1,4 +1,5 @@
-﻿<div class="row g-4" id="contenedorLibros">
+﻿<span id="libros-total-meta" data-total="{{ $libros->total() }}" hidden></span>
+<div class="row g-4" id="contenedorLibros">
     @forelse($libros as $libro)
         <div class="col-12 col-sm-6 col-md-4 col-lg-3">
             <a href="{{ route('libro.show', $libro->id) }}"

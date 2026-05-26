@@ -49,6 +49,19 @@ window.libroPage = {
             stickyCta.classList.toggle('book-sticky-hidden', entry.isIntersecting);
         }, { threshold: 0.5 }).observe(heroCta);
     }
+
+    // Contador de caracteres del comentario
+    const textarea = document.getElementById('comentarioTextarea');
+    const charCount = document.getElementById('comentarioCharCount');
+    if (textarea && charCount) {
+        const actualizarContador = (len) => {
+            charCount.textContent = len;
+            charCount.closest('.book-char-counter').classList.toggle('book-char-counter--warn', len >= 450);
+            charCount.closest('.book-char-counter').classList.toggle('book-char-counter--max', len >= 500);
+        };
+        actualizarContador(textarea.value.length);
+        textarea.addEventListener('input', function () { actualizarContador(this.value.length); });
+    }
 })();
 </script>
 @endsection
@@ -161,7 +174,7 @@ window.libroPage = {
 
                     @php $longDesc = mb_strlen($descripcionLibro) > 350; @endphp
                     <div class="book-description-card">
-                        <h2 class="book-section-title">📖 Resumen</h2>
+                        <h2 class="book-section-title">Resumen</h2>
                         <p class="book-description-text{{ $longDesc ? ' book-desc-clamped' : '' }}" id="bookDescText">{{ $descripcionLibro }}</p>
                         @if($longDesc)
                             <button type="button" class="book-desc-toggle" id="btnToggleDesc">
@@ -196,7 +209,7 @@ window.libroPage = {
 
                     @if($materiasLibro->isNotEmpty())
                         <div class="book-info-card">
-                            <h2 class="book-section-title">🏷️ Materias y temas</h2>
+                            <h2 class="book-section-title">Materias y temas</h2>
                             <div class="book-topic-list">
                                 @foreach($materiasLibro as $materia)
                                     <span class="book-topic">
@@ -370,14 +383,22 @@ window.libroPage = {
     </section>
 
     <section class="book-comments-card">
-        <h2 class="book-section-title">Comentarios y valoraciones</h2>
+        <div class="book-section-heading">
+            <h2 class="book-section-title">Comentarios y valoraciones</h2>
+            @if($libro->comentarios_count > 0)
+                <span class="book-section-badge">
+                    <i class="bi bi-chat-fill"></i>
+                    {{ $libro->comentarios_count }} reseña{{ $libro->comentarios_count !== 1 ? 's' : '' }}
+                </span>
+            @endif
+        </div>
 
         <div class="book-comments-layout">
             <div>
                 <div class="book-rating-panel" id="bookRatingSummary">
                     @include('pagina._rating_summary', [
                         'libro' => $libro,
-                        'ratingSize' => '1rem',
+                        'ratingSize' => '1.05rem',
                     ])
                 </div>
 
@@ -389,36 +410,57 @@ window.libroPage = {
             <div>
                 @auth
                     <div class="book-comment-form-card">
-                        <h3 class="book-section-title mb-2">Agregar comentario</h3>
-                        <form id="formComentario">
-                            @csrf
+                        @if($miComentario)
+                            <h3 class="book-section-title mb-1">Tu reseña</h3>
+                            <p class="book-comment-form-hint">Ya has valorado este libro. Puedes actualizar tu reseña aquí o editarla directamente desde el listado.</p>
+                        @else
+                            <h3 class="book-section-title mb-1">Tu reseña</h3>
+                            <p class="book-comment-form-hint">Califica y comparte tu experiencia con este libro.</p>
+                        @endif
 
+                        <form id="formComentario" novalidate>
+                            @csrf
                             <input type="hidden" name="libro_id" value="{{ $libro->id }}">
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Calificacion</label>
+                                <label class="form-label fw-semibold">Calificación</label>
                                 <div class="rating">
                                     @for($i = 5; $i >= 1; $i--)
                                         <input
                                             type="radio"
                                             name="rating"
                                             value="{{ $i }}"
-                                            id="star{{ $libro->id }}_{{ $i }}">
-                                        <label for="star{{ $libro->id }}_{{ $i }}">&#9733;</label>
+                                            id="star{{ $libro->id }}_{{ $i }}"
+                                            {{ $miComentario && (int)$miComentario->calificacion === $i ? 'checked' : '' }}>
+                                        <label for="star{{ $libro->id }}_{{ $i }}" title="{{ $i }} estrella{{ $i !== 1 ? 's' : '' }}">&#9733;</label>
                                     @endfor
+                                </div>
+                                <small class="book-modal-field-help mt-1">Selecciona cuántas estrellas merece este libro.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Comentario</label>
+                                <textarea
+                                    name="comentario"
+                                    id="comentarioTextarea"
+                                    class="form-control"
+                                    rows="4"
+                                    maxlength="500"
+                                    placeholder="Comparte tu experiencia de lectura..."
+                                    required>{{ $miComentario ? $miComentario->comentario : '' }}</textarea>
+                                <div class="book-char-counter">
+                                    <span id="comentarioCharCount">{{ $miComentario ? mb_strlen($miComentario->comentario) : 0 }}</span>/500
                                 </div>
                             </div>
 
-                            <textarea
-                                name="comentario"
-                                class="form-control mb-3"
-                                rows="4"
-                                placeholder="Comparte tu experiencia de lectura..."
-                                required></textarea>
-
-                            <button class="btn book-action-primary w-100" type="submit">
-                                <i class="bi bi-chat-square-text me-2"></i>
-                                Publicar comentario
+                            <button class="btn book-action-primary w-100" type="submit" id="btnPublicarComentario">
+                                @if($miComentario)
+                                    <i class="bi bi-arrow-repeat me-2"></i>
+                                    Actualizar reseña
+                                @else
+                                    <i class="bi bi-chat-square-text me-2"></i>
+                                    Publicar reseña
+                                @endif
                             </button>
                         </form>
                     </div>
@@ -429,31 +471,27 @@ window.libroPage = {
                             Comunidad lectora
                         </span>
 
-                        <h3 class="book-guest-title">Participa en la valoracion</h3>
+                        <h3 class="book-guest-title">¿Leíste este libro?</h3>
 
                         <p class="book-guest-text">
-                            Comparte tu experiencia de lectura, ayuda a otros usuarios a descubrir mejores libros y deja una calificacion que aporte a la comunidad.
+                            Comparte tu opinión y ayuda a otros lectores a descubrir mejores libros. Tu calificación aporta a la comunidad.
                         </p>
 
                         <div class="book-guest-points">
                             <div class="book-guest-point">
                                 <i class="bi bi-star-fill"></i>
-                                <span>Valora el libro con estrellas segun tu experiencia.</span>
+                                <span>Califica con estrellas según tu experiencia</span>
                             </div>
                             <div class="book-guest-point">
                                 <i class="bi bi-chat-quote-fill"></i>
-                                <span>Escribe una opinion breve para orientar a otros lectores.</span>
-                            </div>
-                            <div class="book-guest-point">
-                                <i class="bi bi-person-check-fill"></i>
-                                <span>Necesitas iniciar sesion para publicar comentarios y calificaciones.</span>
+                                <span>Escribe una reseña breve para orientar a otros</span>
                             </div>
                         </div>
 
                         <div class="book-guest-actions">
                             <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="btn book-action-primary book-guest-login">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>
-                                Iniciar sesion
+                                Iniciar sesión
                             </a>
                         </div>
                     </div>
@@ -475,100 +513,172 @@ window.libroPage = {
 @endsection
 
 @section('modal')
-<div class="modal fade" id="modalReserva" tabindex="-1" aria-labelledby="modalReservaTitle" aria-describedby="modalReservaDescription" aria-hidden="true">
+<div class="modal fade" id="modalReserva" tabindex="-1" aria-labelledby="modalReservaTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content book-modal-content">
+
             <div class="modal-header book-modal-header border-0">
                 <div>
-                    <h5 class="modal-title book-modal-title" id="modalReservaTitle">Solicitar prestamo</h5>
-                    <small class="book-modal-subtitle" id="modalReservaDescription">Elige la sede, selecciona un ejemplar disponible y define la modalidad del prestamo.</small>
+                    <h5 class="modal-title book-modal-title" id="modalReservaTitle">
+                        <i class="bi bi-bookmark-plus me-2"></i>Solicitar préstamo
+                    </h5>
+                    <small class="book-modal-subtitle">
+                        {{ \Illuminate\Support\Str::limit($libro->titulo, 60) }}
+                    </small>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar modal de prestamo"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body book-modal-body">
                 @auth
+                    {{-- Stats rápidos --}}
                     <div class="book-modal-summary">
-                        <div class="book-modal-stat">
-                            <span>Titulo</span>
-                            <strong>{{ $libro->titulo }}</strong>
-                        </div>
                         <div class="book-modal-stat">
                             <span>Disponibles</span>
                             <strong>{{ $ejemplaresDisponibles }} ejemplar{{ $ejemplaresDisponibles === 1 ? '' : 'es' }}</strong>
                         </div>
                         <div class="book-modal-stat">
                             <span>Sedes</span>
-                            <strong>{{ $bibliotecasDisponibles }} biblioteca{{ $bibliotecasDisponibles === 1 ? '' : 's' }}</strong>
+                            <strong>{{ $bibliotecasDisponibles }} sede{{ $bibliotecasDisponibles === 1 ? '' : 's' }}</strong>
+                        </div>
+                        <div class="book-modal-stat">
+                            <span>Reserva válida</span>
+                            <strong>Hasta mañana 20:00</strong>
+                        </div>
+                    </div>
+
+                    {{-- Indicador de pasos --}}
+                    <div class="book-modal-steps" id="modalSteps">
+                        <div class="book-modal-step book-modal-step--done" id="step1">
+                            <span class="book-modal-step-num">1</span>
+                            <span>Sede</span>
+                        </div>
+                        <span class="book-modal-step-line"></span>
+                        <div class="book-modal-step" id="step2">
+                            <span class="book-modal-step-num">2</span>
+                            <span>Ejemplar</span>
+                        </div>
+                        <span class="book-modal-step-line"></span>
+                        <div class="book-modal-step book-modal-step--done" id="step3">
+                            <span class="book-modal-step-num">3</span>
+                            <span>Modalidad</span>
                         </div>
                     </div>
 
                     <form id="formReserva" class="book-modal-form" novalidate>
                         @csrf
 
-                        <h6 class="book-modal-section-title">Datos de la solicitud</h6>
-                        <p class="book-modal-section-text">
-                            Completa los siguientes campos para registrar tu reserva correctamente.
-                        </p>
-
+                        {{-- Paso 1: Sede --}}
                         <div class="mb-3">
-                            <label for="biblioteca_select" class="form-label fw-semibold">Biblioteca</label>
-                            <select id="biblioteca_select" class="form-control" aria-describedby="bibliotecaSelectHelp" required>
-                                <option value="">-- Seleccionar biblioteca --</option>
-                                @foreach($bibliotecas as $biblioteca)
-                                    <option value="{{ $biblioteca->id }}">{{ $biblioteca->nombre }}</option>
+                            <label for="biblioteca_select" class="form-label fw-semibold">
+                                <i class="bi bi-building me-1 opacity-50"></i>Sede / Biblioteca
+                            </label>
+                            <select id="biblioteca_select" class="form-control" required>
+                                <option value="">Seleccionar sede...</option>
+                                @foreach($bibliotecas as $bib)
+                                    @php
+                                        $dispBib = $libro->ejemplares
+                                            ->where('biblioteca_id', $bib->id)
+                                            ->where('estado', 1)
+                                            ->count();
+                                    @endphp
+                                    <option value="{{ $bib->id }}" {{ $dispBib === 0 ? 'data-sin-stock=1' : '' }}>
+                                        {{ $bib->nombre }}
+                                        @if($dispBib > 0)
+                                            — {{ $dispBib }} disponible{{ $dispBib !== 1 ? 's' : '' }}
+                                        @else
+                                            — sin ejemplares disponibles
+                                        @endif
+                                    </option>
                                 @endforeach
                             </select>
-                            <small id="bibliotecaSelectHelp" class="book-modal-field-help">
-                                Selecciona la sede donde deseas consultar la disponibilidad del ejemplar.
-                            </small>
                         </div>
 
+                        {{-- Paso 2: Ejemplar --}}
                         <div class="mb-3">
-                            <label for="ejemplar_select" class="form-label fw-semibold">Ejemplar</label>
-                            <select name="ejemplar_id" id="ejemplar_select" class="form-control" aria-describedby="ejemplarSelectHelp" disabled required>
-                                <option value="">-- Seleccione una biblioteca primero --</option>
+                            <label for="ejemplar_select" class="form-label fw-semibold">
+                                <i class="bi bi-file-text me-1 opacity-50"></i>Ejemplar
+                            </label>
+                            <select name="ejemplar_id" id="ejemplar_select" class="form-control" disabled required>
+                                <option value="">Primero selecciona una sede</option>
                             </select>
-                            <small id="ejemplarSelectHelp" class="book-modal-field-help">
-                                La lista se habilitara cuando elijas una biblioteca con ejemplares disponibles.
-                            </small>
                         </div>
 
+                        {{-- Paso 3: Modalidad --}}
                         <div class="mb-0">
-                            <label for="tipo_prestamo" class="form-label fw-semibold">Tipo de prestamo</label>
-                            <select name="tipo_prestamo" id="tipo_prestamo" class="form-control" aria-describedby="tipoPrestamoHelp" required>
-                                <option value="0">Prestamo en sala</option>
-                                <option value="1">Prestamo a casa</option>
-                            </select>
-                            <small id="tipoPrestamoHelp" class="book-modal-field-help">
-                                El tipo de prestamo define las condiciones de uso y entrega del ejemplar.
-                            </small>
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-tag me-1 opacity-50"></i>Modalidad de préstamo
+                            </label>
+                            <div class="book-loan-types">
+                                <label class="book-loan-type">
+                                    <input type="radio" name="tipo_prestamo" value="0" checked>
+                                    <span class="book-loan-type-card">
+                                        <i class="bi bi-building"></i>
+                                        <strong>En sala</strong>
+                                        <small>Consulta el libro dentro de la biblioteca, sin límite de tiempo.</small>
+                                    </span>
+                                </label>
+                                <label class="book-loan-type">
+                                    <input type="radio" name="tipo_prestamo" value="1">
+                                    <span class="book-loan-type-card">
+                                        <i class="bi bi-house-door"></i>
+                                        <strong>A domicilio</strong>
+                                        <small>Lleva el libro a casa. Sujeto a plazo de devolución.</small>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
 
                     </form>
-
-                    <div class="book-modal-help">
-                        <i class="bi bi-clock-history"></i>
-                        <div>
-                            La reserva sera valida hasta manana a las <strong>20:00</strong>. Selecciona primero una biblioteca para ver los ejemplares disponibles en esa sede.
-                        </div>
-                    </div>
 
                     <div class="book-modal-footer">
                         <button type="button" class="btn book-modal-cancel" data-bs-dismiss="modal">
                             Cancelar
                         </button>
-                        <button class="btn book-action-primary flex-grow-1" type="submit" form="formReserva">
+                        <button class="btn book-action-primary flex-grow-1" type="submit" form="formReserva" id="btnConfirmarReserva">
                             <i class="bi bi-journal-check me-2"></i>
                             Confirmar reserva
                         </button>
                     </div>
                 @else
-                    <div class="alert alert-warning rounded-4 border-0 mb-0">
-                        Debes iniciar sesion para solicitar un prestamo de este libro.
+                    {{-- Estado no autenticado --}}
+                    <div class="book-modal-guest">
+                        <div class="book-modal-guest-icon">
+                            <i class="bi bi-lock-fill"></i>
+                        </div>
+                        <h6 class="book-modal-guest-title">Inicia sesión para continuar</h6>
+                        <p class="book-modal-guest-text">
+                            Para solicitar el préstamo de
+                            <strong>«{{ \Illuminate\Support\Str::limit($libro->titulo, 50) }}»</strong>
+                            necesitas acceder con tu cuenta universitaria.
+                        </p>
+                        <div class="book-modal-guest-points">
+                            <div class="book-modal-guest-point">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Reserva ejemplares en cualquier sede</span>
+                            </div>
+                            <div class="book-modal-guest-point">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Consulta y gestiona tus préstamos activos</span>
+                            </div>
+                            <div class="book-modal-guest-point">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Accede a tu historial de lecturas</span>
+                            </div>
+                        </div>
+                        <div class="book-modal-guest-actions">
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="btn book-action-primary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Iniciar sesión
+                            </a>
+                            <button type="button" class="btn book-modal-cancel" data-bs-dismiss="modal">
+                                Ahora no
+                            </button>
+                        </div>
                     </div>
                 @endauth
             </div>
+
         </div>
     </div>
 </div>

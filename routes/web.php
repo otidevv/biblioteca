@@ -278,6 +278,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
 // PAGINA Route::get('/autores', [ApiAutorController::class, 'listarAutores']);
 Route::prefix('pagina')->group(function () {
     Route::post('/comentario', [ApiPaginaController::class, 'agregarComentario'])->middleware('auth')->name('comentario');
+    Route::put('/comentario/{id}', [ApiPaginaController::class, 'actualizarComentario'])->middleware('auth')->name('comentario.actualizar');
+    Route::delete('/comentario/{id}', [ApiPaginaController::class, 'eliminarComentario'])->middleware('auth')->name('comentario.eliminar');
     Route::get('/idiomas', [ApiPaginaController::class, 'listarIdiomas']);
     Route::get('/materias', [ApiPaginaController::class, 'listarMaterias']); 
     Route::get('/autores', [ApiPaginaController::class, 'listarAutores']); 

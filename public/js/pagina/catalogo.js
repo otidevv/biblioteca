@@ -178,6 +178,13 @@ $(document).ready(function () {
             .done(function (html) {
                 $contenedor.html(html);
                 window.history.replaceState({}, '', url);
+
+                // Actualizar contador de resultados
+                const total = $contenedor.find('#libros-total-meta').data('total');
+                if (total !== undefined) {
+                    $('#catalogResultsCount').text(total);
+                    $('#catalogResultsSuffix').text(' resultado' + (total !== 1 ? 's' : ''));
+                }
             })
             .fail(function () {
                 if (typeof alerta === 'function') {

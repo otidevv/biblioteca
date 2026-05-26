@@ -147,12 +147,10 @@ class PaginaController extends Controller
             'rating' => 'required|integer|min:1|max:5'
         ]);
 
-        Comentario::create([
-            'libro_id' => $request->libro_id,
-            'user_id' => auth()->id(),
-            'comentario' => $request->comentario,
-            'calificacion' => $request->rating
-        ]);
+        Comentario::updateOrCreate(
+            ['libro_id' => $request->libro_id, 'user_id' => auth()->id()],
+            ['comentario' => $request->comentario, 'calificacion' => $request->rating]
+        );
 
         $comentarios = Comentario::with('usuario')
             ->where('libro_id', $request->libro_id)
@@ -178,6 +176,58 @@ class PaginaController extends Controller
             ])->render(),
         ]);
     }
+    public function eliminarComentario($id)
+    {
+        $comentario = Comentario::findOrFail($id);
+
+        if ($comentario->user_id !== auth()->id()) {
+            return response()->json(['error' => 'No tienes permiso para eliminar este comentario.'], 403);
+        }
+
+        $libroId = $comentario->libro_id;
+        $comentario->delete();
+
+        $comentarios = Comentario::with('usuario')->where('libro_id', $libroId)->latest()->get();
+        $libro = Libro::withAvg('comentarios as rating_promedio', 'calificacion')->withCount('comentarios')->findOrFail($libroId);
+
+        return response()->json([
+            'ok' => true,
+            'comentariosHtml' => view('pagina._comentarios', compact('comentarios'))->render(),
+            'ratingHtml'      => view('pagina._rating_summary', ['libro' => $libro, 'ratingSize' => '1rem'])->render(),
+            'mainRatingHtml'  => view('pagina._rating_summary', ['libro' => $libro, 'ratingClass' => 'book-main-rating-stars', 'ratingSize' => '1rem'])->render(),
+        ]);
+    }
+
+    public function actualizarComentario(Request $request, $id)
+    {
+        $comentario = Comentario::findOrFail($id);
+
+        if ($comentario->user_id !== auth()->id()) {
+            return response()->json(['error' => 'No tienes permiso para editar este comentario.'], 403);
+        }
+
+        $request->validate([
+            'comentario' => 'required|string|max:2000',
+            'rating'     => 'required|integer|min:1|max:5',
+        ]);
+
+        $comentario->update([
+            'comentario'  => $request->comentario,
+            'calificacion' => $request->rating,
+        ]);
+
+        $libroId = $comentario->libro_id;
+        $comentarios = Comentario::with('usuario')->where('libro_id', $libroId)->latest()->get();
+        $libro = Libro::withAvg('comentarios as rating_promedio', 'calificacion')->withCount('comentarios')->findOrFail($libroId);
+
+        return response()->json([
+            'ok' => true,
+            'comentariosHtml' => view('pagina._comentarios', compact('comentarios'))->render(),
+            'ratingHtml'      => view('pagina._rating_summary', ['libro' => $libro, 'ratingSize' => '1rem'])->render(),
+            'mainRatingHtml'  => view('pagina._rating_summary', ['libro' => $libro, 'ratingClass' => 'book-main-rating-stars', 'ratingSize' => '1rem'])->render(),
+        ]);
+    }
+
     public function listarLibros(Request $request)
     {
         $q = $request->get('q');

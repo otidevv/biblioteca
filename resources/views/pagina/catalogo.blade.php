@@ -176,9 +176,9 @@
     </div>
 
     <div class="catalog-results-bar__actions">
-        <span class="catalog-chip">
+        <span class="catalog-chip" id="catalogResultsChip">
             <i class="bi bi-file-text-fill"></i>
-            {{ $libros->total() }} resultados
+            <span id="catalogResultsCount">{{ $libros->total() }}</span><span id="catalogResultsSuffix"> resultado{{ $libros->total() !== 1 ? 's' : '' }}</span>
         </span>
 
         <div class="catalog-perpage">
