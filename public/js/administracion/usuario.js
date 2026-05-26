@@ -379,7 +379,7 @@ function validarCamposObligatoriosUsuario() {
 function modoEdicionUsuario() {
     $('#div_credenciales').hide();
 
-    $('#correo, #password, #re_password')
+    $('#password, #re_password')
         .closest('.form-group')
         .removeClass('form-required');
 
@@ -389,7 +389,7 @@ function modoEdicionUsuario() {
 function modoNuevoUsuario() {
     $('#div_credenciales').show();
 
-    $('#correo, #password, #re_password')
+    $('#password, #re_password')
         .closest('.form-group')
         .addClass('form-required');
 

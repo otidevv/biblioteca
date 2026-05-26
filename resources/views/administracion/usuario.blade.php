@@ -156,18 +156,19 @@
                             <label class="form-label">Direccion</label>
                             <input type="text" id="direccion" name="direccion" class="form-control">
                         </div>
+
+                        <div class="col-md-6 form-group form-required">
+                            <label class="form-label">Correo electrónico</label>
+                            <input type="email" id="correo" name="correo" class="form-control">
+                            <div class="form-text">Se usa como usuario de inicio de sesión.</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="admin-modal-section user-modal__section user-modal__section--soft" id="div_credenciales">
-                    <h6 class="user-modal__section-title">Credenciales de acceso</h6>
-                    <p class="user-modal__section-copy">Solo se solicitan al crear la cuenta. Luego podrás actualizar la contraseña desde acciones.</p>
+                    <h6 class="user-modal__section-title">Contraseña</h6>
+                    <p class="user-modal__section-copy">Solo se solicita al crear la cuenta. Luego puedes cambiarla desde acciones.</p>
                     <div class="row g-3 mt-1 mb-0">
-                        <div class="col-md-6 form-group form-required">
-                            <label class="form-label">Correo</label>
-                            <input type="email" id="correo" name="correo" class="form-control">
-                            <div class="form-text">Se usará como usuario de inicio de sesión.</div>
-                        </div>
                         <div class="col-md-6 form-group password-group form-required">
                             <label class="form-label">Contrasena</label>
                             <input type="password" id="password" name="password" class="form-control">

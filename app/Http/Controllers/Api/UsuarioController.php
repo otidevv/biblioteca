@@ -209,6 +209,7 @@ class UsuarioController extends Controller
             'sexo'              => 'nullable|in:M,F,O',
             'telefono'          => 'required|string|max:20',
             'direccion'         => 'required|string|max:255',
+            'correo'            => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'biblioteca'        => 'nullable|integer|exists:bibliotecas,id',
             'roles'             => 'required|array|min:1',
             'roles.*'           => 'exists:roles,id',
@@ -228,7 +229,8 @@ class UsuarioController extends Controller
             $persona->telefono=$request->telefono;
             $persona->direccion=$request->direccion;
             $persona->save();
-            $user->name = $this->construirNombreUsuario($request);
+            $user->name  = $this->construirNombreUsuario($request);
+            $user->email = $request->correo;
             $user->save();
             $user->roles()->sync($request->roles);
 
