@@ -17,6 +17,40 @@ window.libroPage = {
 };
 </script>
 <script src="{{ asset('js/pagina/libro.js') }}"></script>
+<script>
+(function () {
+    // Botón compartir
+    document.getElementById('btnShare')?.addEventListener('click', function () {
+        const icon = this.querySelector('i');
+        if (navigator.share) {
+            navigator.share({ title: document.title, url: location.href });
+        } else {
+            navigator.clipboard.writeText(location.href).then(() => {
+                icon.className = 'bi bi-check2';
+                setTimeout(() => { icon.className = 'bi bi-share'; }, 2000);
+            });
+        }
+    });
+
+    // Expandir/colapsar descripción
+    document.getElementById('btnToggleDesc')?.addEventListener('click', function () {
+        const desc = document.getElementById('bookDescText');
+        const expanded = desc.classList.toggle('book-desc-expanded');
+        this.innerHTML = expanded
+            ? '<i class="bi bi-chevron-up"></i> Ver menos'
+            : '<i class="bi bi-chevron-down"></i> Ver descripción completa';
+    });
+
+    // Ocultar sticky CTA cuando el botón principal está visible
+    const heroCta = document.querySelector('.book-action-row .book-action-primary');
+    const stickyCta = document.getElementById('bookStickyCta');
+    if (heroCta && stickyCta && 'IntersectionObserver' in window) {
+        new IntersectionObserver(([entry]) => {
+            stickyCta.classList.toggle('book-sticky-hidden', entry.isIntersecting);
+        }, { threshold: 0.5 }).observe(heroCta);
+    }
+})();
+</script>
 @endsection
 
 
@@ -125,9 +159,15 @@ window.libroPage = {
                         @endif
                     </div>
 
+                    @php $longDesc = mb_strlen($descripcionLibro) > 350; @endphp
                     <div class="book-description-card">
                         <h2 class="book-section-title">📖 Resumen</h2>
-                        <p class="book-description-text">{{ $descripcionLibro }}</p>
+                        <p class="book-description-text{{ $longDesc ? ' book-desc-clamped' : '' }}" id="bookDescText">{{ $descripcionLibro }}</p>
+                        @if($longDesc)
+                            <button type="button" class="book-desc-toggle" id="btnToggleDesc">
+                                <i class="bi bi-chevron-down"></i> Ver descripción completa
+                            </button>
+                        @endif
                     </div>
 
                     <div class="book-quick-specs">
@@ -169,19 +209,31 @@ window.libroPage = {
                     @endif
 
                     <div class="book-action-row">
-                        <button
-                            type="button"
-                            class="btn book-action-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalReserva">
-                            <i class="bi bi-download"></i>
-                            Solicitar préstamo
-                        </button>
+                        @if($ejemplaresDisponibles > 0)
+                            <button
+                                type="button"
+                                class="btn book-action-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalReserva">
+                                <i class="bi bi-bookmark-plus"></i>
+                                Solicitar préstamo
+                                <span class="book-btn-badge">{{ $ejemplaresDisponibles }}</span>
+                            </button>
+                        @else
+                            <button type="button" class="btn book-action-primary book-action-unavailable" disabled>
+                                <i class="bi bi-bookmark-x"></i>
+                                Sin ejemplares disponibles
+                            </button>
+                        @endif
 
                         <a href="{{ route('catalogo') }}" class="btn book-action-secondary">
                             <i class="bi bi-arrow-left"></i>
                             Volver al catálogo
                         </a>
+
+                        <button type="button" class="btn book-action-secondary book-share-btn" id="btnShare" title="Compartir este libro">
+                            <i class="bi bi-share"></i>
+                        </button>
                     </div>
 
                     <div class="book-info-alert">
@@ -190,7 +242,10 @@ window.libroPage = {
                         </div>
                         <div class="book-alert-content">
                             <strong>Disponibilidad en tiempo real</strong>
-                            <p class="mb-0">Revisa las sedes con ejemplares disponibles y solicita tu préstamo desde esta misma página.</p>
+                            <p class="mb-0">
+                                <a href="#seccion-disponibilidad" class="book-alert-link">Revisa las sedes con ejemplares disponibles</a>
+                                y solicita tu préstamo desde esta misma página.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -230,9 +285,9 @@ window.libroPage = {
                 </div>
             </div>
 
-            <div class="book-info-card">
+            <div class="book-info-card" id="seccion-disponibilidad">
                 <h2 class="book-section-title">Disponibilidad por biblioteca</h2>
-                <div class="table-responsive" id="tablaDisponibilidad">
+                <div id="tablaDisponibilidad">
                     @include('pagina._disponibilidad', ['libro' => $libro])
                 </div>
             </div>
@@ -407,6 +462,16 @@ window.libroPage = {
         </div>
     </section>
 </div>
+
+@if($ejemplaresDisponibles > 0)
+<div class="book-sticky-cta d-lg-none" id="bookStickyCta">
+    <button type="button" class="btn book-action-primary w-100" data-bs-toggle="modal" data-bs-target="#modalReserva">
+        <i class="bi bi-bookmark-plus me-2"></i>
+        Solicitar préstamo ·
+        <strong>{{ $ejemplaresDisponibles }} disponible{{ $ejemplaresDisponibles === 1 ? '' : 's' }}</strong>
+    </button>
+</div>
+@endif
 @endsection
 
 @section('modal')

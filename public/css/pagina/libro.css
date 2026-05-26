@@ -449,14 +449,12 @@
 }
 
 .book-copies-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    align-items: stretch;
-    max-height: 38rem;
-    overflow: auto;
-    padding-right: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    max-height: 34rem;
+    overflow-y: auto;
     overscroll-behavior: contain;
+    padding-right: 0.15rem;
 }
 
 .book-copies-grid::-webkit-scrollbar {
@@ -471,6 +469,87 @@
 .book-copies-grid::-webkit-scrollbar-track {
     background: rgba(24, 77, 59, 0.05);
     border-radius: 999px;
+}
+
+/* ── Filas de ejemplar ──────────────────────────────────────────────────── */
+.book-copy-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid rgba(24, 77, 59, 0.06);
+    border-left: 3px solid transparent;
+    transition: background 0.15s;
+}
+
+.book-copy-row:last-child {
+    border-bottom: none;
+}
+
+.book-copy-row:hover {
+    background: rgba(24, 77, 59, 0.04);
+}
+
+.book-copy-row--available { border-left-color: #22c55e; }
+.book-copy-row--lent      { border-left-color: #ef4444; }
+.book-copy-row--reserved  { border-left-color: #f59e0b; }
+.book-copy-row--transfer  { border-left-color: #9ca3af; }
+
+.book-copy-row-icon {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.65rem;
+    background: rgba(29, 101, 76, 0.09);
+    color: #1d654c;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.book-copy-row--lent     .book-copy-row-icon { background: rgba(239,68,68,0.08); color: #dc2626; }
+.book-copy-row--reserved .book-copy-row-icon { background: rgba(245,158,11,0.1); color: #b45309; }
+.book-copy-row--transfer .book-copy-row-icon { background: rgba(156,163,175,0.12); color: #6b7280; }
+
+.book-copy-row-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-copy-row-code {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #173d2f;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-copy-row-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem;
+    margin-top: 0.18rem;
+    font-size: 0.76rem;
+    color: #748a82;
+}
+
+.book-copy-row-lib {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.book-copy-row-lib i {
+    font-size: 0.7rem;
+}
+
+.bk-sep {
+    margin: 0 0.15rem;
+    opacity: 0.4;
 }
 
 .book-section-heading {
@@ -1564,4 +1643,413 @@ body.library-dark .book-copy-library {
     .book-section-title {
         font-size: 1rem;
     }
+}
+
+/* ── Badge de conteo en el botón CTA ────────────────────────────────────── */
+.book-btn-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-left: 0.2rem;
+}
+
+.book-action-unavailable {
+    opacity: 0.58;
+    cursor: not-allowed;
+}
+
+/* ── Botón compartir ────────────────────────────────────────────────────── */
+.book-share-btn {
+    min-width: 50px;
+    justify-content: center;
+    padding-inline: 0.85rem;
+}
+
+/* ── Descripción expandible ─────────────────────────────────────────────── */
+.book-desc-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.book-desc-clamped.book-desc-expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+}
+
+.book-desc-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0;
+    background: none;
+    border: none;
+    color: #1d654c;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.book-desc-toggle:hover {
+    color: #0d5e47;
+}
+
+/* ── Enlace dentro del alert ────────────────────────────────────────────── */
+.book-alert-link {
+    color: #1d654c;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.book-alert-link:hover {
+    color: #0d5e47;
+}
+
+/* ── Sticky CTA móvil ───────────────────────────────────────────────────── */
+.book-sticky-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 120;
+    padding: 0.85rem 1rem;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(24, 77, 59, 0.1);
+    box-shadow: 0 -8px 28px rgba(24, 77, 59, 0.12);
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.book-sticky-cta.book-sticky-hidden {
+    transform: translateY(110%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Disponibilidad: card grid ──────────────────────────────────────────── */
+.book-avail-grid {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.book-avail-card {
+    border-radius: 1rem;
+    border: 1px solid rgba(24, 77, 59, 0.08);
+    background: rgba(24, 77, 59, 0.03);
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.book-avail-card:hover {
+    border-color: rgba(24, 77, 59, 0.16);
+}
+
+.book-avail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+}
+
+.book-avail-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.35rem;
+}
+
+.book-avail-dot--on {
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    animation: book-avail-pulse 2s infinite;
+}
+
+.book-avail-dot--off {
+    background: #ef4444;
+}
+
+@keyframes book-avail-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2); }
+    50%       { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0.05); }
+}
+
+.book-avail-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-avail-name {
+    font-weight: 700;
+    color: #173d2f;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-avail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.book-avail-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(24, 77, 59, 0.08);
+    color: #2a5f48;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.book-avail-pill--muted {
+    background: rgba(24, 77, 59, 0.04);
+    color: #6b7d76;
+    font-weight: 500;
+}
+
+.book-avail-counts {
+    font-size: 0.82rem;
+    color: #6b7d76;
+    margin-top: 0.4rem;
+}
+
+.book-avail-counts strong {
+    color: #173d2f;
+}
+
+.book-avail-sep {
+    margin: 0 0.3rem;
+    opacity: 0.45;
+}
+
+.book-avail-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.45rem;
+    flex-shrink: 0;
+}
+
+.book-avail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.32rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid rgba(24, 77, 59, 0.14);
+    background: rgba(24, 77, 59, 0.05);
+    color: #1d654c;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+}
+
+.book-avail-toggle:hover {
+    background: rgba(24, 77, 59, 0.12);
+    border-color: rgba(24, 77, 59, 0.25);
+}
+
+.book-avail-toggle i {
+    transition: transform 0.25s ease;
+}
+
+.book-avail-toggle[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+
+/* ── Listado de ejemplares dentro de la card ─────────────────────────────── */
+.book-avail-copies {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid rgba(24, 77, 59, 0.08);
+    background: rgba(24, 77, 59, 0.025);
+    padding: 0.5rem 0.75rem;
+}
+
+.book-avail-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.35rem;
+    border-bottom: 1px solid rgba(24, 77, 59, 0.06);
+}
+
+.book-avail-copy:last-child {
+    border-bottom: none;
+}
+
+.book-avail-copy-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.65rem;
+    background: rgba(29, 101, 76, 0.1);
+    color: #1d654c;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.book-avail-copy-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-avail-copy-code {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #173d2f;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-avail-copy-meta {
+    font-size: 0.76rem;
+    color: #748a82;
+    margin-top: 0.12rem;
+}
+
+/* ── Dark mode — nuevos elementos ───────────────────────────────────────── */
+body.library-dark .book-sticky-cta {
+    background: rgba(12, 18, 26, 0.97) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.library-dark .book-desc-toggle {
+    color: #86e2c0 !important;
+}
+
+body.library-dark .book-desc-toggle:hover {
+    color: #aff5da !important;
+}
+
+body.library-dark .book-alert-link {
+    color: #86e2c0 !important;
+}
+
+body.library-dark .book-avail-card {
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    background: rgba(255, 255, 255, 0.025) !important;
+}
+
+body.library-dark .book-avail-card:hover {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+body.library-dark .book-avail-name {
+    color: #f2f6fb !important;
+}
+
+body.library-dark .book-avail-counts {
+    color: #8fa4b4 !important;
+}
+
+body.library-dark .book-avail-counts strong {
+    color: #f2f6fb !important;
+}
+
+body.library-dark .book-avail-pill {
+    background: rgba(78, 181, 145, 0.12) !important;
+    color: #86e2c0 !important;
+}
+
+body.library-dark .book-avail-pill--muted {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #8fa4b4 !important;
+}
+
+body.library-dark .book-avail-toggle {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #86e2c0 !important;
+}
+
+body.library-dark .book-avail-toggle:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.library-dark .book-avail-copies {
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+}
+
+body.library-dark .book-avail-copy {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.library-dark .book-avail-copy-icon {
+    background: rgba(78, 181, 145, 0.12) !important;
+    color: #86e2c0 !important;
+}
+
+body.library-dark .book-avail-copy-code {
+    color: #f2f6fb !important;
+}
+
+body.library-dark .book-avail-copy-meta {
+    color: #8fa4b4 !important;
+}
+
+/* ── Dark mode — filas de ejemplar ─────────────────────────────────────── */
+body.library-dark .book-copy-row {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.library-dark .book-copy-row:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.library-dark .book-copy-row-icon {
+    background: rgba(78, 181, 145, 0.12) !important;
+    color: #86e2c0 !important;
+}
+
+body.library-dark .book-copy-row--lent .book-copy-row-icon {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #f87171 !important;
+}
+
+body.library-dark .book-copy-row--reserved .book-copy-row-icon {
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: #fcd34d !important;
+}
+
+body.library-dark .book-copy-row--transfer .book-copy-row-icon {
+    background: rgba(156, 163, 175, 0.1) !important;
+    color: #9ca3af !important;
+}
+
+body.library-dark .book-copy-row-code {
+    color: #f2f6fb !important;
+}
+
+body.library-dark .book-copy-row-meta {
+    color: #8fa4b4 !important;
 }
