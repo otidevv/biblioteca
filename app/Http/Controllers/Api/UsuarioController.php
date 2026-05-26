@@ -41,9 +41,12 @@ class UsuarioController extends Controller
 
     } else {
 
-        // 👉 Listado general (roles administrativos)
-        $query->whereHas('roles', function ($q) {
-            $q->whereIn('rol_id', [1, 2, 3, 4]);
+        // 👉 Listado general: todos los usuarios con al menos un rol que no sea LECTOR
+        $lectorId = \App\Models\Rol::where('nombre', 'LECTOR')->value('id');
+        $query->whereHas('roles', function ($q) use ($lectorId) {
+            if ($lectorId) {
+                $q->where('rol_id', '!=', $lectorId);
+            }
         });
 
     }

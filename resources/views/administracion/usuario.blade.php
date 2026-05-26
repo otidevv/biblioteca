@@ -46,10 +46,10 @@
                     <select id="tipo_usuario" class="form-select user-filter__select">
                         <option value="">Todos</option>
                         @foreach($tiposUsuarios as $tipo)
-                            @if($tipo['id'] == 5)
+                            @if(strtoupper($tipo->nombre) === 'LECTOR')
                                 @continue
                             @endif
-                            <option value="{{ $tipo['id'] }}">{{ $tipo['nombre'] }}</option>
+                            <option value="{{ $tipo->id }}">{{ $tipo->nombre }}</option>
                         @endforeach
                     </select>
                 </div>
