@@ -294,3 +294,97 @@ function habilitarModoEdicion() {
     $('.password-group').hide().removeClass('form-required');
     $('#password, #password_confirmation').val('');
 }
+
+// ── Cambiar contraseña de lector ──────────────────────────────────────────
+
+$(document).ready(function () {
+
+    $('#tabla-lectores').on('click', '.cambiarContrasenaLector', function () {
+        const data = tabla.row($(this).closest('tr')).data();
+        $('#contrasena_lector_id').val(data.id || '');
+        $('#contrasena_lector_email').val(data.email || '');
+        resetModalContrasenaLector();
+        $('#modalContrasenaLector').modal('show');
+    });
+
+    $(document).on('click', '.toggle-lector-pass', function () {
+        const $target = $('#' + $(this).data('target'));
+        $target.attr('type', $target.attr('type') === 'password' ? 'text' : 'password');
+    });
+
+    $('#lector_pchange').on('input', function () {
+        const val = $(this).val();
+        const $s  = $('#lector-pass-strength');
+        if (val.length < 8) {
+            $s.text('Debil').removeClass().addClass('small text-danger');
+        } else if (val.match(/[A-Z]/) && val.match(/[0-9]/)) {
+            $s.text('Fuerte').removeClass().addClass('small text-success');
+        } else {
+            $s.text('Media').removeClass().addClass('small text-warning');
+        }
+    });
+
+    $('#lector_pchange_confirmed').on('input', function () {
+        const match = $(this).val() === $('#lector_pchange').val();
+        $('#lector-pass-match span')
+            .text(match ? 'Las contraseñas coinciden' : 'No coinciden')
+            .removeClass()
+            .addClass('small ' + (match ? 'text-success' : 'text-danger'));
+    });
+
+    $('#modalContrasenaLector').on('hidden.bs.modal', function () {
+        resetModalContrasenaLector();
+        $('#contrasena_lector_id').val('');
+    });
+
+    $('#formContrasenaLector').on('submit', function (e) {
+        e.preventDefault();
+
+        const password = $('#lector_pchange').val();
+        const confirm  = $('#lector_pchange_confirmed').val();
+        const userId   = $('#contrasena_lector_id').val();
+        const $btn     = $(this).find('button[type="submit"]');
+
+        if (!userId) {
+            alerta('No se encontro el lector', false);
+            return;
+        }
+        if (password.length < 8) {
+            alerta('La contraseña debe tener al menos 8 caracteres', false);
+            return;
+        }
+        if (password !== confirm) {
+            alerta('Las contraseñas no coinciden', false);
+            return;
+        }
+
+        $btn.prop('disabled', true).text('Guardando...');
+
+        $.ajax({
+            url: '/api/usuarios/contrasena',
+            type: 'POST',
+            data: { id: userId, password: password, password_confirmation: confirm },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function (response) {
+                if (response.success) {
+                    alerta('Contraseña actualizada correctamente', true);
+                    $('#modalContrasenaLector').modal('hide');
+                } else {
+                    alerta(response.message || 'Error al cambiar la contraseña', false);
+                }
+            },
+            error: function (xhr) {
+                alerta(xhr.responseJSON?.message || 'Error interno del servidor', false);
+            },
+            complete: function () {
+                $btn.prop('disabled', false).text('Guardar cambios');
+            }
+        });
+    });
+});
+
+function resetModalContrasenaLector() {
+    $('#lector_pchange, #lector_pchange_confirmed').val('').attr('type', 'password');
+    $('#lector-pass-strength').text('Usa al menos 8 caracteres').removeClass().addClass('small text-muted');
+    $('#lector-pass-match span').text('Las contraseñas deben coincidir').removeClass().addClass('small text-muted');
+}

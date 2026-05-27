@@ -133,7 +133,18 @@ class LibroController extends Controller
                 ->toArray();
         })
 
-        ->addColumn('acciones', function($row){
+        ->addColumn('acciones', function($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
+            $puedeEditar = $accesoGlobal
+                || $row->ejemplares->whereIn('biblioteca_id', $bibliotecasAsignadasIds)->isNotEmpty();
+
+            $botonesEdicion = $puedeEditar ? '
+                        <a class="dropdown-item admin-action-link admin-action-link--edit editarLibro" href="/administracion/libros_editar/'.$row->id.'">
+                            <i class="bi bi-pencil-square"></i><span>Editar</span>
+                        </a>
+                        <button class="dropdown-item admin-action-link admin-action-link--delete eliminarLibro" data-id="'.$row->id.'">
+                            <i class="bi bi-trash3"></i><span>Eliminar</span>
+                        </button>' : '';
+
             return '
                 <div class="dropdown admin-action-menu">
                     <button class="btn admin-action-menu__trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir acciones">
@@ -143,12 +154,7 @@ class LibroController extends Controller
                         <a class="dropdown-item admin-action-link admin-action-link--view verEjemplares" href="/administracion/ejemplares/'.$row->id.'">
                             <i class="bi bi-eye"></i><span>Ver</span>
                         </a>
-                        <a class="dropdown-item admin-action-link admin-action-link--edit editarLibro" href="/administracion/libros_editar/'.$row->id.'">
-                            <i class="bi bi-pencil-square"></i><span>Editar</span>
-                        </a>
-                        <button class="dropdown-item admin-action-link admin-action-link--delete eliminarLibro" data-id="'.$row->id.'">
-                            <i class="bi bi-trash3"></i><span>Eliminar</span>
-                        </button>
+                        '.$botonesEdicion.'
                     </div>
                 </div>
             ';

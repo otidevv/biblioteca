@@ -297,6 +297,9 @@ class UsuarioController extends Controller
                             <button class="dropdown-item admin-action-link admin-action-link--edit editarLector" type="button">
                                 <i class="bi bi-pencil-square"></i><span>Editar</span>
                             </button>
+                            <button class="dropdown-item admin-action-link admin-action-link--password cambiarContrasenaLector" type="button">
+                                <i class="bi bi-shield-lock"></i><span>Contrasena</span>
+                            </button>
                         </div>
                     </div>
                 ';

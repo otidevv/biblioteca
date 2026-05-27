@@ -76,6 +76,63 @@
 @endsection
 
 @section('modal')
+
+{{-- Modal cambiar contraseña de lector --}}
+<div class="modal fade" id="modalContrasenaLector" tabindex="-1">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <form id="formContrasenaLector" class="modal-content shadow-lg border-0 reader-password-modal">
+            <input type="hidden" id="contrasena_lector_id" name="id">
+
+            <div class="modal-header reader-password-modal__header">
+                <div>
+                    <span class="reader-modal__eyebrow" style="background:rgba(255,255,255,.16);color:#fff;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        Seguridad de acceso
+                    </span>
+                    <h5 class="modal-title fw-semibold mb-0" style="color:#fff;">Cambiar contraseña</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body px-4 py-3 reader-password-modal__body">
+                <div class="reader-password-modal__account mb-3">
+                    <label class="form-label fw-semibold text-muted">Lector</label>
+                    <input id="contrasena_lector_email" type="text" class="form-control bg-light" disabled>
+                </div>
+
+                <div class="reader-password-modal__divider"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nueva contraseña</label>
+                    <div class="input-group">
+                        <input id="lector_pchange" type="password" class="form-control" placeholder="Minimo 8 caracteres">
+                        <button class="btn btn-outline-secondary toggle-lector-pass" type="button" data-target="lector_pchange">Ver</button>
+                    </div>
+                    <div class="form-text">
+                        <span id="lector-pass-strength" class="small text-muted">Usa al menos 8 caracteres</span>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Confirmar contraseña</label>
+                    <div class="input-group">
+                        <input id="lector_pchange_confirmed" type="password" class="form-control" placeholder="Repetir contraseña">
+                        <button class="btn btn-outline-secondary toggle-lector-pass" type="button" data-target="lector_pchange_confirmed">Ver</button>
+                    </div>
+                    <div class="form-text" id="lector-pass-match">
+                        <span class="text-muted small">Las contraseñas deben coincidir</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer reader-modal__footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-success px-4">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="modal fade" id="modalLector" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content reader-modal">

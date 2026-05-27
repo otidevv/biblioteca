@@ -198,3 +198,44 @@
         border-radius: 16px;
     }
 }
+
+/* ── Modal cambiar contraseña lector ── */
+.reader-password-modal {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.reader-password-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #0f766e 0%, #0f4c81 100%);
+}
+
+.reader-password-modal__body {
+    background: linear-gradient(180deg, #fcfefd 0%, #f8fbff 100%);
+}
+
+.reader-password-modal__account {
+    padding: 14px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.reader-password-modal__divider {
+    height: 1px;
+    margin: 16px 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.4) 50%, transparent 100%);
+}
+
+.admin-dark .reader-password-modal__body {
+    background: rgba(15, 23, 42, 0.96);
+}
+
+.admin-dark .reader-password-modal__account {
+    background: rgba(15, 23, 42, 0.78);
+    border-color: rgba(148, 163, 184, 0.12);
+}

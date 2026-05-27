@@ -139,9 +139,13 @@
                             <label class="form-label">Biblioteca</label>
                             <select id="biblioteca" name="biblioteca" class="form-select validar_select">
                                 <option value="0">Seleccione</option>
-                                <option value="">Todos</option>
                                 @foreach ($bibliotecas as $biblioteca)
-                                    <option value="{{ $biblioteca->id }}">{{ $biblioteca->nombre }}</option>
+                                    <option value="{{ $biblioteca->id }}">
+                                        {{ $biblioteca->nombre }}
+                                        @if($biblioteca->ejemplares_count > 0)
+                                            — {{ number_format($biblioteca->ejemplares_count) }} ejempl.
+                                        @endif
+                                    </option>
                                 @endforeach
                             </select>
                             <div class="form-text">Define el alcance operativo del usuario.</div>

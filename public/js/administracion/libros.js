@@ -35,16 +35,6 @@ function formatEstado(data) {
 }
 
 function cargarOpcionesFiltros() {
-    $.get('/api/bibliotecas/listar?draw=1&start=0&length=500', function(res) {
-        const sel = $('#filtro-biblioteca');
-        (res.data || [])
-            .filter(function(b) { return b.estado == 1 || b.estado == null; })
-            .sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); })
-            .forEach(function(bib) {
-                sel.append(new Option(bib.nombre, bib.id));
-            });
-    });
-
     $.get('/api/tipo_registros/listar?draw=1&start=0&length=200', function(res) {
         const sel = $('#filtro-tipo');
         (res.data || [])
@@ -65,6 +55,10 @@ function hayFiltrosActivos() {
 
 $(document).ready(function () {
     cargarOpcionesFiltros();
+
+    if (hayFiltrosActivos()) {
+        $('#btn-limpiar-filtros').show();
+    }
 
     tabla = $('#tabla-libros').DataTable({
         processing: true,

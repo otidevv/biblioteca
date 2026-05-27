@@ -14,6 +14,7 @@ use App\Models\Idioma;
 use App\Models\Dewey;
 use App\Models\Prestamo;
 use App\Models\Visita;
+use App\Models\Ejemplar;
 use App\Models\ActividadCategoria;
 use App\Services\ReporteInventarioFisicoService;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,20 @@ class AdministracionController extends Controller
             ->orderBy('fecha')
             ->pluck('total', 'fecha');
 
+        $bibliotecaAsignada     = null;
+        $librosEnMiBiblioteca   = null;
+        $bibliotecaId = Auth::user()
+            ->usuarioRolBibliotecas()
+            ->whereNotNull('biblioteca_id')
+            ->value('biblioteca_id');
+
+        if ($bibliotecaId) {
+            $bibliotecaAsignada   = Biblioteca::find($bibliotecaId);
+            $librosEnMiBiblioteca = Ejemplar::where('biblioteca_id', $bibliotecaId)
+                ->distinct('libro_id')
+                ->count('libro_id');
+        }
+
         return view('administracion.index', compact(
             'totalLibros',
             'totalUsuarios',
@@ -48,7 +63,9 @@ class AdministracionController extends Controller
             'visitasSemana',
             'visitasMes',
             'visitasTotal',
-            'visitasPorDia'
+            'visitasPorDia',
+            'bibliotecaAsignada',
+            'librosEnMiBiblioteca'
         ));
     }
     public function index(string $modulo, $id=null)
@@ -83,7 +100,7 @@ class AdministracionController extends Controller
     {
         $usuarios = User::latest()->get();
         $tiposUsuarios  = Rol::latest()->get();
-        $bibliotecas  = Biblioteca::latest()->get();
+        $bibliotecas  = Biblioteca::withCount('ejemplares')->orderBy('nombre')->get();
 
         return view('administracion.usuario', compact('usuarios', 'tiposUsuarios', 'bibliotecas'));
     }
@@ -132,7 +149,14 @@ class AdministracionController extends Controller
     }
     protected function libros()
     {
-        return view('administracion.libros');
+        $bibliotecaUsuarioId = Auth::user()
+            ->usuarioRolBibliotecas()
+            ->whereNotNull('biblioteca_id')
+            ->value('biblioteca_id');
+
+        $bibliotecas = Biblioteca::orderBy('nombre')->get(['id', 'nombre', 'estado']);
+
+        return view('administracion.libros', compact('bibliotecaUsuarioId', 'bibliotecas'));
     }
 
     public function trasladosEjemplares()
@@ -179,8 +203,23 @@ class AdministracionController extends Controller
     }
     protected function libros_editar($id)
     {
+        $libro = Libro::with(['autores','tipo_registro','materias','editorial','ejemplares'])->find($id);
+
+        if (!$libro) {
+            abort(404);
+        }
+
+        $servicio = app(ReporteInventarioFisicoService::class);
+        $contexto = $servicio->resolverContextoBibliotecas(Auth::user());
+
+        $puedeEditar = $contexto['accesoGlobal']
+            || $libro->ejemplares->whereIn('biblioteca_id', $contexto['bibliotecasAsignadas']->all())->isNotEmpty();
+
+        if (!$puedeEditar) {
+            abort(403, 'No tienes permiso para editar este libro.');
+        }
+
         $tipo_registros = Tipo_registro::latest()->get();
-        $libro = Libro::with(['autores','tipo_registro','materias','editorial'])->find($id);
         $paises = Pais::latest()->get();
         $idiomas = Idioma::latest()->get();
         $deweys = Dewey::latest()->get();

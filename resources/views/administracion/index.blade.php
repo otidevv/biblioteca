@@ -66,25 +66,35 @@
     </section>
 
     <section class="admin-dashboard__stats">
-        <article class="admin-stat">
+        <article class="admin-stat admin-stat--books">
+            <div class="admin-stat__icon"><i class="bi bi-book-fill"></i></div>
             <div class="admin-stat__label">Catalogo</div>
             <div class="admin-stat__value">{{ number_format($totalLibros ?? 0) }}</div>
+            @if($bibliotecaAsignada && $librosEnMiBiblioteca !== null)
+                <div class="admin-stat__sublabel">
+                    <i class="bi bi-building"></i>
+                    {{ number_format($librosEnMiBiblioteca) }} en {{ $bibliotecaAsignada->nombre }}
+                </div>
+            @endif
             <div class="admin-stat__hint">Registros bibliograficos disponibles en el sistema.</div>
         </article>
 
-        <article class="admin-stat">
+        <article class="admin-stat admin-stat--users">
+            <div class="admin-stat__icon"><i class="bi bi-people-fill"></i></div>
             <div class="admin-stat__label">Usuarios</div>
             <div class="admin-stat__value">{{ number_format($totalUsuarios ?? 0) }}</div>
             <div class="admin-stat__hint">Cuentas activas para administracion y atencion a lectores.</div>
         </article>
 
-        <article class="admin-stat">
+        <article class="admin-stat admin-stat--loans">
+            <div class="admin-stat__icon"><i class="bi bi-arrow-left-right"></i></div>
             <div class="admin-stat__label">Prestamos activos</div>
             <div class="admin-stat__value">{{ number_format($prestamosActivos ?? 0) }}</div>
             <div class="admin-stat__hint">Material actualmente en circulacion o pendiente de devolucion.</div>
         </article>
 
-        <article class="admin-stat">
+        <article class="admin-stat admin-stat--branches">
+            <div class="admin-stat__icon"><i class="bi bi-building-fill"></i></div>
             <div class="admin-stat__label">Bibliotecas</div>
             <div class="admin-stat__value">{{ number_format($totalBibliotecas ?? 0) }}</div>
             <div class="admin-stat__hint">Sedes y puntos de atencion disponibles en la red.</div>
@@ -102,43 +112,43 @@
 
             <div class="admin-quick-links">
                 <a href="{{ url('/administracion/libros') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">L</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-books"></i></div>
                     <div class="admin-quick-link__title">Libros</div>
                     <div class="admin-quick-link__copy">Consulta, edita y organiza el catalogo bibliografico.</div>
                 </a>
 
                 <a href="{{ url('/administracion/libros_nuevo') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">+</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-plus-circle-fill"></i></div>
                     <div class="admin-quick-link__title">Nuevo libro</div>
                     <div class="admin-quick-link__copy">Registra material nuevo y completa sus datos tecnicos.</div>
                 </a>
 
                 <a href="{{ route('administracion.libros.importar') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">XL</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-file-earmark-spreadsheet-fill"></i></div>
                     <div class="admin-quick-link__title">Importar libros</div>
                     <div class="admin-quick-link__copy">Carga archivos Excel en un modulo aislado para registrar libros sin tocar el flujo actual.</div>
                 </a>
 
                 <a href="{{ url('/administracion/traslados_ejemplares') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">TR</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-arrow-left-right"></i></div>
                     <div class="admin-quick-link__title">Traslados de ejemplares</div>
                     <div class="admin-quick-link__copy">Acepta, rechaza o cancela movimientos de ejemplares desde una vista separada.</div>
                 </a>
 
                 <a href="{{ url('/lectores/registro') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">U</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-person-lines-fill"></i></div>
                     <div class="admin-quick-link__title">Lectores</div>
                     <div class="admin-quick-link__copy">Gestiona lectores, historiales y seguimiento de usuarios.</div>
                 </a>
 
                 <a href="{{ url('/prestamos/reservas') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">P</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-bookmark-check-fill"></i></div>
                     <div class="admin-quick-link__title">Reservas y prestamos</div>
                     <div class="admin-quick-link__copy">Atiende la circulacion diaria y el estado del material.</div>
                 </a>
 
                 <a href="{{ route('manual.aprendizaje.clasificacion') }}" class="admin-quick-link">
-                    <div class="admin-quick-link__icon">AI</div>
+                    <div class="admin-quick-link__icon"><i class="bi bi-lightbulb-fill"></i></div>
                     <div class="admin-quick-link__title">Aprendizaje Dewey y Cutter</div>
                     <div class="admin-quick-link__copy">Explica como el sistema aprende de titulos, autores y correcciones de clasificacion.</div>
                 </a>

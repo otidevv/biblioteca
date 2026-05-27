@@ -1663,8 +1663,12 @@ body.library-dark .overlay.active {
             <div class="library-sidebar-footer">
                 @auth
                 <div class="library-sidebar-user">
-                    <div class="library-sidebar-avatar">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                    <div class="library-sidebar-avatar" @if(optional($user->persona)->foto) style="padding:0;overflow:hidden;" @endif>
+                        @if(optional($user->persona)->foto)
+                            <img src="{{ asset('storage/' . $user->persona->foto) }}" alt="{{ $user->name }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                        @endif
                     </div>
                     <div class="library-sidebar-user-info">
                         <strong>{{ Auth::user()->name ?? 'Usuario' }}</strong>
@@ -1751,7 +1755,11 @@ body.library-dark .overlay.active {
                 @php($esLector = $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists())
                 <div class="dropdown">
                     <button class="btn library-user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i>
+                        @if(optional($user->persona)->foto)
+                            <img src="{{ asset('storage/' . $user->persona->foto) }}" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                        @else
+                            <i class="bi bi-person-circle"></i>
+                        @endif
                         {{ $user->name }}
                     </button>
                     <div class="dropdown-menu dropdown-menu-end library-alert-menu">

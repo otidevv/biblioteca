@@ -201,7 +201,13 @@
 
                 <div x-data="{ open: false }" class="admin-topbar__dropdown">
                     <button type="button" class="admin-user" @click="open = !open">
-                        <span class="admin-user__avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+                        <span class="admin-user__avatar" @if(optional(auth()->user()->persona)->foto) style="overflow:hidden;padding:0;" @endif>
+                            @if(optional(auth()->user()->persona)->foto)
+                                <img src="{{ asset('storage/' . auth()->user()->persona->foto) }}" alt="{{ auth()->user()->name }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                            @else
+                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                            @endif
+                        </span>
                         <span class="admin-user__meta">
                             <span class="admin-user__label">Sesión activa</span>
                             <span class="admin-user__name">{{ auth()->user()->name ?? 'Usuario' }}</span>

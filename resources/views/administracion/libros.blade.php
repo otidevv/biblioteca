@@ -49,6 +49,11 @@
                 </label>
                 <select id="filtro-biblioteca" class="books-filter-select form-select form-select-sm">
                     <option value="">Todas las bibliotecas</option>
+                    @foreach($bibliotecas as $bib)
+                        <option value="{{ $bib->id }}" {{ ($bibliotecaUsuarioId && $bib->id == $bibliotecaUsuarioId) ? 'selected' : '' }}>
+                            {{ $bib->nombre }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
             <div class="books-filter-group">
