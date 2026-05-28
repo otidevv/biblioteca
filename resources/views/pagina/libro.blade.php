@@ -138,16 +138,7 @@ window.libroPage = {
                         <span>{{ $autoresLibro !== '' ? $autoresLibro : 'Autor no disponible' }}</span>
                     </div>
 
-                    <div class="book-main-rating">
-                        <span class="book-main-rating-label">⭐ Calificación</span>
-                        <div id="bookMainRatingValue">
-                            @include('pagina._rating_summary', [
-                                'libro' => $libro,
-                                'ratingClass' => 'book-main-rating-stars',
-                                'ratingSize' => '1rem',
-                            ])
-                        </div>
-                    </div>
+                
 
                     <div class="book-chip-row">
                         <span class="book-chip">

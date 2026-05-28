@@ -176,7 +176,11 @@ class AdministracionController extends Controller
     protected function ejemplares($id)
     {
         $libro=Libro::with(['autores','tipo_registro','editorial'])
-                    ->withCount('ejemplares')->find($id);
+                    ->withCount([
+                        'ejemplares',
+                        'ejemplares as disponibles_count' => fn($q) => $q->where('estado', 1),
+                        'ejemplares as pendientes_count' => fn($q) => $q->where('estado_traslado', 1),
+                    ])->find($id);
         $service = app(ReporteInventarioFisicoService::class);
         $contexto = $service->resolverContextoBibliotecas(Auth::user());
 
@@ -191,6 +195,8 @@ class AdministracionController extends Controller
             'puedeFiltrarBiblioteca' => $contexto['puedeFiltrarBiblioteca'],
             'bibliotecasUsuarioIds' => $contexto['bibliotecasAsignadas']->all(),
             'accesoGlobalBibliotecas' => $contexto['accesoGlobal'],
+            'disponiblesCount' => $libro->disponibles_count ?? 0,
+            'pendientesCount' => $libro->pendientes_count ?? 0,
         ]);
     }   
     protected function libros_nuevo()

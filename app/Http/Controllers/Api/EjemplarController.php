@@ -83,7 +83,7 @@ class EjemplarController extends Controller
 
                 if ((int) $row->estado_traslado === Ejemplar::TRASLADO_PENDIENTE && $row->trasladoDestinoBiblioteca) {
                     return $actual
-                        . '<div class="mt-1"><span class="exemplars-table__library exemplars-table__library--empty">Pendiente en '
+                        . '<div class="mt-1"><span class="ex-table-pending-badge"><i class="bi bi-arrow-right-short"></i>'
                         . e($row->trasladoDestinoBiblioteca->nombre)
                         . '</span></div>';
                 }
@@ -118,10 +118,13 @@ class EjemplarController extends Controller
                 }
 
                 if (! $this->canEditEjemplar($row, $contexto)) {
-                    return '<span class="text-muted small">Sin acciones</span>';
+                    return '<span class="text-muted small">—</span>';
                 }
 
-                return '<button type="button" onclick="actualizarEjemplar(' . $row->id . ')" class="btn btn-sm btn-primary editarEjemplar">Actualizar</button>';
+                return '<div class="d-flex gap-1">'
+                    . '<button type="button" onclick="actualizarEjemplar(' . $row->id . ')" class="btn btn-sm btn-primary editarEjemplar">Actualizar</button>'
+                    . '<button type="button" onclick="eliminarEjemplar(' . $row->id . ')" class="btn btn-sm btn-outline-danger eliminarEjemplar">Eliminar</button>'
+                    . '</div>';
             })
             ->rawColumns(['biblioteca', 'estado', 'acciones'])
             ->make(true);
@@ -362,6 +365,7 @@ class EjemplarController extends Controller
                     'libro_id' => $request->libro_id,
                     'biblioteca_id' => $request->biblioteca_id,
                     'codigo_interno' => $ultimoCodigo + $i,
+                    'codigo_ant' => $request->codigo_ant ?: null,
                     'tipo' => 'ej.',
                     'siaf' => $request->siaf,
                     'codigo_dewey' => $libro->codigo_dewey . $libro->codigo,
@@ -427,6 +431,10 @@ class EjemplarController extends Controller
 
             $ejemplar->biblioteca_id = $request->biblioteca_id;
             $ejemplar->siaf = $request->siaf;
+            $ejemplar->codigo_ant = $request->codigo_ant ?: null;
+            if ($request->filled('codigo_interno')) {
+                $ejemplar->codigo_interno = $request->codigo_interno;
+            }
             $ejemplar->save();
 
             DB::commit();
@@ -442,6 +450,44 @@ class EjemplarController extends Controller
                 'success' => false,
                 'error' => 'Error al actualizar ejemplar',
             ], 500);
+        }
+    }
+
+    public function eliminar(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:ejemplares,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $contexto = $this->resolverContextoUsuario($request->user());
+        $ejemplares = Ejemplar::whereIn('id', $request->ids)->get();
+
+        $sinPermiso = $ejemplares->filter(fn($e) => ! $this->canEditEjemplar($e, $contexto));
+        if ($sinPermiso->isNotEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Algunos ejemplares no pueden eliminarse: están en traslado o fuera de tu biblioteca asignada.',
+            ], 403);
+        }
+
+        DB::beginTransaction();
+        try {
+            Ejemplar::whereIn('id', $request->ids)->delete();
+            DB::commit();
+
+            $total = count($request->ids);
+            return response()->json([
+                'success' => true,
+                'message' => $total === 1 ? 'Ejemplar eliminado correctamente.' : "{$total} ejemplares eliminados correctamente.",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'error' => 'Error al eliminar los ejemplares.'], 500);
         }
     }
 

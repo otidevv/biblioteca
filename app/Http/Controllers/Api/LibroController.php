@@ -215,6 +215,7 @@ class LibroController extends Controller
             $codigoDewey = $this->resolverCodigoDewey($request->codigo_dewey);
             $libro = new Libro();
             $libro->isbn = $request->isbn;
+            $libro->codigo_ant = $request->codigo_ant;
             $libro->tipo_registro_id = $request->tipo_registro_id;
             $libro->codigo_dewey = $codigoDewey;
             $libro->codigo = $request->codigo;
@@ -302,6 +303,7 @@ class LibroController extends Controller
 
         // ================= ACTUALIZAR =================
         $libro->isbn = $request->isbn;
+        $libro->codigo_ant = $request->codigo_ant;
         $libro->tipo_registro_id = $request->tipo_registro_id;
         $libro->codigo_dewey = $this->resolverCodigoDewey($request->codigo_dewey);
         $libro->codigo = $request->codigo;

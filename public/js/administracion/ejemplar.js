@@ -9,7 +9,6 @@ const ejemplarContexto = window.ejemplarContexto || {
     bibliotecasUsuarioIds: [],
 };
 $(document).ready(function () {
-    $('#barraSeleccion').hide();
 
     $('#modalEjemplar').on('hidden.bs.modal', function () {
         ejemplar_id = 0;
@@ -256,6 +255,38 @@ $(document).ready(function () {
     });
 
     /* ===============================
+       ELIMINAR EN LOTE
+    ===============================*/
+    $('#btnEliminarEjemplares').click(function(){
+        let ids = [];
+        $('.check-ejemplar:checked').each(function(){
+            ids.push($(this).val());
+        });
+        if (!ids.length) {
+            alerta('Selecciona al menos un ejemplar.', false);
+            return;
+        }
+        if (!confirm('¿Eliminar ' + ids.length + ' ejemplar(es) seleccionado(s)? Esta acción no se puede deshacer.')) {
+            return;
+        }
+        $.ajax({
+            url: '/api/inventario/ejemplares/eliminar',
+            type: 'POST',
+            data: { ids: ids },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(response) {
+                alerta(response.message, true);
+                ocultarBarra();
+                tabla.ajax.reload();
+            },
+            error: function(xhr) {
+                const message = xhr.responseJSON?.message || 'No se pudieron eliminar los ejemplares.';
+                alerta(message, false);
+            }
+        });
+    });
+
+    /* ===============================
        MOVER EJEMPLARES
     ===============================*/
     $('#btnMoverBiblioteca').click(function(){
@@ -303,17 +334,16 @@ $(document).ready(function () {
 function actualizarSeleccion(){
     let total = $('.check-ejemplar:checked').length;
     if(total > 0){
-        $('#barraSeleccion').fadeIn(150);
+        $('#barraSeleccion').slideDown(150);
         $('#contadorSeleccion').text(total);
-    }else{
+    } else {
         ocultarBarra();
     }
 }
 function ocultarBarra(){
-    $('#barraSeleccion').fadeOut(150);
-    $('#barraSeleccion').hide();
+    $('#barraSeleccion').slideUp(150);
     $('#contadorSeleccion').text(0);
-    $('#checkAll').prop('checked',false);
+    $('#checkAll').prop('checked', false);
 }
 
 function resolverTraslado(id, accion) {
@@ -347,6 +377,26 @@ function resolverTraslado(id, accion) {
         }
     });
 }
+function eliminarEjemplar(id) {
+    if (!confirm('¿Eliminar este ejemplar? Esta acción no se puede deshacer.')) {
+        return;
+    }
+    $.ajax({
+        url: '/api/inventario/ejemplares/eliminar',
+        type: 'POST',
+        data: { ids: [id] },
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        success: function(response) {
+            alerta(response.message, true);
+            tabla.ajax.reload();
+        },
+        error: function(xhr) {
+            const message = xhr.responseJSON?.message || 'No se pudo eliminar el ejemplar.';
+            alerta(message, false);
+        }
+    });
+}
+
 function actualizarEjemplar(id) {
     ejemplar_id=id;
     prepareEditMode();
@@ -357,6 +407,8 @@ function actualizarEjemplar(id) {
     if (ejemplar) {
         $('#siaf').val(ejemplar.siaf || '');
         $('#biblioteca_modal').val(ejemplar.biblioteca_id || 0);
+        $('#codigo_ant_ejemplar').val(ejemplar.codigo_ant || '');
+        $('#codigo_interno_ejemplar').val(ejemplar.codigo_interno || '');
     }
 
     $('#modalEjemplar').modal('show');
@@ -367,6 +419,8 @@ function prepareCreateMode() {
     $('.js-quantity-group').removeClass('oculto');
     $('.js-quantity-group').find('input').prop('disabled', false);
     requiredCampo('.js-quantity-group', true);
+    $('.js-edit-only-group').addClass('oculto');
+    $('.js-edit-only-group').find('input').prop('disabled', true);
     $('#modalEjemplarTitulo').text('Registro de ejemplar');
     $('#btnGuardarEjemplar').text('Guardar');
 }
@@ -376,6 +430,8 @@ function prepareEditMode() {
     $('.js-quantity-group').addClass('oculto');
     $('.js-quantity-group').find('input').prop('disabled', true);
     requiredCampo('.js-quantity-group', false);
+    $('.js-edit-only-group').removeClass('oculto');
+    $('.js-edit-only-group').find('input').prop('disabled', false);
     $('#modalEjemplarTitulo').text('Actualizar ejemplar');
     $('#btnGuardarEjemplar').text('Actualizar');
 }
@@ -387,6 +443,10 @@ function resetEjemplarForm() {
     $('#biblioteca_modal').val(0);
     $('#cantidad').val(1);
     $('#siaf').val('');
+    $('#codigo_ant_ejemplar').val('');
+    $('#codigo_interno_ejemplar').val('');
     $('.js-quantity-group').removeClass('oculto');
     $('.js-quantity-group').find('input').prop('disabled', false);
+    $('.js-edit-only-group').addClass('oculto');
+    $('.js-edit-only-group').find('input').prop('disabled', true);
 }

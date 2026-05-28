@@ -71,6 +71,7 @@ class PermisoPorRuta
         'api/inventario/listar' => 'administracion.libros',
         'api/inventario/ejemplares/guardar' => 'administracion.libros',
         'api/inventario/ejemplares/actualizar' => 'administracion.libros',
+        'api/inventario/ejemplares/eliminar' => 'administracion.libros',
         'api/inventario/ejemplares/enviar-biblioteca' => 'administracion.libros',
         'api/inventario/ejemplares/resolver-traslado' => 'administracion.libros',
         'api/inventario/ejemplares/movimientos/listar' => 'administracion.libros',

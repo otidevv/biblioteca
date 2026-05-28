@@ -25,48 +25,58 @@
 
 @section('content')
 <div class="admin-section">
-    <div class="admin-breadcrumb">
-        <span>Administracion</span>
-        <span>/</span>
-        <span>Libros</span>
-        <span>/</span>
-        <span class="admin-breadcrumb__current">Ejemplares</span>
+
+    <div class="ex-page-header">
+        <div class="ex-page-header__main">
+            <div class="admin-breadcrumb">
+                <span>Administracion</span>
+                <span>/</span>
+                <span>Libros</span>
+                <span>/</span>
+                <span class="admin-breadcrumb__current">Ejemplares</span>
+            </div>
+            <h2 class="ex-page-header__title">Ejemplares del libro</h2>
+            <p class="ex-page-header__copy">Gestiona disponibilidad, ubicacion y trazabilidad de cada copia fisica desde una vista unificada.</p>
+        </div>
+        <a href="{{ url('/administracion/libros') }}" class="admin-btn admin-btn--ghost ex-page-header__back">
+            <i class="bi bi-arrow-left-circle"></i>
+            Volver al catalogo
+        </a>
+    </div>
+
+    <div class="ex-stats-row">
+        <div class="ex-stat-card">
+            <span class="ex-stat-card__label">
+                <i class="bi bi-upc-scan"></i> Codigo topografico
+            </span>
+            <strong class="ex-stat-card__value" style="font-size:1.1rem;">{{ $libro->codigo_dewey.$libro->codigo }}</strong>
+        </div>
+        <div class="ex-stat-card">
+            <span class="ex-stat-card__label">
+                <i class="bi bi-collection"></i> Total de ejemplares
+            </span>
+            <strong class="ex-stat-card__value ex-stat-card__value--total">{{ $libro->ejemplares_count }}</strong>
+            <span class="ex-stat-card__sub">registrados</span>
+        </div>
+        <div class="ex-stat-card ex-stat-card--avail">
+            <span class="ex-stat-card__label">
+                <i class="bi bi-check-circle"></i> Disponibles
+            </span>
+            <strong class="ex-stat-card__value ex-stat-card__value--avail">{{ $disponiblesCount }}</strong>
+            <span class="ex-stat-card__sub">ejemplares</span>
+        </div>
+        <div class="ex-stat-card ex-stat-card--pending">
+            <span class="ex-stat-card__label">
+                <i class="bi bi-arrow-left-right"></i> Pendientes
+            </span>
+            <strong class="ex-stat-card__value ex-stat-card__value--pending">{{ $pendientesCount }}</strong>
+            <span class="ex-stat-card__sub">pendiente aceptacion</span>
+        </div>
     </div>
 
     <section class="admin-panel">
-        <div class="exemplars-hero">
-            <div class="exemplars-hero__body">
-                <span class="exemplars-hero__eyebrow">
-                    <i class="bi bi-layers"></i>
-                    Control de coleccion
-                </span>
-                <h2 class="exemplars-hero__title">Ejemplares del libro</h2>
-                <p class="exemplars-hero__copy">Gestiona disponibilidad, ubicacion y trazabilidad de cada copia fisica desde una vista mas clara.</p>
-            </div>
-            <div class="exemplars-hero__stats">
-                <a href="{{ url('/administracion/libros') }}" class="exemplars-hero__back">
-                    <i class="bi bi-arrow-left-circle"></i>
-                    <span>Volver al catalogo</span>
-                </a>
-                <div class="exemplars-stat">
-                    <span class="exemplars-stat__label">
-                        <i class="bi bi-upc-scan"></i>
-                        Codigo topografico
-                    </span>
-                    <strong class="exemplars-stat__value">{{ $libro->codigo_dewey.$libro->codigo }}</strong>
-                </div>
-                <div class="exemplars-stat exemplars-stat--accent">
-                    <span class="exemplars-stat__label">
-                        <i class="bi bi-collection"></i>
-                        Ejemplares actuales
-                    </span>
-                    <strong class="exemplars-stat__value exemplars-stat__value--big">{{ $libro->ejemplares_count }}</strong>
-                </div>
-            </div>
-        </div>
-
         <div class="row g-4">
-            <div class="col-12 col-xl-5">
+            <div class="col-12 col-xl-4">
                 <div class="admin-modal-section exemplars-book-card h-100">
                     <div class="exemplars-book-card__header">
                         <div>
@@ -74,100 +84,96 @@
                                 <i class="bi bi-bookmark-check"></i>
                                 Ficha bibliografica
                             </span>
-                            <h3 class="admin-card__title mb-0">Informacion del libro</h3>
+                            <h3 class="admin-card__title mb-0 mt-2">Informacion del libro</h3>
                         </div>
                     </div>
-                    <div class="row g-3 align-items-start">
-                        <div class="col-md-4 text-center">
-                            <img id="portadaLibro" class="exemplars-book-card__cover" src="{{ asset($libro->imagen) }}" alt="Portada del libro">
+                    <div class="text-center mb-3">
+                        <img class="exemplars-book-card__cover" src="{{ asset($libro->imagen ?: 'img/libro-placeholder.png') }}" alt="Portada del libro">
+                    </div>
+                    <div class="exemplars-book-meta">
+                        <div class="exemplars-book-meta__item">
+                            <span class="exemplars-book-meta__label"><i class="bi bi-upc-scan"></i>Codigo</span>
+                            <strong class="exemplars-book-meta__value">{{ $libro->codigo_dewey.$libro->codigo }}</strong>
                         </div>
-                        <div class="col-md-8">
-                            <div class="exemplars-book-meta">
-                                <div class="exemplars-book-meta__item">
-                                    <span class="exemplars-book-meta__label">
-                                        <i class="bi bi-upc-scan"></i>Codigo
-                                    </span>
-                                    <strong class="exemplars-book-meta__value">{{ $libro->codigo_dewey.$libro->codigo }}</strong>
-                                </div>
-                                <div class="exemplars-book-meta__item">
-                                    <span class="exemplars-book-meta__label">
-                                        <i class="bi bi-book"></i>Titulo
-                                    </span>
-                                    <strong class="exemplars-book-meta__value">{{ $libro->titulo }}</strong>
-                                </div>
-                                <div class="exemplars-book-meta__item">
-                                    <span class="exemplars-book-meta__label">
-                                        <i class="bi bi-barcode"></i>ISBN
-                                    </span>
-                                    <strong class="exemplars-book-meta__value">{{ $libro->isbn ?: 'Sin ISBN' }}</strong>
-                                </div>
-                                <div class="exemplars-book-meta__item">
-                                    <span class="exemplars-book-meta__label">
-                                        <i class="bi bi-person-lines-fill"></i>Autor(es)
-                                    </span>
-                                    <strong class="exemplars-book-meta__value">{{ $libro->autores->map(fn($autor) => $autor->nombres.' '.$autor->apellidos)->join(', ') }}</strong>
-                                </div>
-                                <div class="exemplars-book-meta__item">
-                                    <span class="exemplars-book-meta__label">
-                                        <i class="bi bi-building"></i>Editorial
-                                    </span>
-                                    <strong class="exemplars-book-meta__value">{{ $libro->editorial? $libro->editorial->nombre:'Sin editorial' }}</strong>
-                                </div>
-                            </div>
+                        <div class="exemplars-book-meta__item">
+                            <span class="exemplars-book-meta__label"><i class="bi bi-book"></i>Titulo</span>
+                            <strong class="exemplars-book-meta__value">{{ $libro->titulo }}</strong>
+                        </div>
+                        <div class="exemplars-book-meta__item">
+                            <span class="exemplars-book-meta__label"><i class="bi bi-barcode"></i>ISBN</span>
+                            <strong class="exemplars-book-meta__value">{{ $libro->isbn ?: 'Sin ISBN' }}</strong>
+                        </div>
+                        <div class="exemplars-book-meta__item">
+                            <span class="exemplars-book-meta__label"><i class="bi bi-person-lines-fill"></i>Autor(es)</span>
+                            <strong class="exemplars-book-meta__value">{{ $libro->autores->map(fn($a) => $a->nombres.' '.$a->apellidos)->join(', ') }}</strong>
+                        </div>
+                        <div class="exemplars-book-meta__item">
+                            <span class="exemplars-book-meta__label"><i class="bi bi-building"></i>Editorial</span>
+                            <strong class="exemplars-book-meta__value">{{ $libro->editorial ? $libro->editorial->nombre : 'Sin editorial' }}</strong>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-12 col-xl-7">
+            <div class="col-12 col-xl-8">
                 <div class="admin-panel exemplars-table-panel">
-                    <div class="admin-panel__header">
-                        <div>
-                            <h3 class="admin-card__title mb-0">Ejemplares registrados</h3>
-                            <p class="admin-panel__copy">Administra ubicacion, estado y movimiento interno de cada ejemplar.</p>
-                            @if(!$accesoGlobalBibliotecas && !empty($bibliotecasUsuarioIds))
-                                <p class="admin-panel__copy mb-0">
-                                    <i class="bi bi-info-circle text-warning me-1"></i>
-                                    Solo podras mover ejemplares que pertenezcan a tu biblioteca asignada. Los traslados quedan pendientes hasta que la biblioteca destino los acepte o rechace.
-                                </p>
-                            @endif
+                    <div class="ex-panel-header">
+                        <div class="ex-panel-header__top">
+                            <div class="ex-panel-header__text">
+                                <h3 class="admin-card__title mb-0">Ejemplares registrados</h3>
+                                <p class="admin-panel__copy mb-0">Administra ubicacion, estado y movimiento interno de cada ejemplar.</p>
+                            </div>
+                            <div class="ex-panel-header__actions">
+                                <label class="exemplars-filter">
+                                    <span class="exemplars-filter__label">
+                                        <i class="bi bi-building"></i>
+                                        Filtrar por biblioteca
+                                    </span>
+                                    <select id="biblioteca_filtro" class="admin-select exemplars-filter__select">
+                                        <option value="-1">Todos los ejemplares</option>
+                                        <option value="">Sin biblioteca</option>
+                                        @foreach($bibliotecas as $b)
+                                            <option value="{{$b->id}}">{{$b->nombre}}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <button class="admin-btn admin-btn--primary" id="btnAgregarEjemplar">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span>Agregar ejemplar</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="admin-actions exemplars-toolbar">
-                            <label class="exemplars-filter">
-                                <span class="exemplars-filter__label">
-                                    <i class="bi bi-building"></i>
-                                    Filtrar por biblioteca
-                                </span>
-                                <select id="biblioteca_filtro" class="admin-select exemplars-filter__select">
-                                    <option value="-1">Todos los ejemplares</option>
-                                    <option value="">Sin biblioteca</option>
-                                    @foreach($bibliotecas as $b)
-                                        <option value="{{$b->id}}">{{$b->nombre}}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <button class="admin-btn admin-btn--primary" id="btnAgregarEjemplar">
-                                <i class="bi bi-plus-circle"></i>
-                                Agregar ejemplar
-                            </button>
+                        @if(!$accesoGlobalBibliotecas && !empty($bibliotecasUsuarioIds))
+                        <div class="ex-panel-header__notice">
+                            <i class="bi bi-info-circle-fill ex-panel-header__notice-icon"></i>
+                            <span>Solo podras mover ejemplares de tu biblioteca. Los traslados quedan pendientes hasta que el destino los acepte.</span>
                         </div>
+                        @endif
                     </div>
 
-                    <div id="barraSeleccion" class="exemplars-bulk-bar" style="display:none !important;">
-                        <div class="exemplars-bulk-bar__summary">
-                            <i class="bi bi-check2-square exemplars-bulk-bar__icon"></i>
-                            <span><b id="contadorSeleccion">0</b> ejemplares seleccionados</span>
-                        </div>
-                        <div class="exemplars-bulk-bar__actions">
-                            <select id="biblioteca_destino" class="form-select form-select-sm exemplars-bulk-bar__select">
+                    <div id="barraSeleccion" class="ex-transfer-bar" style="display:none;">
+                        <div class="ex-transfer-bar__left">
+                            <span class="ex-transfer-bar__title">
+                                <i class="bi bi-arrow-left-right"></i>
+                                Trasladar ejemplares
+                            </span>
+                            <select id="biblioteca_destino" class="form-select form-select-sm ex-transfer-bar__select">
                                 <option value="">Seleccionar biblioteca destino...</option>
                                 @foreach($bibliotecasDestino as $b)
                                     <option value="{{$b->id}}">{{$b->nombre}}</option>
                                 @endforeach
                             </select>
-                            <button class="admin-btn admin-btn--primary exemplars-bulk-bar__btn" id="btnMoverBiblioteca">
-                                <i class="bi bi-arrow-left-right"></i>
-                                Mover
+                            <button class="admin-btn admin-btn--primary ex-transfer-bar__btn" id="btnMoverBiblioteca">
+                                Trasladar
+                            </button>
+                        </div>
+                        <div class="ex-transfer-bar__right">
+                            <span class="ex-transfer-badge">
+                                Seleccionados: <b id="contadorSeleccion">0</b>
+                            </span>
+                            <button class="admin-btn admin-btn--danger ex-transfer-bar__btn" id="btnEliminarEjemplares">
+                                <i class="bi bi-trash3"></i>
+                                Eliminar
                             </button>
                         </div>
                     </div>
@@ -202,7 +208,6 @@
                         <p class="admin-panel__copy">Consulta quien solicito el traslado de un ejemplar, que biblioteca estuvo involucrada y que usuario lo acepto o rechazo.</p>
                     </div>
                 </div>
-
                 <div class="admin-table-shell table-responsive exemplars-table-shell">
                     <table id="tabla-movimientos-ejemplares" class="table table-hover table-bordered align-middle w-100">
                         <thead>
@@ -256,6 +261,14 @@
                             <div class="col-md-6 form-group">
                                 <label class="form-label">SIAF o referencia</label>
                                 <input type="text" id="siaf" name="siaf" class="form-control" placeholder="Codigo SIAF, compra o referencia interna">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="form-label">Codigo antiguo o interno</label>
+                                <input type="text" id="codigo_ant_ejemplar" name="codigo_ant" class="form-control" placeholder="Codigo anterior del sistema">
+                            </div>
+                            <div class="col-md-6 form-group js-edit-only-group">
+                                <label class="form-label">Numero de inventario</label>
+                                <input type="number" id="codigo_interno_ejemplar" name="codigo_interno" class="form-control" placeholder="Codigo interno del ejemplar">
                             </div>
                             <div class="col-md-12 form-group form-required">
                                 <label class="form-label">Biblioteca</label>

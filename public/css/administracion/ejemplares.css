@@ -130,7 +130,7 @@
 
 .exemplars-table-panel {
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .exemplars-book-card__header {
@@ -240,7 +240,8 @@
 .exemplars-table-shell .dataTables_wrapper {
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
 }
 
 .exemplars-table-shell .dataTables_scroll {
@@ -256,7 +257,8 @@
 }
 
 .exemplars-table-shell .dataTables_scrollBody {
-    overflow-y: hidden !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
 }
 
 .exemplars-table-shell .dataTables_scrollHeadInner,
@@ -568,6 +570,252 @@ body.dark-mode .exemplars-modal__footer {
     border-color: rgba(148, 163, 184, 0.14);
 }
 
+/* ============================================================
+   PANEL HEADER (title + toolbar + notice)
+============================================================ */
+.ex-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+}
+
+.ex-panel-header__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.ex-panel-header__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.ex-panel-header__actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.ex-panel-header__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 12px;
+    background: rgba(234, 179, 8, 0.08);
+    border: 1px solid rgba(234, 179, 8, 0.22);
+    color: #78350f;
+    font-size: 0.83rem;
+    line-height: 1.5;
+}
+
+.ex-panel-header__notice-icon {
+    color: #d97706;
+    font-size: 0.95rem;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+/* Dark mode */
+body.dark-mode .ex-panel-header__notice {
+    background: rgba(234, 179, 8, 0.07);
+    border-color: rgba(234, 179, 8, 0.18);
+    color: #fef3c7;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+    .ex-panel-header__top {
+        flex-direction: column;
+    }
+    .ex-panel-header__actions {
+        width: 100%;
+    }
+    .exemplars-filter {
+        flex: 1;
+        min-width: 0;
+    }
+    .exemplars-filter__select {
+        width: 100%;
+    }
+    #btnAgregarEjemplar {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================================
+   TABLE HEADER
+============================================================ */
+.exemplars-table-shell thead th {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #475569;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+    padding: 0.9rem 0.75rem;
+    white-space: nowrap;
+}
+
+.exemplars-table-shell thead th i {
+    opacity: 0.65;
+}
+
+/* ============================================================
+   TABLE ROWS
+============================================================ */
+.exemplars-table-shell tbody tr {
+    transition: background-color 0.12s ease;
+}
+
+.exemplars-table-shell tbody tr:hover td {
+    background: rgba(13, 148, 136, 0.04) !important;
+}
+
+/* ============================================================
+   ICON ACTION BUTTONS
+============================================================ */
+.ex-table-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.ex-table-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    font-size: 0.82rem;
+    cursor: pointer;
+    background: none;
+    transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.1s ease;
+}
+
+.ex-table-btn:hover { transform: translateY(-1px); }
+
+.ex-table-btn--edit {
+    color: #0f766e;
+    border-color: rgba(15, 118, 110, 0.22);
+    background: rgba(13, 148, 136, 0.08);
+}
+.ex-table-btn--edit:hover {
+    background: rgba(13, 148, 136, 0.18);
+    border-color: rgba(15, 118, 110, 0.42);
+}
+
+.ex-table-btn--delete {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.2);
+    background: rgba(220, 38, 38, 0.06);
+}
+.ex-table-btn--delete:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.38);
+}
+
+.ex-table-btn--accept {
+    color: #16a34a;
+    border-color: rgba(22, 163, 74, 0.22);
+    background: rgba(22, 163, 74, 0.08);
+}
+.ex-table-btn--accept:hover {
+    background: rgba(22, 163, 74, 0.18);
+    border-color: rgba(22, 163, 74, 0.42);
+}
+
+.ex-table-btn--reject {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.2);
+    background: rgba(220, 38, 38, 0.06);
+}
+.ex-table-btn--reject:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.38);
+}
+
+.ex-table-no-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: #cbd5e1;
+    font-size: 1rem;
+}
+
+/* ============================================================
+   PENDING TRANSFER BADGE
+============================================================ */
+.ex-table-pending-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(217, 119, 6, 0.1);
+    color: #b45309;
+    font-size: 0.77rem;
+    font-weight: 600;
+    border: 1px solid rgba(217, 119, 6, 0.18);
+}
+
+/* ============================================================
+   DARK MODE — table elements
+============================================================ */
+body.dark-mode .exemplars-table-shell thead th {
+    background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+    color: #475569;
+    border-color: rgba(148, 163, 184, 0.08) !important;
+}
+
+body.dark-mode .exemplars-table-shell tbody tr:hover td {
+    background: rgba(13, 148, 136, 0.07) !important;
+}
+
+body.dark-mode .ex-table-btn--edit {
+    color: #2dd4bf;
+    border-color: rgba(45, 212, 191, 0.2);
+    background: rgba(45, 212, 191, 0.07);
+}
+body.dark-mode .ex-table-btn--edit:hover { background: rgba(45, 212, 191, 0.15); }
+
+body.dark-mode .ex-table-btn--delete,
+body.dark-mode .ex-table-btn--reject {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.2);
+    background: rgba(248, 113, 113, 0.07);
+}
+body.dark-mode .ex-table-btn--delete:hover,
+body.dark-mode .ex-table-btn--reject:hover { background: rgba(248, 113, 113, 0.15); }
+
+body.dark-mode .ex-table-btn--accept {
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.2);
+    background: rgba(74, 222, 128, 0.07);
+}
+body.dark-mode .ex-table-btn--accept:hover { background: rgba(74, 222, 128, 0.15); }
+
+body.dark-mode .ex-table-no-actions { color: #334155; }
+
+body.dark-mode .ex-table-pending-badge {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.18);
+}
+
 @media (max-width: 991.98px) {
     .exemplars-hero {
         grid-template-columns: 1fr;
@@ -598,8 +846,222 @@ body.dark-mode .exemplars-modal__footer {
     }
 }
 
+/* ============================================================
+   PAGE HEADER
+============================================================ */
+.ex-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.ex-page-header__title {
+    margin: 0.5rem 0 0.25rem;
+    color: #0f172a;
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+    font-weight: 800;
+}
+
+.ex-page-header__copy {
+    margin: 0;
+    color: #64748b;
+}
+
+.ex-page-header__back {
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 1.6rem;
+}
+
+/* ============================================================
+   STATS ROW
+============================================================ */
+.ex-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.ex-stat-card {
+    display: grid;
+    gap: 0.2rem;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.ex-stat-card__label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #64748b;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+
+.ex-stat-card__value {
+    color: #0f172a;
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.ex-stat-card__value--total { color: #0f766e; }
+.ex-stat-card__value--avail { color: #16a34a; }
+.ex-stat-card__value--pending { color: #d97706; }
+
+.ex-stat-card__sub {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-top: 0.1rem;
+}
+
+.ex-stat-card--avail {
+    border-color: rgba(22, 163, 74, 0.2);
+    background: linear-gradient(135deg, rgba(240, 253, 244, 0.97), rgba(220, 252, 231, 0.7));
+}
+
+.ex-stat-card--pending {
+    border-color: rgba(217, 119, 6, 0.2);
+    background: linear-gradient(135deg, rgba(255, 251, 235, 0.97), rgba(254, 243, 199, 0.7));
+}
+
+/* ============================================================
+   PERSISTENT TRANSFER BAR
+============================================================ */
+.ex-transfer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    background: rgba(248, 250, 252, 0.97);
+    flex-wrap: wrap;
+}
+
+.ex-transfer-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.ex-transfer-bar__right {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-shrink: 0;
+}
+
+.ex-transfer-bar__title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #334155;
+    font-size: 0.84rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ex-transfer-bar__select {
+    min-width: 195px;
+    max-width: 270px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+}
+
+.ex-transfer-bar__btn {
+    min-height: 36px;
+    padding: 0 0.9rem;
+    font-size: 0.86rem;
+}
+
+.ex-transfer-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.32rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   DARK MODE — new elements
+============================================================ */
+body.dark-mode .ex-page-header__title { color: #f8fafc; }
+body.dark-mode .ex-page-header__copy  { color: #94a3b8; }
+
+body.dark-mode .ex-stat-card {
+    background: #1e293b;
+    border-color: rgba(148, 163, 184, 0.12);
+    box-shadow: none;
+}
+body.dark-mode .ex-stat-card__value   { color: #f8fafc; }
+body.dark-mode .ex-stat-card__label   { color: #94a3b8; }
+body.dark-mode .ex-stat-card__sub     { color: #64748b; }
+body.dark-mode .ex-stat-card--avail {
+    background: linear-gradient(135deg, rgba(22,163,74,.1), rgba(21,128,61,.08));
+    border-color: rgba(22,163,74,.22);
+}
+body.dark-mode .ex-stat-card--pending {
+    background: linear-gradient(135deg, rgba(217,119,6,.1), rgba(180,83,9,.08));
+    border-color: rgba(217,119,6,.22);
+}
+body.dark-mode .ex-stat-card__value--total   { color: #2dd4bf; }
+body.dark-mode .ex-stat-card__value--avail   { color: #4ade80; }
+body.dark-mode .ex-stat-card__value--pending { color: #fbbf24; }
+
+body.dark-mode .ex-transfer-bar {
+    background: #1e293b;
+    border-color: rgba(148, 163, 184, 0.12);
+}
+body.dark-mode .ex-transfer-bar__title { color: #cbd5e1; }
+body.dark-mode .ex-transfer-bar__select {
+    background: rgba(15, 23, 42, 0.9);
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.16);
+}
+body.dark-mode .ex-transfer-badge {
+    background: rgba(248, 250, 252, 0.07);
+    color: #cbd5e1;
+}
+
+/* ============================================================
+   RESPONSIVE — new elements
+============================================================ */
 @media (max-width: 1199.98px) {
+    .ex-stats-row { grid-template-columns: repeat(2, 1fr); }
     .exemplars-hero {
         grid-template-columns: 1fr;
     }
+}
+
+@media (max-width: 767.98px) {
+    .ex-page-header { flex-direction: column; }
+    .ex-page-header__back { margin-top: 0; }
+    .ex-stats-row { grid-template-columns: 1fr 1fr; }
+    .ex-transfer-bar { flex-direction: column; align-items: stretch; }
+    .ex-transfer-bar__left, .ex-transfer-bar__right { width: 100%; }
+    .ex-transfer-bar__select { min-width: 0; max-width: none; width: 100%; }
+}
+
+@media (max-width: 575.98px) {
+    .ex-stats-row { grid-template-columns: 1fr; }
 }

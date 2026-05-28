@@ -246,6 +246,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('/libros/listar', [ApiLibroController::class, 'listar']);
             Route::post('/ejemplares/guardar', [ApiEjemplarController::class, 'guardar']);
             Route::post('/ejemplares/actualizar', [ApiEjemplarController::class, 'actualizar']);
+            Route::post('/ejemplares/eliminar', [ApiEjemplarController::class, 'eliminar']);
             Route::post('/ejemplares/enviar-biblioteca', [ApiEjemplarController::class, 'enviarBiblioteca']);
             Route::post('/ejemplares/resolver-traslado', [ApiEjemplarController::class, 'resolverTraslado']);
             Route::get('/ejemplares/movimientos/listar', [ApiEjemplarController::class, 'listarMovimientos']);

@@ -146,9 +146,13 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2 form-group form-required">
+                    <div class="col-md-2 form-group form-optional">
                         <label>ISBN</label>
                         <input type="text" name="isbn" class="form-control" value="{{ optional($libroActual)->isbn ?? '' }}">
+                    </div>
+                    <div class="col-md-2 form-group form-optional">
+                        <label>Código antiguo o interno</label>
+                        <input type="text" name="codigo_ant" class="form-control" value="{{ optional($libroActual)->codigo_ant ?? '' }}" placeholder="Opcional">
                     </div>
                     <div class="col-md-4 form-group form-required">
                         <label>Codigo Dewey</label>
