@@ -785,7 +785,7 @@ body {
 
 .library-footer-grid {
     display: grid;
-    grid-template-columns: 1.8fr 1fr 1fr;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr;
     gap: 2rem;
     align-items: start;
 }
@@ -1634,6 +1634,13 @@ body.library-dark .overlay.active {
                             <small>Scopus · ScienceDirect · IOP</small>
                         </span>
                     </a>
+                    <a href="https://elibro.net/es/lc/unamad/login_usuario/" target="_blank" rel="noopener noreferrer" class="library-nav-link nav-scientific">
+                        <span class="library-nav-icon"><i class="bi bi-book-half"></i></span>
+                        <span class="library-nav-text">
+                            <strong>eLibro</strong>
+                            <small>Biblioteca virtual</small>
+                        </span>
+                    </a>
                 </div>
 
                 {{-- Sección: Mi espacio (solo autenticados) --}}
@@ -1870,6 +1877,16 @@ body.library-dark .overlay.active {
                                 <i class="bi bi-wifi"></i>
                                 <span>Acceso a bibliotecas científicas desde la red institucional</span>
                             </div>
+                        </div>
+                    </div>
+
+                    {{-- Columna recursos --}}
+                    <div class="library-footer-col">
+                        <h6>Recursos</h6>
+                        <div class="library-footer-list">
+                            <a href="https://elibro.net/es/lc/unamad/login_usuario/" target="_blank" rel="noopener noreferrer">
+                                eLibro &mdash; Biblioteca virtual
+                            </a>
                         </div>
                     </div>
 
