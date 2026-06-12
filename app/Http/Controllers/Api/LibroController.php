@@ -42,7 +42,7 @@ class LibroController extends Controller
         $query = Libro::with([
                         'autores',
                         'tipo_registro',
-                        'ejemplares' => fn($q) => $q->select('id', 'libro_id', 'biblioteca_id')
+                        'ejemplares' => fn($q) => $q->select('id', 'libro_id', 'biblioteca_id', 'codigo_interno', 'codigo_ant', 'estado')
                                                      ->with('biblioteca:id,nombre'),
                     ])
                     ->withCount('ejemplares');
@@ -118,8 +118,12 @@ class LibroController extends Controller
                 ->join(',');
         })
 
-        ->addColumn('bibliotecas_resumen', function($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
-            return $row->ejemplares
+        ->addColumn('bibliotecas_resumen', function($row) use ($accesoGlobal, $bibliotecasAsignadasIds, $bibliotecaFiltro) {
+            $ejemplares = $row->ejemplares;
+            if ($bibliotecaFiltro) {
+                $ejemplares = $ejemplares->where('biblioteca_id', (int) $bibliotecaFiltro);
+            }
+            return $ejemplares
                 ->groupBy('biblioteca_id')
                 ->map(function($grupo) use ($accesoGlobal, $bibliotecasAsignadasIds) {
                     $biblioteca = $grupo->first()->biblioteca;
@@ -127,6 +131,12 @@ class LibroController extends Controller
                         'nombre' => $biblioteca?->nombre ?? 'Sin biblioteca',
                         'count'  => $grupo->count(),
                         'es_mia' => in_array($biblioteca?->id, $bibliotecasAsignadasIds),
+                        'items'  => $grupo->sortBy('codigo_interno')
+                                          ->map(fn($e) => [
+                                              'codigo_interno' => $e->codigo_interno,
+                                              'codigo_ant'     => $e->codigo_ant,
+                                              'estado'         => $e->estado,
+                                          ])->values()->toArray(),
                     ];
                 })
                 ->values()

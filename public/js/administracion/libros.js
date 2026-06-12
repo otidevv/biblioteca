@@ -1,4 +1,5 @@
 let tabla;
+let modoEjemplares = 'expandido'; // 'expandido' | 'compacto'
 
 function toTitleCase(str) {
     if (!str) return '';
@@ -139,27 +140,59 @@ $(document).ready(function () {
                 name: 'ejemplares_count',
                 orderable: false,
                 render: function(data, type, row) {
-                    const total   = Number(data || 0);
-                    const propios = Number(row.ejemplares_usuario_count || 0);
-                    const otras   = total - propios;
                     const resumen = Array.isArray(row.bibliotecas_resumen) ? row.bibliotecas_resumen : [];
+
+                    // El total se calcula desde el resumen (ya filtrado por biblioteca si aplica)
+                    const total = resumen.length > 0
+                        ? resumen.reduce(function(s, b) { return s + Number(b.count); }, 0)
+                        : Number(data || 0);
 
                     if (total === 0) {
                         return '<span class="books-cell__empty">Sin ejemplares</span>';
                     }
 
-                    // Desglose por biblioteca
+                    const estadoMap = {
+                        0: { label: 'Prestado',   cls: 'ej-estado--prestado'  },
+                        1: { label: 'Disponible', cls: 'ej-estado--disponible' },
+                        2: { label: 'Reservado',  cls: 'ej-estado--reservado'  },
+                        3: { label: 'Traslado',   cls: 'ej-estado--traslado'   },
+                    };
+
                     let bibsHtml = '';
-                    if (resumen.length > 0) {
+
+                    if (modoEjemplares === 'compacto') {
                         bibsHtml = resumen.map(function(bib) {
                             const cls  = bib.es_mia ? 'books-bib-item--mine' : 'books-bib-item--other';
                             const icon = bib.es_mia ? 'bi-building-check' : 'bi-building';
                             return `<span class="books-bib-item ${cls}"><i class="bi ${icon}"></i>${bib.nombre}: <b>${bib.count}</b></span>`;
                         }).join('');
                     } else {
-                        // Fallback con conteos si resumen no disponible
-                        if (propios > 0) bibsHtml += `<span class="books-bib-item books-bib-item--mine"><i class="bi bi-building-check"></i>Tu biblioteca: <b>${propios}</b></span>`;
-                        if (otras   > 0) bibsHtml += `<span class="books-bib-item books-bib-item--other"><i class="bi bi-building"></i>Otras: <b>${otras}</b></span>`;
+                        resumen.forEach(function(bib) {
+                            const cls  = bib.es_mia ? 'books-bib-item--mine' : 'books-bib-item--other';
+                            const icon = bib.es_mia ? 'bi-building-check' : 'bi-building';
+
+                            let ejsHtml = '';
+                            if (Array.isArray(bib.items) && bib.items.length > 0) {
+                                ejsHtml = bib.items.map(function(ej) {
+                                    const est    = estadoMap[ej.estado] || { label: 'Desconocido', cls: 'ej-estado--desconocido' };
+                                    const codAnt = ej.codigo_ant ? `<span class="books-ej-codigo">${ej.codigo_ant}</span>` : '';
+                                    const codInt = `<span class="books-ej-codigo${ej.codigo_ant ? '-sec' : ''}">Ej.${ej.codigo_interno ?? '?'}</span>`;
+                                    return `<div class="books-ej-row">
+                                        ${codAnt}${codInt}
+                                        <span class="books-ej-estado ${est.cls}">${est.label}</span>
+                                    </div>`;
+                                }).join('');
+                            }
+
+                            bibsHtml += `<div class="books-bib-block ${cls}">
+                                <div class="books-bib-block__header">
+                                    <i class="bi ${icon}"></i>
+                                    <span class="books-bib-block__nombre" title="${bib.nombre}">${bib.nombre}</span>
+                                    <span class="books-bib-block__count">${bib.count}</span>
+                                </div>
+                                <div class="books-bib-block__items">${ejsHtml}</div>
+                            </div>`;
+                        });
                     }
 
                     return `<div class="books-exemplars-cell">
@@ -204,5 +237,21 @@ $(document).ready(function () {
         $('#filtro-biblioteca, #filtro-tipo, #filtro-estado, #filtro-con-ejemplares').val('');
         $(this).hide();
         tabla.ajax.reload();
+    });
+
+    $('#btn-toggle-ejemplares').on('click', function() {
+        const $btn = $(this);
+        if (modoEjemplares === 'expandido') {
+            modoEjemplares = 'compacto';
+            $btn.attr('data-modo', 'compacto').attr('title', 'Expandir detalle de ejemplares');
+            $btn.find('i').removeClass('bi-layout-text-sidebar-reverse').addClass('bi-layout-text-sidebar');
+            $btn.find('span').text('Expandir ejemplares');
+        } else {
+            modoEjemplares = 'expandido';
+            $btn.attr('data-modo', 'expandido').attr('title', 'Colapsar detalle de ejemplares');
+            $btn.find('i').removeClass('bi-layout-text-sidebar').addClass('bi-layout-text-sidebar-reverse');
+            $btn.find('span').text('Colapsar ejemplares');
+        }
+        tabla.draw(false); // redibuja sin recargar datos
     });
 });

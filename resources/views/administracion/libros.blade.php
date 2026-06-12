@@ -90,6 +90,13 @@
             </button>
         </div>
 
+        <div class="books-view-toolbar">
+            <button id="btn-toggle-ejemplares" class="admin-btn admin-btn--ghost books-toggle-btn" data-modo="expandido" title="Colapsar detalle de ejemplares">
+                <i class="bi bi-layout-text-sidebar-reverse"></i>
+                <span>Colapsar ejemplares</span>
+            </button>
+        </div>
+
         <div class="admin-table-shell table-responsive books-table-shell">
             <table id="tabla-libros" class="table table-hover table-bordered align-middle text-nowrap datatable w-100">
                 <thead>

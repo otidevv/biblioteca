@@ -276,7 +276,8 @@ class ReporteController extends Controller
 
         $labels = [];
         $series = [
-            ['label' => 'Prestamos', 'color' => '#0f766e', 'values' => []],
+            ['label' => 'Prestamos emitidos', 'color' => '#0f766e', 'values' => []],
+            ['label' => 'Devoluciones', 'color' => '#0284c7', 'values' => []],
             ['label' => 'Reservas', 'color' => '#f59e0b', 'values' => []],
             ['label' => 'Compras', 'color' => '#2563eb', 'values' => []],
         ];
@@ -287,8 +288,9 @@ class ReporteController extends Controller
 
             $labels[] = $this->formatMonthLabel($month);
             $series[0]['values'][] = $this->countRecordsBetween('prestamos', 'fecha_prestamo', Prestamo::class, $start, $end);
-            $series[1]['values'][] = $this->countRecordsBetween('reservaciones', 'fecha_reservacion', Reservacion::class, $start, $end);
-            $series[2]['values'][] = $this->countRecordsBetween('compras', 'fecha_compra', Compra::class, $start, $end);
+            $series[1]['values'][] = $this->countRecordsBetween('prestamos', 'fecha_devolucion', Prestamo::class, $start, $end);
+            $series[2]['values'][] = $this->countRecordsBetween('reservaciones', 'fecha_reservacion', Reservacion::class, $start, $end);
+            $series[3]['values'][] = $this->countRecordsBetween('compras', 'fecha_compra', Compra::class, $start, $end);
         }
 
         $max = collect($series)

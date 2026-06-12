@@ -153,7 +153,7 @@
                     <span class="report-chart__eyebrow">Tendencia</span>
                     <h3 class="report-chart__title">Movimiento de los ultimos 6 meses</h3>
                 </div>
-                <span class="report-chart__badge">Prestamos, reservas y compras</span>
+                <span class="report-chart__badge">Prestamos, devoluciones, reservas y compras</span>
             </div>
 
             @if ($tendencia['empty'])
