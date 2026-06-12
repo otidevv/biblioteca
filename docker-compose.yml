@@ -1,0 +1,76 @@
+x-app-env: &app-env
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: biblioteca_unamad
+  DB_USERNAME: root
+  DB_PASSWORD: "954040025"
+
+services:
+  app:
+    build:
+      context: .
+    image: biblioteca-app
+    container_name: biblioteca_app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      RUN_SETUP: "1"
+      PHP_CLI_SERVER_WORKERS: "8"
+    command: php artisan serve --host=0.0.0.0 --port=8000 --no-reload
+    ports:
+      - "8088:8000"
+    volumes:
+      - ./.env:/var/www/html/.env
+      - storage-data:/var/www/html/storage/app
+
+  queue:
+    image: biblioteca-app
+    container_name: biblioteca_queue
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      <<: *app-env
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=300
+    volumes:
+      - ./.env:/var/www/html/.env
+      - storage-data:/var/www/html/storage/app
+
+  scheduler:
+    image: biblioteca-app
+    container_name: biblioteca_scheduler
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      <<: *app-env
+    command: php artisan schedule:work
+    volumes:
+      - ./.env:/var/www/html/.env
+      - storage-data:/var/www/html/storage/app
+
+  mysql:
+    image: mysql:8.0
+    container_name: biblioteca_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "954040025"
+      MYSQL_DATABASE: biblioteca_unamad
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./biblioteca-2.sql:/seed/biblioteca-2.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p954040025"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  db-data:
+  storage-data:
