@@ -106,6 +106,12 @@ class LibroController extends Controller
                     //  TIPO REGISTRO
                     ->orWhereHas('tipo_registro', function ($q3) use ($search) {
                         $q3->whereRaw('LOWER(nombre) LIKE ?', ["%{$search}%"]);
+                    })
+
+                    //  EJEMPLARES (CODIGO INTERNO / ANTIGUO)
+                    ->orWhereHas('ejemplares', function ($q4) use ($search) {
+                        $q4->whereRaw('LOWER(codigo_interno) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(codigo_ant) LIKE ?', ["%{$search}%"]);
                     });
 
                 });

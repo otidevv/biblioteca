@@ -139,6 +139,7 @@
                             <label class="form-label">Biblioteca</label>
                             <select id="biblioteca" name="biblioteca" class="form-select validar_select">
                                 <option value="0">Seleccione</option>
+                                <option value="">Todas las bibliotecas</option>
                                 @foreach ($bibliotecas as $biblioteca)
                                     <option value="{{ $biblioteca->id }}">
                                         {{ $biblioteca->nombre }}

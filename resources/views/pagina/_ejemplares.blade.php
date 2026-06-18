@@ -9,8 +9,8 @@
 
 @forelse($lista as $e)
     @php
-        $partes        = array_filter([$e->codigo_dewey, $e->codigo_interno ? '/' . $e->codigo_interno : null]);
-        $codigoDisplay = implode('', $partes) ?: ($e->codigo_ant ?: '—');
+        $tipoEjemplar  = $e->tipo ? ucfirst($e->tipo) : 'Ejemplar';
+        $codigoDisplay = $tipoEjemplar . ($e->codigo_interno ? ' N° ' . $e->codigo_interno : '');
         $rowClass = match((int) $e->estado) {
             1 => 'book-copy-row--available',
             0 => 'book-copy-row--lent',
@@ -27,8 +27,15 @@
         <div class="book-copy-row-body">
             <div class="book-copy-row-code">{{ $codigoDisplay }}</div>
             <div class="book-copy-row-meta">
-                @if($e->tipo)
-                    <span>{{ ucfirst($e->tipo) }}</span>
+                @if($e->codigo_ant)
+                    <span title="Codigo interno / antiguo">
+                        <i class="bi bi-upc-scan"></i>
+                        Cod. interno: {{ $e->codigo_ant }}
+                    </span>
+                @endif
+                @if($e->codigo_dewey)
+                    <span class="bk-sep">·</span>
+                    <span><i class="bi bi-diagram-3"></i> {{ $e->codigo_dewey }}</span>
                 @endif
                 @if($e->siaf)
                     <span class="bk-sep">·</span>

@@ -265,23 +265,31 @@ $(document).ready(function () {
 
     // ── Tarjeta ejemplar ──
     function pdEjemplarCard(e) {
-        // Con dewey: muestra código completo (ya incluye la copia)
-        // Sin dewey: muestra código interno del libro + número de copia por separado
-        const codigoEjemplar = e.codigo
-            ? '<span style="margin:0 5px;opacity:.4;">·</span><code><i class="bi bi-upc" style="margin-right:2px;"></i>' + esc(e.codigo) + '</code>'
+        const sep = '<span style="margin:0 5px;opacity:.4;">·</span>';
+
+        // N° de ejemplar (codigo_interno propio de la copia)
+        const numEjemplar = (e.codigo_interno !== null && e.codigo_interno !== '')
+            ? sep + '<code><i class="bi bi-hash" style="margin-right:2px;"></i>Ej. ' + esc(e.codigo_interno) + '</code>'
             : '';
-        const codigoInterno = e.codigo_libro
-            ? '<span style="margin:0 5px;opacity:.4;">·</span><code><i class="bi bi-hash" style="margin-right:2px;"></i>' + esc(e.codigo_libro) + '</code>'
+        // Codigo antiguo / interno propio del ejemplar (no el del libro)
+        const codAnt = e.codigo_ant
+            ? sep + '<code><i class="bi bi-upc" style="margin-right:2px;"></i>' + esc(e.codigo_ant) + '</code>'
             : '';
-        const copia = (!e.codigo && e.copia)
-            ? '<span style="margin:0 5px;opacity:.4;">·</span><span style="font-size:.8em;color:#6c757d;"><i class="bi bi-copy" style="margin-right:2px;"></i>' + esc(e.copia) + '</span>'
+        const codDewey = e.codigo_dewey
+            ? sep + '<code>' + esc(e.codigo_dewey) + '</code>'
             : '';
+
+        // Codigo que se muestra en la tarjeta de seleccion (paso 3)
+        const codigoSel = [
+            e.codigo_ant || '',
+            (e.codigo_interno !== null && e.codigo_interno !== '') ? 'Ej. ' + e.codigo_interno : ''
+        ].filter(Boolean).join(' · ') || ('#' + e.id);
 
         return $('<div>')
             .addClass('pd-result-item pd-ejemplar-item')
             .attr('data-id', e.id)
             .attr('data-libro', e.libro)
-            .attr('data-codigo', e.codigo || e.codigo_libro)
+            .attr('data-codigo', codigoSel)
             .attr('data-bib', e.biblioteca)
             .html(
                 '<div class="pd-result-avatar pd-result-avatar--book"><i class="bi bi-book-half"></i></div>' +
@@ -289,9 +297,9 @@ $(document).ready(function () {
                     '<strong class="pd-result-name">' + esc(e.libro) + '</strong>' +
                     '<span class="pd-result-sub">' +
                         '<i class="bi bi-building" style="margin-right:3px;"></i>' + esc(e.biblioteca) +
-                        codigoEjemplar +
-                        codigoInterno +
-                        copia +
+                        numEjemplar +
+                        codAnt +
+                        codDewey +
                     '</span>' +
                 '</div>' +
                 '<span class="pd-result-badge"><i class="bi bi-check-circle"></i>Disponible</span>'

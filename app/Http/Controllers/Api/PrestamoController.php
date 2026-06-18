@@ -80,11 +80,20 @@ class PrestamoController extends Controller
                 return '<div class="loan-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>';
             })
             ->addColumn('ejemplar', function ($row) {
-                $codigoInterno = trim((string) ($row->ejemplar->libro->codigo_ant ?? ''));
-                $codigo        = $codigoInterno !== '' ? $codigoInterno : '-';
-                $biblioteca    = $row->ejemplar->biblioteca->nombre ?? '';
+                $ejemplar      = $row->ejemplar;
+                // Codigo antiguo/interno propio del ejemplar (no el del libro)
+                $codigoEjemplar = trim((string) ($ejemplar->codigo_ant ?? ''));
+                $codigo        = $codigoEjemplar !== '' ? $codigoEjemplar : '-';
+                // N° de inventario propio del ejemplar: distingue cada copia fisica
+                $inventario    = ($ejemplar->codigo_interno !== null && $ejemplar->codigo_interno !== '')
+                    ? 'Ej. N° ' . $ejemplar->codigo_interno
+                    : null;
+                $biblioteca    = $ejemplar->biblioteca->nombre ?? '';
 
                 return '<span class="loan-table__code"><i class="bi bi-hash me-1"></i>' . e($codigo) . '</span>' .
+                    ($inventario
+                        ? '<small class="loan-table__bib"><i class="bi bi-collection me-1"></i>' . e($inventario) . '</small>'
+                        : '') .
                     ($biblioteca
                         ? '<small class="loan-table__bib"><i class="bi bi-building me-1"></i>' . e($biblioteca) . '</small>'
                         : '');
@@ -374,19 +383,14 @@ class PrestamoController extends Controller
             ->get();
 
         return response()->json($query->map(function ($e) {
-            $codigoEjemplar = $e->codigo_dewey
-                ? $e->codigo_dewey . ($e->tipo ?? '') . $e->codigo_interno
-                : null;
-
-            $copia = trim(($e->tipo ?? '') . ($e->codigo_interno ?? ''));
-
             return [
-                'id'           => $e->id,
-                'libro'        => $e->libro->titulo ?? '—',
-                'codigo'       => $codigoEjemplar,
-                'codigo_libro' => $e->libro->codigo_ant ?? '',
-                'copia'        => $copia ?: null,
-                'biblioteca'   => $e->biblioteca->nombre ?? '—',
+                'id'             => $e->id,
+                'libro'          => $e->libro->titulo ?? '—',
+                // Datos propios del ejemplar (no del libro): identifican cada copia
+                'codigo_interno' => $e->codigo_interno,
+                'codigo_ant'     => $e->codigo_ant,
+                'codigo_dewey'   => $e->codigo_dewey,
+                'biblioteca'     => $e->biblioteca->nombre ?? '—',
             ];
         }));
     }

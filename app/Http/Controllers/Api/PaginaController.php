@@ -253,13 +253,11 @@ public function ejemplarBiblioteca(Request $request, $biblioteca_id)
         ->where('estado_traslado', Ejemplar::TRASLADO_NINGUNO)
         ->select(
             'id',
-            DB::raw("
-                CONCAT(
-                    COALESCE(codigo_ant, ''),
-                    COALESCE(tipo, ''),
-                    COALESCE(codigo_interno, '')
-                ) as codigo
-            ")
+            'codigo_ant',
+            'codigo_interno',
+            'codigo_dewey',
+            'tipo',
+            'siaf'
         )
         ->get();
 
