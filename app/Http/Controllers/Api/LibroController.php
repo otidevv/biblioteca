@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\CutterAprendizaje;
 use App\Models\Dewey;
 use App\Models\Dewey_aprendizaje;
+use App\Models\Ejemplar;
 use App\Models\Libro;
 class LibroController extends Controller
 {
@@ -132,8 +133,10 @@ class LibroController extends Controller
         ->addColumn('acciones', function ($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
             $puedeEditar = $accesoGlobal || in_array((int) $row->biblioteca_id, $bibliotecasAsignadasIds);
 
+            $editarUrl = '/administracion/libros_editar/'.$row->libro_id.($row->biblioteca_id ? '?biblioteca='.$row->biblioteca_id : '');
+
             $botonesEdicion = $puedeEditar ? '
-                        <a class="dropdown-item admin-action-link admin-action-link--edit editarLibro" href="/administracion/libros_editar/'.$row->libro_id.'">
+                        <a class="dropdown-item admin-action-link admin-action-link--edit editarLibro" href="'.$editarUrl.'">
                             <i class="bi bi-pencil-square"></i><span>Editar</span>
                         </a>
                         <button class="dropdown-item admin-action-link admin-action-link--delete eliminarLibro" data-id="'.$row->libro_id.'">
@@ -353,6 +356,21 @@ class LibroController extends Controller
             ->update([
                 'codigo_dewey' => $libro->codigo_dewey . $libro->codigo,
             ]);
+
+        // ================= CODIGO ANTIGUO POR BIBLIOTECA =================
+        // El campo "Código antiguo (referencial)" solo llega habilitado cuando se edita
+        // desde la fila de una biblioteca especifica: se aplica solo a sus ejemplares.
+        if ($request->filled('codigo_ant_biblioteca_id')) {
+            $bibliotecaId = (int) $request->codigo_ant_biblioteca_id;
+            $contexto = $this->bibliotecaService->resolverContextoBibliotecas($request->user());
+            $puedeEditarBiblioteca = $contexto['accesoGlobal'] || $contexto['bibliotecasAsignadas']->contains($bibliotecaId);
+
+            if ($puedeEditarBiblioteca) {
+                Ejemplar::where('libro_id', $libro->id)
+                    ->where('biblioteca_id', $bibliotecaId)
+                    ->update(['codigo_ant' => $request->codigo_ant_biblioteca ?: null]);
+            }
+        }
 
         // ================= RELACIONES =================
         $libro->autores()->sync($request->autor_id ?? []);

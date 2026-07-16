@@ -209,7 +209,7 @@ class AdministracionController extends Controller
     }
     protected function libros_editar($id)
     {
-        $libro = Libro::with(['autores','tipo_registro','materias','editorial','ejemplares'])->find($id);
+        $libro = Libro::with(['autores','tipo_registro','materias','editorial','ejemplares.biblioteca'])->find($id);
 
         if (!$libro) {
             abort(404);
@@ -225,11 +225,25 @@ class AdministracionController extends Controller
             abort(403, 'No tienes permiso para editar este libro.');
         }
 
+        // Si se llega desde la fila de una biblioteca especifica, el codigo antiguo
+        // referencial mostrado es el de los ejemplares de esa sede, no el del libro.
+        $codigoAntReferencial = $libro->codigo_ant;
+        $codigoAntBiblioteca = null;
+
+        if (request()->filled('biblioteca')) {
+            $ejemplarBiblioteca = $libro->ejemplares->firstWhere('biblioteca_id', (int) request()->query('biblioteca'));
+
+            if ($ejemplarBiblioteca) {
+                $codigoAntReferencial = $ejemplarBiblioteca->codigo_ant ?: $libro->codigo_ant;
+                $codigoAntBiblioteca = $ejemplarBiblioteca->biblioteca;
+            }
+        }
+
         $tipo_registros = Tipo_registro::latest()->get();
         $paises = Pais::latest()->get();
         $idiomas = Idioma::latest()->get();
         $deweys = Dewey::latest()->get();
-        return view('administracion.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys','libro'));
+        return view('administracion.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys','libro','codigoAntReferencial','codigoAntBiblioteca'));
     }
     protected function compras()    
     {

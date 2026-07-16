@@ -152,8 +152,20 @@
                     </div>
                     <div class="col-md-2 form-group form-optional">
                         <label>Código antiguo (referencial)</label>
-                        <input type="text" class="form-control" value="{{ optional($libroActual)->codigo_ant ?? 'Sin registro' }}" disabled readonly>
-                        <small class="text-muted d-block mt-2">Código del primer lote importado, no representa a un ejemplar en particular. Para corregir el código de una copia especifica, hazlo desde "Ejemplares del libro".</small>
+                        <input type="text"
+                               name="codigo_ant_biblioteca"
+                               class="form-control"
+                               value="{{ $codigoAntReferencial ?? optional($libroActual)->codigo_ant ?? '' }}"
+                               placeholder="Opcional"
+                               {{ empty($codigoAntBiblioteca) ? 'disabled readonly' : '' }}>
+                        <input type="hidden" name="codigo_ant_biblioteca_id" value="{{ optional($codigoAntBiblioteca ?? null)->id }}">
+                        <small class="text-muted d-block mt-2">
+                            @if(!empty($codigoAntBiblioteca))
+                                Se aplicará a todos los ejemplares de {{ $codigoAntBiblioteca->nombre }} para este libro.
+                            @else
+                                Código del primer lote importado. Para corregirlo por sede, entra a "Editar" desde la fila de esa biblioteca en el listado.
+                            @endif
+                        </small>
                     </div>
                     <div class="col-md-4 form-group form-required">
                         <label>Codigo Dewey</label>
