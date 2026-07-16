@@ -10,6 +10,7 @@ use App\Models\Materia;
 use App\Models\Idioma;
 use App\Models\Editorial;
 use App\Models\Biblioteca;
+use App\Models\Ejemplar;
 use App\Models\Reservacion;
 use App\Models\Prestamo;
 use App\Models\Actividad;
@@ -138,7 +139,53 @@ class PaginaController extends Controller
         }
 
         $perPage = in_array((int) $request->per_page, [8, 16, 24, 32]) ? (int) $request->per_page : 8;
-        $libros  = $query->distinct('libros.id')->paginate($perPage)->withQueryString();
+
+        // Un libro puede tener ejemplares en varias bibliotecas: se agrupa por
+        // (libro, biblioteca) para mostrar un resultado por cada biblioteca donde está disponible.
+        $libroIds = $query->select('libros.id')->distinct()->pluck('libros.id');
+
+        $libros = Ejemplar::query()
+            ->select('libro_id', 'biblioteca_id')
+            ->selectRaw('COUNT(*) as total_ejemplares')
+            ->selectRaw('SUM(CASE WHEN estado = ? THEN 1 ELSE 0 END) as disponibles', [Ejemplar::ESTADO_DISPONIBLE])
+            ->whereIn('libro_id', $libroIds)
+            ->whereNotNull('biblioteca_id')
+            ->groupBy('libro_id', 'biblioteca_id')
+            ->orderBy('libro_id')
+            ->orderBy('biblioteca_id')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $librosPorId = Libro::with(['autores', 'editorial', 'materias', 'idioma'])
+            ->withAvg('comentarios as rating_promedio', 'calificacion')
+            ->withCount('comentarios')
+            ->whereIn('id', $libros->getCollection()->pluck('libro_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $bibliotecasPorId = Biblioteca::whereIn('id', $libros->getCollection()->pluck('biblioteca_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $libros->setCollection(
+            $libros->getCollection()
+                ->map(function ($grupo) use ($librosPorId, $bibliotecasPorId) {
+                    $libro = $librosPorId->get($grupo->libro_id);
+
+                    if (!$libro) {
+                        return null;
+                    }
+
+                    $libro = clone $libro;
+                    $libro->biblioteca_actual = $bibliotecasPorId->get($grupo->biblioteca_id);
+                    $libro->total_ejemplares_biblioteca = (int) $grupo->total_ejemplares;
+                    $libro->disponibles_biblioteca = (int) $grupo->disponibles;
+
+                    return $libro;
+                })
+                ->filter()
+                ->values()
+        );
 
         // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
         if ($request->ajax()) {
@@ -191,6 +238,13 @@ class PaginaController extends Controller
 
         $libros = $query->paginate(8)->withQueryString();
 
+        $libros->getCollection()->each(function ($libro) use ($biblioteca) {
+            $ejemplaresBiblioteca = $libro->ejemplares->where('biblioteca_id', $biblioteca->id);
+            $libro->biblioteca_actual = $biblioteca;
+            $libro->total_ejemplares_biblioteca = $ejemplaresBiblioteca->count();
+            $libro->disponibles_biblioteca = $ejemplaresBiblioteca->where('estado', Ejemplar::ESTADO_DISPONIBLE)->count();
+        });
+
         // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
         if ($request->ajax()) {
             return view('pagina._libros', compact('libros'))->render();
@@ -200,7 +254,7 @@ class PaginaController extends Controller
         return view('pagina.catalogo', compact('libros','biblioteca'));
     }
 
-    public function showLibro($id)
+    public function showLibro(Request $request, $id)
     {
         // Traer el libro con todas sus relaciones, incluyendo ejemplares y biblioteca
         $libro = Libro::with([
@@ -215,10 +269,25 @@ class PaginaController extends Controller
         ->withAvg('comentarios as rating_promedio', 'calificacion')
         ->withCount('comentarios')
         ->findOrFail($id);
+
+        // Si se llega desde una tarjeta del catálogo scopeada a una biblioteca,
+        // la ficha solo muestra la disponibilidad de esa sede.
+        $bibliotecaFiltro = null;
+        if ($request->filled('biblioteca')) {
+            $bibliotecaFiltroId = (int) $request->query('biblioteca');
+            if ($libro->ejemplares->contains('biblioteca_id', $bibliotecaFiltroId)) {
+                $bibliotecaFiltro = Biblioteca::find($bibliotecaFiltroId);
+            }
+        }
+
         //OBTENER BIBLIOTECAS QUE TIENEN ESE LIBRO
-        $bibliotecas = Biblioteca::whereHas('ejemplares', function($q) use ($id) {
+        $bibliotecas = Biblioteca::whereHas('ejemplares', function($q) use ($id, $bibliotecaFiltro) {
             $q->where('libro_id', $id)
             ->where('estado', 1); // solo disponibles
+
+            if ($bibliotecaFiltro) {
+                $q->where('biblioteca_id', $bibliotecaFiltro->id);
+            }
         })->get();
         // Palabras clave
         $keywords = collect(explode(' ', $libro->titulo))
@@ -253,7 +322,7 @@ class PaginaController extends Controller
             ? $libro->comentarios->firstWhere('user_id', auth()->id())
             : null;
 
-        return view('pagina.libro', compact('libro','libros','bibliotecas','miComentario'));
+        return view('pagina.libro', compact('libro','libros','bibliotecas','miComentario','bibliotecaFiltro'));
     }
     public function misReservas()
     {        

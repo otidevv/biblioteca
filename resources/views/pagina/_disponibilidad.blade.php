@@ -1,5 +1,8 @@
 @php
     $ejemplaresConBiblioteca = $libro->ejemplares->filter(fn($e) => !is_null($e->biblioteca_id));
+    if (!empty($bibliotecaFiltro)) {
+        $ejemplaresConBiblioteca = $ejemplaresConBiblioteca->where('biblioteca_id', $bibliotecaFiltro->id);
+    }
     $porBiblioteca = $ejemplaresConBiblioteca->groupBy('biblioteca_id');
 @endphp
 

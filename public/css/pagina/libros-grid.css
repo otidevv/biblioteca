@@ -151,6 +151,30 @@ body.library-dark .catalog-grid-code--secondary {
     background: rgba(110, 201, 184, 0.1);
 }
 
+/* Biblioteca badge */
+
+.catalog-grid-lib {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #2a5fa0;
+    background: rgba(42, 95, 160, 0.08);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.library-dark .catalog-grid-lib {
+    color: #7fb2ec;
+    background: rgba(127, 178, 236, 0.1);
+}
+
 /* Rating */
 
 .catalog-grid-rating {
@@ -180,6 +204,14 @@ body.library-dark .catalog-grid-code--secondary {
 
 .catalog-grid-avail i {
     font-size: 0.72rem;
+}
+
+.catalog-grid-avail--off {
+    color: #a34848;
+}
+
+body.library-dark .catalog-grid-avail--off {
+    color: #e28a8a;
 }
 
 .catalog-grid-button {

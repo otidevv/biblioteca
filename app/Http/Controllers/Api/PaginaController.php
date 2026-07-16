@@ -14,6 +14,7 @@ use App\Models\Ejemplar;
 use App\Models\Tipo_registro;
 use App\Models\Comentario;
 use App\Models\Libro;
+use App\Models\Biblioteca;
 
 class PaginaController extends Controller
 {
@@ -264,7 +265,7 @@ public function ejemplarBiblioteca(Request $request, $biblioteca_id)
     return response()->json($ejemplares);
 }
 //disponibilidad
-public function disponibilidad($id)
+public function disponibilidad(Request $request, $id)
 {
     $libro = Libro::with([
         'ejemplares' => function ($query) {
@@ -273,9 +274,13 @@ public function disponibilidad($id)
         'ejemplares.biblioteca',
     ])->findOrFail($id);
 
-    return view('pagina._disponibilidad', compact('libro'))->render();
+    $bibliotecaFiltro = $request->filled('biblioteca')
+        ? Biblioteca::find((int) $request->query('biblioteca'))
+        : null;
+
+    return view('pagina._disponibilidad', compact('libro', 'bibliotecaFiltro'))->render();
 }
-public function ejemplares($id)
+public function ejemplares(Request $request, $id)
 {
     $libro = Libro::with([
         'ejemplares' => function ($query) {
@@ -284,7 +289,13 @@ public function ejemplares($id)
         'ejemplares.biblioteca',
     ])->findOrFail($id);
 
-    return view('pagina._ejemplares', compact('libro'))->render();
+    $ejemplares = $libro->ejemplares->filter(fn ($e) => !is_null($e->biblioteca_id));
+
+    if ($request->filled('biblioteca')) {
+        $ejemplares = $ejemplares->where('biblioteca_id', (int) $request->query('biblioteca'));
+    }
+
+    return view('pagina._ejemplares', compact('ejemplares'))->render();
 }
 
 public function rating($id)

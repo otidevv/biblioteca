@@ -151,8 +151,9 @@
                         <input type="text" name="isbn" class="form-control" value="{{ optional($libroActual)->isbn ?? '' }}">
                     </div>
                     <div class="col-md-2 form-group form-optional">
-                        <label>Código antiguo o interno</label>
-                        <input type="text" name="codigo_ant" class="form-control" value="{{ optional($libroActual)->codigo_ant ?? '' }}" placeholder="Opcional">
+                        <label>Código antiguo (referencial)</label>
+                        <input type="text" class="form-control" value="{{ optional($libroActual)->codigo_ant ?? 'Sin registro' }}" disabled readonly>
+                        <small class="text-muted d-block mt-2">Código del primer lote importado, no representa a un ejemplar en particular. Para corregir el código de una copia especifica, hazlo desde "Ejemplares del libro".</small>
                     </div>
                     <div class="col-md-4 form-group form-required">
                         <label>Codigo Dewey</label>

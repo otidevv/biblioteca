@@ -259,7 +259,10 @@ function cargarEjemplares(libroId, bibliotecaId) {
 }
 
 function refrescarDisponibilidad(libroId) {
-    fetch(`/pagina/libro/${libroId}/disponibilidad`)
+    const bibliotecaFiltro = window.libroPage && window.libroPage.bibliotecaFiltro;
+    const query = bibliotecaFiltro ? `?biblioteca=${bibliotecaFiltro}` : '';
+
+    fetch(`/pagina/libro/${libroId}/disponibilidad${query}`)
         .then(res => res.text())
         .then(html => {
             document.getElementById('tablaDisponibilidad').innerHTML = html;
@@ -267,7 +270,10 @@ function refrescarDisponibilidad(libroId) {
 }
 
 function refrescarEjemplares(libroId) {
-    fetch(`/pagina/libro/${libroId}/ejemplares`)
+    const bibliotecaFiltro = window.libroPage && window.libroPage.bibliotecaFiltro;
+    const query = bibliotecaFiltro ? `?biblioteca=${bibliotecaFiltro}` : '';
+
+    fetch(`/pagina/libro/${libroId}/ejemplares${query}`)
         .then(res => res.text())
         .then(html => {
             document.getElementById('listaEjemplares').innerHTML = html;

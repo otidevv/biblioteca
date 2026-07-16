@@ -107,6 +107,7 @@
                         <th><i class="bi bi-tag text-muted me-1"></i>Tipo</th>
                         <th><i class="bi bi-book text-muted me-1"></i>Titulo</th>
                         <th><i class="bi bi-person-lines-fill text-muted me-1"></i>Autor</th>
+                        <th><i class="bi bi-building text-muted me-1"></i>Biblioteca</th>
                         <th><i class="bi bi-collection text-muted me-1"></i>Ejemplares</th>
                         <th><i class="bi bi-circle-half text-muted me-1"></i>Estado</th>
                         <th class="text-center"><i class="bi bi-sliders text-muted me-1"></i>Acciones</th>

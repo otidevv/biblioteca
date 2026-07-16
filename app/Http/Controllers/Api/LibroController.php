@@ -30,54 +30,54 @@ class LibroController extends Controller
     {
         $contexto = $this->bibliotecaService->resolverContextoBibliotecas($request->user());
 
-        $accesoGlobal          = $contexto['accesoGlobal'];
-        $bibliotecasAsignadas  = $contexto['bibliotecasAsignadas'];
-        $bibliotecasAsignadasIds = $bibliotecasAsignadas->toArray();
+        $accesoGlobal            = $contexto['accesoGlobal'];
+        $bibliotecasAsignadasIds = $contexto['bibliotecasAsignadas']->toArray();
 
-        $bibliotecaFiltro  = $request->input('biblioteca_id');
-        $tipoFiltro        = $request->input('tipo_registro_id');
-        $estadoFiltro      = $request->input('estado_filtro');
+        $bibliotecaFiltro    = $request->input('biblioteca_id');
+        $tipoFiltro          = $request->input('tipo_registro_id');
+        $estadoFiltro        = $request->input('estado_filtro');
         $conEjemplaresFiltro = $request->input('con_ejemplares');
 
-        $query = Libro::with([
-                        'autores',
-                        'tipo_registro',
-                        'ejemplares' => fn($q) => $q->select('id', 'libro_id', 'biblioteca_id', 'codigo_interno', 'codigo_ant', 'estado')
-                                                     ->with('biblioteca:id,nombre'),
-                    ])
-                    ->withCount('ejemplares');
+        // Un libro puede tener ejemplares en varias bibliotecas: se agrupa por
+        // (libro, biblioteca) para listar una fila por cada biblioteca donde tiene ejemplares.
+        $autoresSub = DB::table('autor_libros')
+            ->join('autores', 'autores.id', '=', 'autor_libros.autor_id')
+            ->selectRaw("autor_libros.libro_id, GROUP_CONCAT(DISTINCT CONCAT(TRIM(COALESCE(autores.apellidos, '')), ':', TRIM(COALESCE(autores.nombres, ''))) ORDER BY autor_libros.id SEPARATOR ',') as autores")
+            ->groupBy('autor_libros.libro_id');
+
+        $query = DB::table('libros')
+            ->leftJoin('ejemplares', 'ejemplares.libro_id', '=', 'libros.id')
+            ->leftJoin('bibliotecas', 'bibliotecas.id', '=', 'ejemplares.biblioteca_id')
+            ->leftJoin('tipo_registros', 'tipo_registros.id', '=', 'libros.tipo_registro_id')
+            ->leftJoinSub($autoresSub, 'aut', fn ($join) => $join->on('aut.libro_id', '=', 'libros.id'))
+            ->groupBy('libros.id', 'ejemplares.biblioteca_id', 'aut.autores')
+            ->select([
+                'libros.id as libro_id',
+                'libros.codigo_dewey',
+                'libros.codigo',
+                'libros.isbn',
+                'libros.titulo',
+                'libros.estado as libro_estado',
+                'tipo_registros.nombre as tipo_registro_nombre',
+                'ejemplares.biblioteca_id',
+                'bibliotecas.nombre as biblioteca_nombre',
+                'aut.autores',
+                DB::raw('COUNT(ejemplares.id) as ejemplares_count'),
+            ]);
 
         if ($bibliotecaFiltro) {
-            $query->whereHas('ejemplares', fn($q) => $q->where('biblioteca_id', $bibliotecaFiltro));
+            $query->where('ejemplares.biblioteca_id', $bibliotecaFiltro);
         }
         if ($tipoFiltro) {
-            $query->where('tipo_registro_id', $tipoFiltro);
+            $query->where('libros.tipo_registro_id', $tipoFiltro);
         }
         if ($estadoFiltro !== null && $estadoFiltro !== '') {
-            $query->where('estado', $estadoFiltro);
+            $query->where('libros.estado', $estadoFiltro);
         }
         if ($conEjemplaresFiltro === '1') {
-            $query->has('ejemplares');
+            $query->havingRaw('COUNT(ejemplares.id) > 0');
         } elseif ($conEjemplaresFiltro === '0') {
-            $query->doesntHave('ejemplares');
-        }
-
-        if ($accesoGlobal) {
-            $query->withCount([
-                'ejemplares as ejemplares_usuario_count'
-            ]);
-        } elseif ($bibliotecasAsignadas->isNotEmpty()) {
-            $query->withCount([
-                'ejemplares as ejemplares_usuario_count' => function ($ejemplaresQuery) use ($bibliotecasAsignadasIds) {
-                    $ejemplaresQuery->whereIn('biblioteca_id', $bibliotecasAsignadasIds);
-                }
-            ]);
-        } else {
-            $query->withCount([
-                'ejemplares as ejemplares_usuario_count' => function ($ejemplaresQuery) {
-                    $ejemplaresQuery->whereRaw('1 = 0');
-                }
-            ]);
+            $query->havingRaw('COUNT(ejemplares.id) = 0');
         }
 
         return DataTables::of($query)
@@ -95,71 +95,52 @@ class LibroController extends Controller
                     ->orWhereRaw('LOWER(libros.isbn) LIKE ?', ["%{$search}%"])
                     ->orWhereRaw('LOWER(libros.codigo) LIKE ?', ["%{$search}%"])
                     ->orWhereRaw('LOWER(libros.codigo_dewey) LIKE ?', ["%{$search}%"])
-                    ->orWhereRaw('LOWER(libros.estado) LIKE ?', ["%{$search}%"])
-
-                    //  AUTORES (RELACIÓN)
-                    ->orWhereHas('autores', function ($q2) use ($search) {
-                        $q2->whereRaw('LOWER(nombres) LIKE ?', ["%{$search}%"])
-                            ->orWhereRaw('LOWER(apellidos) LIKE ?', ["%{$search}%"]);
-                    })
-
-                    //  TIPO REGISTRO
-                    ->orWhereHas('tipo_registro', function ($q3) use ($search) {
-                        $q3->whereRaw('LOWER(nombre) LIKE ?', ["%{$search}%"]);
-                    })
-
-                    //  EJEMPLARES (CODIGO INTERNO / ANTIGUO)
-                    ->orWhereHas('ejemplares', function ($q4) use ($search) {
-                        $q4->whereRaw('LOWER(codigo_interno) LIKE ?', ["%{$search}%"])
-                            ->orWhereRaw('LOWER(codigo_ant) LIKE ?', ["%{$search}%"]);
-                    });
-
+                    ->orWhereRaw('LOWER(tipo_registros.nombre) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(bibliotecas.nombre) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw("LOWER(COALESCE(aut.autores, '')) LIKE ?", ["%{$search}%"])
+                    ->orWhereRaw("LOWER(COALESCE(ejemplares.codigo_interno, '')) LIKE ?", ["%{$search}%"])
+                    ->orWhereRaw("LOWER(COALESCE(ejemplares.codigo_ant, '')) LIKE ?", ["%{$search}%"]);
                 });
             }
         })
 
-        ->addColumn('autores', function($row) {
-            return $row->autores
-                ->map(fn($a) => trim((string)$a->apellidos) . ':' . trim((string)$a->nombres))
-                ->join(',');
+        ->addColumn('tipo_registro', function ($row) {
+            return $row->tipo_registro_nombre ? ['nombre' => $row->tipo_registro_nombre] : null;
         })
 
-        ->addColumn('bibliotecas_resumen', function($row) use ($accesoGlobal, $bibliotecasAsignadasIds, $bibliotecaFiltro) {
-            $ejemplares = $row->ejemplares;
-            if ($bibliotecaFiltro) {
-                $ejemplares = $ejemplares->where('biblioteca_id', (int) $bibliotecaFiltro);
+        ->addColumn('estado', function ($row) {
+            return (int) $row->libro_estado;
+        })
+
+        ->addColumn('es_mia', function ($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
+            return $accesoGlobal || in_array((int) $row->biblioteca_id, $bibliotecasAsignadasIds);
+        })
+
+        ->addColumn('ejemplares_items', function ($row) {
+            if (! $row->biblioteca_id) {
+                return [];
             }
-            return $ejemplares
-                ->groupBy('biblioteca_id')
-                ->map(function($grupo) use ($accesoGlobal, $bibliotecasAsignadasIds) {
-                    $biblioteca = $grupo->first()->biblioteca;
-                    return [
-                        'nombre' => $biblioteca?->nombre ?? 'Sin biblioteca',
-                        'count'  => $grupo->count(),
-                        'es_mia' => in_array($biblioteca?->id, $bibliotecasAsignadasIds),
-                        'items'  => $grupo->sortBy('codigo_interno')
-                                          ->map(fn($e) => [
-                                              'codigo_interno' => $e->codigo_interno,
-                                              'codigo_ant'     => $e->codigo_ant,
-                                              'estado'         => $e->estado,
-                                          ])->values()->toArray(),
-                    ];
-                })
-                ->values()
+
+            return DB::table('ejemplares')
+                ->where('libro_id', $row->libro_id)
+                ->where('biblioteca_id', $row->biblioteca_id)
+                ->orderBy('codigo_interno')
+                ->get(['codigo_interno', 'codigo_ant', 'estado'])
                 ->toArray();
         })
 
-        ->addColumn('acciones', function($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
-            $puedeEditar = $accesoGlobal
-                || $row->ejemplares->whereIn('biblioteca_id', $bibliotecasAsignadasIds)->isNotEmpty();
+        ->addColumn('acciones', function ($row) use ($accesoGlobal, $bibliotecasAsignadasIds) {
+            $puedeEditar = $accesoGlobal || in_array((int) $row->biblioteca_id, $bibliotecasAsignadasIds);
 
             $botonesEdicion = $puedeEditar ? '
-                        <a class="dropdown-item admin-action-link admin-action-link--edit editarLibro" href="/administracion/libros_editar/'.$row->id.'">
+                        <a class="dropdown-item admin-action-link admin-action-link--edit editarLibro" href="/administracion/libros_editar/'.$row->libro_id.'">
                             <i class="bi bi-pencil-square"></i><span>Editar</span>
                         </a>
-                        <button class="dropdown-item admin-action-link admin-action-link--delete eliminarLibro" data-id="'.$row->id.'">
+                        <button class="dropdown-item admin-action-link admin-action-link--delete eliminarLibro" data-id="'.$row->libro_id.'">
                             <i class="bi bi-trash3"></i><span>Eliminar</span>
                         </button>' : '';
+
+            $verUrl = '/administracion/ejemplares/'.$row->libro_id.($row->biblioteca_id ? '?biblioteca='.$row->biblioteca_id : '');
 
             return '
                 <div class="dropdown admin-action-menu">
@@ -167,7 +148,7 @@ class LibroController extends Controller
                         <i class="bi bi-three-dots"></i>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end admin-action-menu__dropdown">
-                        <a class="dropdown-item admin-action-link admin-action-link--view verEjemplares" href="/administracion/ejemplares/'.$row->id.'">
+                        <a class="dropdown-item admin-action-link admin-action-link--view verEjemplares" href="'.$verUrl.'">
                             <i class="bi bi-eye"></i><span>Ver</span>
                         </a>
                         '.$botonesEdicion.'
@@ -318,8 +299,9 @@ class LibroController extends Controller
         $codigoAnterior = $libro->codigo_dewey;
 
         // ================= ACTUALIZAR =================
+        // codigo_ant no se toca aqui: es un dato referencial del primer lote importado,
+        // no representa a un ejemplar en particular (se edita por copia en Ejemplares del libro).
         $libro->isbn = $request->isbn;
-        $libro->codigo_ant = $request->codigo_ant;
         $libro->tipo_registro_id = $request->tipo_registro_id;
         $libro->codigo_dewey = $this->resolverCodigoDewey($request->codigo_dewey);
         $libro->codigo = $request->codigo;
