@@ -17,6 +17,7 @@ use App\Models\Actividad;
 use App\Models\ActividadCategoria;
 use App\Models\Tipo_registro;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 class PaginaController extends Controller
 {
     //    
@@ -134,8 +135,15 @@ class PaginaController extends Controller
             });
         }
 
-        if ($request->filled('codigo_ant')) {
-            $query->where('codigo_ant', 'like', '%' . trim((string) $request->codigo_ant) . '%');
+        $terminoCodigo = $request->filled('codigo_ant') ? trim((string) $request->codigo_ant) : null;
+
+        if ($terminoCodigo) {
+            $query->where(function ($q) use ($terminoCodigo) {
+                $q->where('codigo_ant', 'like', '%' . $terminoCodigo . '%')
+                    ->orWhereHas('ejemplares', function ($eq) use ($terminoCodigo) {
+                        $eq->where('codigo_ant', 'like', '%' . $terminoCodigo . '%');
+                    });
+            });
         }
 
         $perPage = in_array((int) $request->per_page, [8, 16, 24, 32]) ? (int) $request->per_page : 8;
@@ -144,12 +152,27 @@ class PaginaController extends Controller
         // (libro, biblioteca) para mostrar un resultado por cada biblioteca donde está disponible.
         $libroIds = $query->select('libros.id')->distinct()->pluck('libros.id');
 
-        $libros = Ejemplar::query()
+        $librosQuery = Ejemplar::query()
             ->select('libro_id', 'biblioteca_id')
             ->selectRaw('COUNT(*) as total_ejemplares')
             ->selectRaw('SUM(CASE WHEN estado = ? THEN 1 ELSE 0 END) as disponibles', [Ejemplar::ESTADO_DISPONIBLE])
+            ->selectRaw('MAX(codigo_ant) as codigo_ant_biblioteca')
             ->whereIn('libro_id', $libroIds)
-            ->whereNotNull('biblioteca_id')
+            ->whereNotNull('biblioteca_id');
+
+        // Si se busco por codigo, solo se muestra la biblioteca cuyos ejemplares
+        // realmente tienen ese codigo (no todas las bibliotecas del libro).
+        if ($terminoCodigo) {
+            $librosQuery->whereExists(function ($sub) use ($terminoCodigo) {
+                $sub->select(DB::raw(1))
+                    ->from('ejemplares as e2')
+                    ->whereColumn('e2.libro_id', 'ejemplares.libro_id')
+                    ->whereColumn('e2.biblioteca_id', 'ejemplares.biblioteca_id')
+                    ->where('e2.codigo_ant', 'like', '%' . $terminoCodigo . '%');
+            });
+        }
+
+        $libros = $librosQuery
             ->groupBy('libro_id', 'biblioteca_id')
             ->orderBy('libro_id')
             ->orderBy('biblioteca_id')
@@ -180,6 +203,9 @@ class PaginaController extends Controller
                     $libro->biblioteca_actual = $bibliotecasPorId->get($grupo->biblioteca_id);
                     $libro->total_ejemplares_biblioteca = (int) $grupo->total_ejemplares;
                     $libro->disponibles_biblioteca = (int) $grupo->disponibles;
+                    if ($grupo->codigo_ant_biblioteca) {
+                        $libro->codigo_ant = $grupo->codigo_ant_biblioteca;
+                    }
 
                     return $libro;
                 })
@@ -236,6 +262,18 @@ class PaginaController extends Controller
             $query->where('materia',$request->materia);
         }
 
+        if ($request->filled('codigo_ant')) {
+            $termino = trim((string) $request->codigo_ant);
+
+            $query->where(function ($q) use ($termino, $id) {
+                $q->where('codigo_ant', 'like', '%' . $termino . '%')
+                    ->orWhereHas('ejemplares', function ($eq) use ($termino, $id) {
+                        $eq->where('biblioteca_id', $id)
+                            ->where('codigo_ant', 'like', '%' . $termino . '%');
+                    });
+            });
+        }
+
         $libros = $query->paginate(8)->withQueryString();
 
         $libros->getCollection()->each(function ($libro) use ($biblioteca) {
@@ -243,6 +281,11 @@ class PaginaController extends Controller
             $libro->biblioteca_actual = $biblioteca;
             $libro->total_ejemplares_biblioteca = $ejemplaresBiblioteca->count();
             $libro->disponibles_biblioteca = $ejemplaresBiblioteca->where('estado', Ejemplar::ESTADO_DISPONIBLE)->count();
+
+            $codigoAntBiblioteca = $ejemplaresBiblioteca->pluck('codigo_ant')->filter()->first();
+            if ($codigoAntBiblioteca) {
+                $libro->codigo_ant = $codigoAntBiblioteca;
+            }
         });
 
         // 🔥 SI ES AJAX → SOLO DEVUELVE LA LISTA
