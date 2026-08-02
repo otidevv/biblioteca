@@ -641,9 +641,9 @@ html, body {
         ? $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists()
         : false;
 
-    // Tarjetas del carrusel: solo libros recientes con portada. Si no hay
-    // ninguno, la sección del carrusel no se muestra.
-    $fanCards = $libros->filter(fn($libro) => filled($libro->imagen))->map(function ($libro) {
+    // Tarjetas del carrusel: los libros recientes con portada que trae el
+    // controlador. Si no hay ninguno, la sección no se muestra.
+    $fanCards = $libros->map(function ($libro) {
         $autores = $libro->autores
             ->map(fn($a) => trim($a->nombres . ' ' . $a->apellidos))
             ->filter()

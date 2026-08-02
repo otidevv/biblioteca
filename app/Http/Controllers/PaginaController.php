@@ -29,6 +29,8 @@ class PaginaController extends Controller
             ->whereHas('ejemplares', function ($query) {
                 $query->whereNotNull('biblioteca_id');
             })
+            ->whereNotNull('imagen')
+            ->where('imagen', '<>', '')
             ->latest()
             ->take(8)
             ->get();
