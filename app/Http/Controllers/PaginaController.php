@@ -25,6 +25,10 @@ class PaginaController extends Controller
     {
 
         $bibliotecas = Biblioteca::all();
+        // El campo `imagen` en BD no contiene la palabra "placeholder"; el
+        // placeholder aparece cuando el navegador dispara `onerror` porque el
+        // archivo referenciado no existe en disco. Por eso filtramos aqui
+        // verificando la existencia real del archivo antes de tomar los 8.
         $libros = Libro::with(['autores', 'editorial'])
             ->withAvg('comentarios as rating_promedio', 'calificacion')
             ->withCount('comentarios')
@@ -35,8 +39,24 @@ class PaginaController extends Controller
             ->where('imagen', '<>', '')
             ->where('imagen', 'not like', '%placeholder%')
             ->latest()
+            ->take(60)
+            ->get()
+            ->filter(function ($libro) {
+                $imagen = trim((string) $libro->imagen);
+                if ($imagen === '') {
+                    return false;
+                }
+                if (\Illuminate\Support\Str::startsWith($imagen, ['http://', 'https://'])) {
+                    return true;
+                }
+                $relativo = ltrim(preg_replace('#^/?storage/#', '', $imagen), '/');
+                if (!str_contains($relativo, '/')) {
+                    $relativo = 'libros/' . $relativo;
+                }
+                return file_exists(storage_path('app/public/' . $relativo));
+            })
             ->take(8)
-            ->get();
+            ->values();
         $actividades = Actividad::with('categoria')
             ->where('estado', 1)
             ->where(function ($query) {
