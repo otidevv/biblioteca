@@ -253,12 +253,6 @@ html, body {
     will-change: transform;
 }
 
-.ld-fan-card .ld-fan-texture {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 12px, transparent 12px 24px);
-}
-
 .ld-fan-card .ld-fan-cover {
     position: absolute;
     inset: 0;
@@ -647,37 +641,20 @@ html, body {
         ? $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists()
         : false;
 
-    // Tarjetas del carrusel: portadas reales de libros recientes (solo los
-    // que tienen imagen); si no alcanzan, se completan con tarjetas
-    // institucionales estilo diseño.
+    // Tarjetas del carrusel: solo libros recientes con portada. Si no hay
+    // ninguno, la sección del carrusel no se muestra.
     $fanCards = $libros->filter(fn($libro) => filled($libro->imagen))->map(function ($libro) {
         $autores = $libro->autores
             ->map(fn($a) => trim($a->nombres . ' ' . $a->apellidos))
             ->filter()
             ->implode(', ');
         return [
-            'tipo'   => 'libro',
             'img'    => $libro->imagen,
             'titulo' => \Illuminate\Support\Str::limit($libro->titulo, 44),
             'hint'   => '// ' . ($autores !== '' ? \Illuminate\Support\Str::limit($autores, 34) : 'título reciente'),
             'url'    => route('libro.show', $libro->id),
         ];
     })->values();
-
-    $fallbackCards = collect([
-        ['bg' => 'linear-gradient(160deg,#1a1a2e,#0c0c18)', 'hint' => '// catálogo institucional',     'line1' => 'Miles de títulos a tu',      'accent' => 'alcance',      'url' => route('catalogo')],
-        ['bg' => 'linear-gradient(160deg,#22303a,#0d1318)', 'hint' => '// scopus · sciencedirect',     'line1' => 'Bibliotecas',                'accent' => 'científicas',  'url' => route('bibliotecas.cientificas')],
-        ['bg' => 'linear-gradient(160deg,#3a1a2a,#140810)', 'hint' => '// reservas en línea',          'line1' => 'Reserva tu libro',           'accent' => 'sin colas',    'url' => route('catalogo')],
-        ['bg' => 'linear-gradient(160deg,#2e1a2e,#120812)', 'hint' => '// biblioteca virtual',         'line1' => 'eLibro donde',               'accent' => 'estés',        'url' => 'https://elibro.net/es/lc/unamad/login_usuario/'],
-        ['bg' => 'linear-gradient(160deg,#1a2e22,#08120c)', 'hint' => '// agenda cultural',            'line1' => 'Eventos que',                'accent' => 'inspiran',     'url' => route('evento')],
-        ['bg' => 'linear-gradient(160deg,#331a26,#14080e)', 'hint' => '// producción académica',       'line1' => 'Repositorio',                'accent' => 'institucional','url' => 'https://repositorio.unamad.edu.pe/'],
-    ]);
-
-    if ($fanCards->count() < 6) {
-        $fanCards = $fanCards->concat(
-            $fallbackCards->map(fn($c) => array_merge($c, ['tipo' => 'promo']))
-        )->take(max(6, $fanCards->count()))->values();
-    }
 
     $cardsPerSet = $fanCards->count();
     // Copias suficientes para que el bucle sea continuo en pantallas anchas.
@@ -750,35 +727,27 @@ html, body {
         </form>
     </section>
 
-    <section class="ld-fan" aria-label="Novedades de la biblioteca">
+    @if ($fanCards->isNotEmpty())
+    <section class="ld-fan" aria-label="Títulos recientes de la biblioteca">
         <div class="ld-fan-track" id="ldFanTrack">
             @for ($set = 0; $set < $fanSets; $set++)
                 @foreach ($fanCards as $card)
-                    @if ($card['tipo'] === 'libro')
-                        <a href="{{ $card['url'] }}" class="ld-fan-card" data-fan-card="1" tabindex="{{ $set === 0 ? 0 : -1 }}">
-                            <img src="{{ $card['img'] }}"
-                                 alt=""
-                                 class="ld-fan-cover"
-                                 loading="lazy"
-                                 decoding="async"
-                                 onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';">
-                            <span class="ld-fan-scrim"></span>
-                            <span class="ld-fan-hint">{{ $card['hint'] }}</span>
-                            <span class="ld-fan-title" style="font-size:17px;text-transform:none;">{{ $card['titulo'] }}</span>
-                        </a>
-                    @else
-                        <a href="{{ $card['url'] }}" class="ld-fan-card" data-fan-card="1" tabindex="{{ $set === 0 ? 0 : -1 }}"
-                           style="background:{{ $card['bg'] }};"
-                           @if (str_starts_with($card['url'], 'http')) target="_blank" rel="noopener noreferrer" @endif>
-                            <span class="ld-fan-texture"></span>
-                            <span class="ld-fan-hint">{{ $card['hint'] }}</span>
-                            <span class="ld-fan-title">{{ $card['line1'] }} <span>{{ $card['accent'] }}</span></span>
-                        </a>
-                    @endif
+                    <a href="{{ $card['url'] }}" class="ld-fan-card" data-fan-card="1" tabindex="{{ $set === 0 ? 0 : -1 }}">
+                        <img src="{{ $card['img'] }}"
+                             alt=""
+                             class="ld-fan-cover"
+                             loading="lazy"
+                             decoding="async"
+                             onerror="this.onerror=null;this.src='{{ asset('img/libro-placeholder.png') }}';">
+                        <span class="ld-fan-scrim"></span>
+                        <span class="ld-fan-hint">{{ $card['hint'] }}</span>
+                        <span class="ld-fan-title" style="font-size:17px;text-transform:none;">{{ $card['titulo'] }}</span>
+                    </a>
                 @endforeach
             @endfor
         </div>
     </section>
+    @endif
 
     <section class="ld-marquee-wrap" aria-label="Recursos de investigación">
         <span class="ld-marquee-label">Recursos que potencian tu investigación</span>
