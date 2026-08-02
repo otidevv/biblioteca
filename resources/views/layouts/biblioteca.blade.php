@@ -1528,6 +1528,12 @@ body.library-dark .overlay.active {
             'title' => 'Detalle del libro',
             'subtitle' => 'Revisa autores, disponibilidad, comentarios y reserva el ejemplar que necesitas.',
         ];
+
+        if (!empty($bibliotecaFiltro)) {
+            $topbarMeta['kicker'] = 'Sede: ' . $bibliotecaFiltro->nombre;
+            $topbarMeta['icon'] = 'bi-buildings-fill';
+            $topbarMeta['subtitle'] = 'Mostrando solo la disponibilidad de ' . $bibliotecaFiltro->nombre . '.';
+        }
     } elseif (request()->routeIs('mis.reservas')) {
         $topbarMeta = [
             'kicker' => 'Seguimiento personal',

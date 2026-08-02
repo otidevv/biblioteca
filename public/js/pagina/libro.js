@@ -241,13 +241,13 @@ function cargarEjemplares(libroId, bibliotecaId) {
 
             let html = '<option value="">Seleccionar ejemplar...</option>';
 
-            data.forEach(e => {
-                const codigo = e.codigo_dewey && e.codigo_interno
-                    ? `${e.codigo_dewey}/${e.codigo_interno}`
-                    : (e.codigo || e.codigo_ant || `Ejemplar #${e.id}`);
-                const tipo = e.tipo ? ` · ${e.tipo}` : '';
-                const siaf = e.siaf ? ` · SIAF: ${e.siaf}` : '';
-                html += `<option value="${e.id}">${codigo}${tipo}${siaf}</option>`;
+            data.forEach((e, i) => {
+                // Numero de ejemplar: el codigo_interno o, si falta, la posicion
+                const numEjemplar = e.codigo_interno ?? (i + 1);
+                // Codigo antiguo: solo el numero, sin etiqueta
+                const codAntiguo = e.codigo_ant ? ` · ${e.codigo_ant}` : '';
+
+                html += `<option value="${e.id}">Ejemplar ${numEjemplar}${codAntiguo}</option>`;
             });
 
             ejemplarSelect.innerHTML = html;
@@ -259,7 +259,10 @@ function cargarEjemplares(libroId, bibliotecaId) {
 }
 
 function refrescarDisponibilidad(libroId) {
-    fetch(`/pagina/libro/${libroId}/disponibilidad`)
+    const bibliotecaFiltro = window.libroPage && window.libroPage.bibliotecaFiltro;
+    const query = bibliotecaFiltro ? `?biblioteca=${bibliotecaFiltro}` : '';
+
+    fetch(`/pagina/libro/${libroId}/disponibilidad${query}`)
         .then(res => res.text())
         .then(html => {
             document.getElementById('tablaDisponibilidad').innerHTML = html;
@@ -267,7 +270,10 @@ function refrescarDisponibilidad(libroId) {
 }
 
 function refrescarEjemplares(libroId) {
-    fetch(`/pagina/libro/${libroId}/ejemplares`)
+    const bibliotecaFiltro = window.libroPage && window.libroPage.bibliotecaFiltro;
+    const query = bibliotecaFiltro ? `?biblioteca=${bibliotecaFiltro}` : '';
+
+    fetch(`/pagina/libro/${libroId}/ejemplares${query}`)
         .then(res => res.text())
         .then(html => {
             document.getElementById('listaEjemplares').innerHTML = html;

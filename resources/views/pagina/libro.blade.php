@@ -13,7 +13,8 @@
 window.libroPage = {
     id: @json($libro->id),
     comentarioUrl: @json(route('comentario')),
-    reservarUrl: @json(route('reservar'))
+    reservarUrl: @json(route('reservar')),
+    bibliotecaFiltro: @json(optional($bibliotecaFiltro ?? null)->id)
 };
 </script>
 <script src="{{ asset('js/pagina/libro.js') }}"></script>
@@ -86,6 +87,9 @@ window.libroPage = {
     $descripcionLibro = $libro->resumen ?: ($libro->descripcion ?? 'No hay descripcion disponible para este libro.');
     $bibliotecasDisponibles = $bibliotecas->count();
     $ejemplaresConBiblioteca = $libro->ejemplares->filter(fn($ejemplar) => !is_null($ejemplar->biblioteca_id));
+    if (!empty($bibliotecaFiltro)) {
+        $ejemplaresConBiblioteca = $ejemplaresConBiblioteca->where('biblioteca_id', $bibliotecaFiltro->id);
+    }
     $ejemplaresDisponibles = $ejemplaresConBiblioteca->where('estado', 1)->count();
     $ejemplaresTotales = $ejemplaresConBiblioteca->count();
 @endphp
@@ -290,9 +294,18 @@ window.libroPage = {
             </div>
 
             <div class="book-info-card" id="seccion-disponibilidad">
-                <h2 class="book-section-title">Disponibilidad por biblioteca</h2>
+                <div class="book-section-heading">
+                    <h2 class="book-section-title mb-0">Disponibilidad por biblioteca</h2>
+                    @if($bibliotecaFiltro ?? null)
+                        <a href="{{ route('libro.show', $libro->id) }}" class="book-section-badge text-decoration-none" title="Quitar filtro y ver todas las bibliotecas">
+                            <i class="bi bi-funnel-fill"></i>
+                            {{ $bibliotecaFiltro->nombre }}
+                            <i class="bi bi-x-circle ms-1"></i>
+                        </a>
+                    @endif
+                </div>
                 <div id="tablaDisponibilidad">
-                    @include('pagina._disponibilidad', ['libro' => $libro])
+                    @include('pagina._disponibilidad', ['libro' => $libro, 'bibliotecaFiltro' => $bibliotecaFiltro ?? null])
                 </div>
             </div>
         </div>

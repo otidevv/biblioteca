@@ -111,7 +111,7 @@ $(document).ready(function () {
             },
             {
                 data: 'tipo_registro',
-                name: 'tipo_registro.nombre',
+                name: 'tipo_registro_nombre',
                 render: function(data) {
                     return formatTipo(data);
                 }
@@ -136,16 +136,25 @@ $(document).ready(function () {
                 }
             },
             {
+                data: 'biblioteca_nombre',
+                name: 'biblioteca_nombre',
+                render: function(data, type, row) {
+                    if (!data) {
+                        return row.ejemplares_count > 0
+                            ? '<span class="books-cell__empty">Sin biblioteca</span>'
+                            : '<span class="books-cell__empty">Sin ejemplares</span>';
+                    }
+                    const cls  = row.es_mia ? 'books-bib-item--mine' : 'books-bib-item--other';
+                    const icon = row.es_mia ? 'bi-building-check' : 'bi-building';
+                    return `<span class="books-bib-item ${cls}"><i class="bi ${icon}"></i>${data}</span>`;
+                }
+            },
+            {
                 data: 'ejemplares_count',
                 name: 'ejemplares_count',
                 orderable: false,
                 render: function(data, type, row) {
-                    const resumen = Array.isArray(row.bibliotecas_resumen) ? row.bibliotecas_resumen : [];
-
-                    // El total se calcula desde el resumen (ya filtrado por biblioteca si aplica)
-                    const total = resumen.length > 0
-                        ? resumen.reduce(function(s, b) { return s + Number(b.count); }, 0)
-                        : Number(data || 0);
+                    const total = Number(data || 0);
 
                     if (total === 0) {
                         return '<span class="books-cell__empty">Sin ejemplares</span>';
@@ -158,46 +167,23 @@ $(document).ready(function () {
                         3: { label: 'Traslado',   cls: 'ej-estado--traslado'   },
                     };
 
-                    let bibsHtml = '';
+                    let itemsHtml = '';
 
-                    if (modoEjemplares === 'compacto') {
-                        bibsHtml = resumen.map(function(bib) {
-                            const cls  = bib.es_mia ? 'books-bib-item--mine' : 'books-bib-item--other';
-                            const icon = bib.es_mia ? 'bi-building-check' : 'bi-building';
-                            return `<span class="books-bib-item ${cls}"><i class="bi ${icon}"></i>${bib.nombre}: <b>${bib.count}</b></span>`;
-                        }).join('');
-                    } else {
-                        resumen.forEach(function(bib) {
-                            const cls  = bib.es_mia ? 'books-bib-item--mine' : 'books-bib-item--other';
-                            const icon = bib.es_mia ? 'bi-building-check' : 'bi-building';
-
-                            let ejsHtml = '';
-                            if (Array.isArray(bib.items) && bib.items.length > 0) {
-                                ejsHtml = bib.items.map(function(ej) {
-                                    const est    = estadoMap[ej.estado] || { label: 'Desconocido', cls: 'ej-estado--desconocido' };
-                                    const codAnt = ej.codigo_ant ? `<span class="books-ej-codigo">${ej.codigo_ant}</span>` : '';
-                                    const codInt = `<span class="books-ej-codigo${ej.codigo_ant ? '-sec' : ''}">Ej.${ej.codigo_interno ?? '?'}</span>`;
-                                    return `<div class="books-ej-row">
-                                        ${codAnt}${codInt}
-                                        <span class="books-ej-estado ${est.cls}">${est.label}</span>
-                                    </div>`;
-                                }).join('');
-                            }
-
-                            bibsHtml += `<div class="books-bib-block ${cls}">
-                                <div class="books-bib-block__header">
-                                    <i class="bi ${icon}"></i>
-                                    <span class="books-bib-block__nombre" title="${bib.nombre}">${bib.nombre}</span>
-                                    <span class="books-bib-block__count">${bib.count}</span>
-                                </div>
-                                <div class="books-bib-block__items">${ejsHtml}</div>
+                    if (modoEjemplares !== 'compacto' && Array.isArray(row.ejemplares_items)) {
+                        itemsHtml = row.ejemplares_items.map(function(ej) {
+                            const est    = estadoMap[ej.estado] || { label: 'Desconocido', cls: 'ej-estado--desconocido' };
+                            const codAnt = ej.codigo_ant ? `<span class="books-ej-codigo">${ej.codigo_ant}</span>` : '';
+                            const codInt = `<span class="books-ej-codigo${ej.codigo_ant ? '-sec' : ''}">Ej.${ej.codigo_interno ?? '?'}</span>`;
+                            return `<div class="books-ej-row">
+                                ${codAnt}${codInt}
+                                <span class="books-ej-estado ${est.cls}">${est.label}</span>
                             </div>`;
-                        });
+                        }).join('');
                     }
 
                     return `<div class="books-exemplars-cell">
                         <strong class="books-exemplars-cell__total">${total} <span class="books-exemplars-cell__label">ejemplar${total !== 1 ? 'es' : ''}</span></strong>
-                        <div class="books-bib-list">${bibsHtml}</div>
+                        <div class="books-bib-list">${itemsHtml}</div>
                     </div>`;
                 }
             },

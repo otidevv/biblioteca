@@ -2,7 +2,13 @@
 <div class="row g-4" id="contenedorLibros">
     @forelse($libros as $libro)
         <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <a href="{{ route('libro.show', $libro->id) }}"
+            @php
+                $libroShowParams = ['id' => $libro->id];
+                if ($libro->biblioteca_actual ?? null) {
+                    $libroShowParams['biblioteca'] = $libro->biblioteca_actual->id;
+                }
+            @endphp
+            <a href="{{ route('libro.show', $libroShowParams) }}"
                class="catalog-grid-card"
                aria-label="Ver detalle del libro {{ $libro->titulo }}">
 
@@ -51,14 +57,22 @@
                         @endif
                     </div>
 
+                    @if($libro->biblioteca_actual ?? null)
+                        <div class="catalog-grid-lib" title="{{ $libro->biblioteca_actual->nombre }}">
+                            <i class="bi bi-building"></i>
+                            {{ \Illuminate\Support\Str::limit($libro->biblioteca_actual->nombre, 32) }}
+                        </div>
+                    @endif
+
                     <div class="catalog-grid-rating">
                         <x-rating-stars :rating="$libro->rating_promedio" :count="$libro->comentarios_count" />
                     </div>
 
+                    @php $disponible = ($libro->disponibles_biblioteca ?? 1) > 0; @endphp
                     <div class="catalog-grid-footer">
-                        <span class="catalog-grid-avail">
+                        <span class="catalog-grid-avail{{ $disponible ? '' : ' catalog-grid-avail--off' }}">
                             <i class="bi bi-check-circle-fill"></i>
-                            Disponible
+                            {{ $disponible ? 'Disponible' : 'No disponible' }}
                         </span>
                         <span class="catalog-grid-button">
                             Ver detalle <i class="bi bi-arrow-right-short"></i>

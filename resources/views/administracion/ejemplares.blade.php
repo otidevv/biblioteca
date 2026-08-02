@@ -130,10 +130,10 @@
                                         Filtrar por biblioteca
                                     </span>
                                     <select id="biblioteca_filtro" class="admin-select exemplars-filter__select">
-                                        <option value="-1">Todos los ejemplares</option>
+                                        <option value="-1" {{ request()->query('biblioteca') ? '' : 'selected' }}>Todos los ejemplares</option>
                                         <option value="">Sin biblioteca</option>
                                         @foreach($bibliotecas as $b)
-                                            <option value="{{$b->id}}">{{$b->nombre}}</option>
+                                            <option value="{{$b->id}}" {{ (string) request()->query('biblioteca') === (string) $b->id ? 'selected' : '' }}>{{$b->nombre}}</option>
                                         @endforeach
                                     </select>
                                 </label>
