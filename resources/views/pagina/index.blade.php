@@ -647,9 +647,10 @@ html, body {
         ? $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists()
         : false;
 
-    // Tarjetas del carrusel: portadas reales de libros recientes; si no
-    // alcanzan, se completan con tarjetas institucionales estilo diseño.
-    $fanCards = $libros->map(function ($libro) {
+    // Tarjetas del carrusel: portadas reales de libros recientes (solo los
+    // que tienen imagen); si no alcanzan, se completan con tarjetas
+    // institucionales estilo diseño.
+    $fanCards = $libros->filter(fn($libro) => filled($libro->imagen))->map(function ($libro) {
         $autores = $libro->autores
             ->map(fn($a) => trim($a->nombres . ' ' . $a->apellidos))
             ->filter()
