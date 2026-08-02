@@ -649,7 +649,7 @@ html, body {
             ->filter()
             ->implode(', ');
         return [
-            'img'    => $libro->imagen,
+            'img'    => $libro->imagen_url,
             'titulo' => \Illuminate\Support\Str::limit($libro->titulo, 44),
             'hint'   => '// ' . ($autores !== '' ? \Illuminate\Support\Str::limit($autores, 34) : 'título reciente'),
             'url'    => route('libro.show', $libro->id),
