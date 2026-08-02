@@ -33,6 +33,7 @@ class PaginaController extends Controller
             })
             ->whereNotNull('imagen')
             ->where('imagen', '<>', '')
+            ->where('imagen', 'not like', '%placeholder%')
             ->latest()
             ->take(8)
             ->get();
