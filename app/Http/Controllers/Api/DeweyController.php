@@ -27,10 +27,33 @@ class DeweyController extends Controller
                 })
             );
 
-        } 
-        $deweys = Dewey::where('nombre', 'like', "%{$q}%")
-                        ->limit(10)
-                        ->get();
+        }
+
+        $termino = trim((string) $q);
+
+        $consulta = Dewey::query();
+
+        if ($termino !== '') {
+            // Coincide por codigo (prefijo), por el termino completo en el nombre o,
+            // si no, porque todas las palabras aparezcan en nombre/keywords.
+            // Asi funcionan tanto "800" como "literatura peruana".
+            $palabras = preg_split('/\s+/', $termino, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+            $consulta->where(function ($grupo) use ($termino, $palabras) {
+                $grupo->where('codigo', 'like', "{$termino}%")
+                      ->orWhere('nombre', 'like', "%{$termino}%")
+                      ->orWhere(function ($todasLasPalabras) use ($palabras) {
+                          foreach ($palabras as $palabra) {
+                              $todasLasPalabras->where(function ($campo) use ($palabra) {
+                                  $campo->where('nombre', 'like', "%{$palabra}%")
+                                        ->orWhere('keywords', 'like', "%{$palabra}%");
+                              });
+                          }
+                      });
+            });
+        }
+
+        $deweys = $consulta->orderBy('codigo')->limit(30)->get();
 
         // Retornamos en formato JSON para Select2
         return response()->json($deweys->map(function($d){

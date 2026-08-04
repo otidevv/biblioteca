@@ -199,6 +199,10 @@ class LibroController extends Controller
     }
     public function nuevo(Request $request){
 
+        // Sin ejemplares el libro no pertenece a ninguna sede y queda fuera del alcance
+        // de su propio registrador, asi que se exige biblioteca a quien tenga alguna visible.
+        $bibliotecasVisibles = $this->bibliotecaService->obtenerBibliotecasVisibles($request->user());
+
         $request->validate([
             'titulo' => 'required',
             'tipo_registro_id' => 'required',
@@ -206,7 +210,18 @@ class LibroController extends Controller
             'codigo_dewey' => 'required',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
             'archivo_indice' => 'nullable|file|mimes:pdf|max:5120',
+            'biblioteca_id' => ($bibliotecasVisibles->isNotEmpty() ? 'required' : 'nullable') . '|integer|exists:bibliotecas,id',
+            'cantidad_ejemplares' => 'nullable|integer|min:1|max:200',
         ]);
+
+        $bibliotecaId = (int) $request->biblioteca_id;
+
+        if ($bibliotecaId && ! $bibliotecasVisibles->contains('id', $bibliotecaId)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puedes registrar el libro en una biblioteca fuera de tu asignacion.',
+            ], 403);
+        }
 
         DB::beginTransaction();
 
@@ -215,7 +230,10 @@ class LibroController extends Controller
             $codigoDewey = $this->resolverCodigoDewey($request->codigo_dewey);
             $libro = new Libro();
             $libro->isbn = $request->isbn;
-            $libro->codigo_ant = $request->codigo_ant;
+            // Codigo antiguo referencial del libro: se copia a los ejemplares iniciales y
+            // sirve de plantilla para los que se agreguen despues. Luego se corrige por sede
+            // desde "Editar" en la fila de cada biblioteca.
+            $libro->codigo_ant = $request->filled('codigo_ant') ? trim((string) $request->codigo_ant) : null;
             $libro->tipo_registro_id = $request->tipo_registro_id;
             $libro->codigo_dewey = $codigoDewey;
             $libro->codigo = $request->codigo;
@@ -249,6 +267,27 @@ class LibroController extends Controller
             }
 
             $libro->save();
+
+            // ejemplares iniciales en la biblioteca elegida
+            if ($bibliotecaId) {
+                $cantidad = (int) ($request->cantidad_ejemplares ?: 1);
+
+                for ($i = 1; $i <= $cantidad; $i++) {
+                    Ejemplar::create([
+                        'libro_id' => $libro->id,
+                        'biblioteca_id' => $bibliotecaId,
+                        'codigo_interno' => $i,
+                        'codigo_ant' => $libro->codigo_ant,
+                        'tipo' => 'ej.',
+                        'siaf' => null,
+                        'adquisicion' => null,
+                        'codigo_dewey' => $libro->codigo_dewey . $libro->codigo,
+                        'estado' => Ejemplar::ESTADO_DISPONIBLE,
+                        'estado_traslado' => Ejemplar::TRASLADO_NINGUNO,
+                        'compra_detalle_id' => null,
+                    ]);
+                }
+            }
 
             // autores
             if($request->autor_id){

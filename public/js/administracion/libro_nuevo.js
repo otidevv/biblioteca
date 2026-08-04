@@ -25,15 +25,23 @@ $(document).ready(function () {
     });
 
     $('#codigo_dewey').select2({
-        placeholder: 'Seleccione codigo Dewey',
+        placeholder: 'Escribe un codigo (800) o una materia (literatura)',
         allowClear: true,
+        minimumInputLength: 0,
+        language: {
+            inputTooShort: () => 'Escribe para buscar',
+            searching: () => 'Buscando...',
+            noResults: () => 'Sin coincidencias. Prueba con el codigo o con una sola palabra.'
+        },
         ajax: {
             url: '/api/inventario/dewey/buscar',
             dataType: 'json',
             delay: 250,
             data: function (params) {
-                const titulo = ($('#titulo').val() || '').trim();
-                return { q: params.term || titulo };
+                // Solo el texto tecleado: enviar el titulo del libro como termino de
+                // busqueda dejaba la lista vacia casi siempre. La sugerencia por titulo
+                // la hace /libros/sugerir-dewey al salir del campo Titulo.
+                return { q: params.term || '' };
             },
             processResults: function (data) {
                 return {
@@ -326,7 +334,9 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr) {
-                alerta(xhr.responseJSON?.message || 'Error al guardar el libro', false);
+                const errores = xhr.responseJSON?.errors;
+                const primerError = errores ? Object.values(errores)[0]?.[0] : null;
+                alerta(primerError || xhr.responseJSON?.message || 'Error al guardar el libro', false);
             },
             complete: function () {
                 $submitLibro.prop('disabled', false).text('Guardar libro');
@@ -384,9 +394,16 @@ $(document).ready(function () {
             '#editorial_id',
             'select[name="idioma"]',
             'select[name="tipo_registro_id"]',
-            '#codigo_dewey'
+            '#codigo_dewey',
+            '#biblioteca_id'
         ].forEach(function (selector) {
             const $select = $(selector);
+
+            // #biblioteca_id solo existe al registrar un libro nuevo.
+            if ($select.length === 0) {
+                return;
+            }
+
             const $group = $select.closest('.form-group');
             const valor = $select.val();
             const estaVacio = Array.isArray(valor)
