@@ -201,11 +201,20 @@ class AdministracionController extends Controller
     }   
     protected function libros_nuevo()
     {
+        // Un libro sin ejemplares no pertenece a ninguna sede: no se puede editar desde
+        // el listado ni corregir su codigo antiguo. Por eso al registrarlo se elige la
+        // biblioteca de destino y se crea al menos un ejemplar en ella.
+        $servicio = app(ReporteInventarioFisicoService::class);
+        $contexto = $servicio->resolverContextoBibliotecas(Auth::user());
+        $bibliotecasDisponibles = $servicio->obtenerBibliotecasVisibles(Auth::user());
+        $bibliotecaPreseleccionada = $contexto['bibliotecaFijaId']
+            ?? ($bibliotecasDisponibles->count() === 1 ? $bibliotecasDisponibles->first()->id : null);
+
         $tipo_registros = Tipo_registro::latest()->get();
         $paises = Pais::latest()->get();
         $idiomas = Idioma::latest()->get();
         $deweys = Dewey::latest()->get();
-        return view('administracion.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys'));
+        return view('administracion.libros_nuevo', compact('tipo_registros','idiomas','paises','deweys','bibliotecasDisponibles','bibliotecaPreseleccionada'));
     }
     protected function libros_editar($id)
     {

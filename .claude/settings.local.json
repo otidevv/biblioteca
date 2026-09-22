@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash([ -f \"C:\\\\\\\\Apache24\\\\\\\\htdocs\\\\\\\\sistema-biblioteca\\\\\\\\storage\\\\\\\\app\\\\\\\\public\\\\\\\\libros\\\\\\\\$f\" ])"
+    ]
+  }
+}

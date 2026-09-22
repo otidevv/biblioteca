@@ -150,18 +150,30 @@
                         <label>ISBN</label>
                         <input type="text" name="isbn" class="form-control" value="{{ optional($libroActual)->isbn ?? '' }}">
                     </div>
+                    {{-- Tres estados del campo. Usar siempre la forma de una linea: la cabecera de este
+                         archivo abre un bloque PHP corto y un cierre de bloque aqui romperia la compilacion.
+                         - Nuevo libro: editable y se guarda en libros.codigo_ant (los ejemplares lo heredan).
+                         - Edicion desde la fila de una biblioteca: editable, solo afecta a los ejemplares de esa sede.
+                         - Edicion sin biblioteca: solo lectura, para no pisar el codigo de otras sedes. --}}
+                    @php($edicionPorBiblioteca = !empty($codigoAntBiblioteca ?? null))
+                    @php($codigoAntEditable = !$libroActual || $edicionPorBiblioteca)
+                    @php($codigoAntNombre = $libroActual ? 'codigo_ant_biblioteca' : 'codigo_ant')
                     <div class="col-md-2 form-group form-optional">
                         <label>Código antiguo (referencial)</label>
                         <input type="text"
-                               name="codigo_ant_biblioteca"
+                               name="{{ $codigoAntNombre }}"
                                class="form-control"
                                value="{{ $codigoAntReferencial ?? optional($libroActual)->codigo_ant ?? '' }}"
                                placeholder="Opcional"
-                               {{ empty($codigoAntBiblioteca) ? 'disabled readonly' : '' }}>
-                        <input type="hidden" name="codigo_ant_biblioteca_id" value="{{ optional($codigoAntBiblioteca ?? null)->id }}">
+                               {{ $codigoAntEditable ? '' : 'disabled readonly' }}>
+                        @if($edicionPorBiblioteca)
+                            <input type="hidden" name="codigo_ant_biblioteca_id" value="{{ $codigoAntBiblioteca->id }}">
+                        @endif
                         <small class="text-muted d-block mt-2">
-                            @if(!empty($codigoAntBiblioteca))
+                            @if($edicionPorBiblioteca)
                                 Se aplicará a todos los ejemplares de {{ $codigoAntBiblioteca->nombre }} para este libro.
+                            @elseif(!$libroActual)
+                                Se guardará como referencia del libro y en los ejemplares iniciales de la biblioteca elegida. Después podrás corregirlo por sede desde "Editar" en la fila de cada biblioteca.
                             @else
                                 Código del primer lote importado. Para corregirlo por sede, entra a "Editar" desde la fila de esa biblioteca en el listado.
                             @endif
@@ -181,6 +193,52 @@
                     </div>
                 </div>
             </div>
+
+            @if(!$libroActual)
+                @php($bibliotecas = $bibliotecasDisponibles ?? collect())
+                <div class="admin-modal-section book-form__section">
+                    <div class="book-form__section-head">
+                        <span class="book-form__section-icon"><i class="bi bi-building"></i></span>
+                        <div>
+                            <h5 class="admin-card__title mb-1">Ubicacion inicial</h5>
+                            <p class="book-form__section-copy">Biblioteca a la que pertenecera el libro y ejemplares con los que se da de alta.</p>
+                        </div>
+                    </div>
+
+                    @if($bibliotecas->isEmpty())
+                        <div class="alert alert-warning mb-0">
+                            No tienes ninguna biblioteca asignada, asi que el libro se registrara sin ejemplares y no
+                            podras editarlo desde el listado. Pide que te asignen una sede antes de continuar.
+                        </div>
+                    @else
+                        <div class="row g-3">
+                            <div class="col-md-6 form-group form-required">
+                                <label>Biblioteca</label>
+                                <select id="biblioteca_id" name="biblioteca_id" class="form-select">
+                                    @if($bibliotecas->count() > 1)
+                                        <option value="">Seleccione...</option>
+                                    @endif
+                                    @foreach($bibliotecas as $biblioteca)
+                                        <option value="{{ $biblioteca->id }}" {{ ($bibliotecaPreseleccionada ?? null) == $biblioteca->id ? 'selected' : '' }}>{{ $biblioteca->nombre }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted d-block mt-2">
+                                    @if($bibliotecas->count() === 1)
+                                        Se usara tu biblioteca asignada.
+                                    @else
+                                        Los ejemplares iniciales y el codigo antiguo se registraran en esta sede.
+                                    @endif
+                                </small>
+                            </div>
+                            <div class="col-md-3 form-group form-required">
+                                <label>Ejemplares iniciales</label>
+                                <input type="number" name="cantidad_ejemplares" class="form-control" value="1" min="1" max="200" required>
+                                <small class="text-muted d-block mt-2">Podras agregar mas desde "Ejemplares".</small>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             <div class="admin-modal-section book-form__section">
                 <div class="book-form__section-head">
