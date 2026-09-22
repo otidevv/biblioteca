@@ -204,8 +204,8 @@ class LibroController extends Controller
             'tipo_registro_id' => 'required',
             'codigo' => 'required',
             'codigo_dewey' => 'required',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
-            'archivo_indice' => 'nullable|file|mimes:pdf|max:5120',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|extensions:jpg,jpeg,png,webp|max:3072',
+            'archivo_indice' => 'nullable|file|mimes:pdf|extensions:pdf|max:5120',
         ]);
 
         DB::beginTransaction();
@@ -234,18 +234,13 @@ class LibroController extends Controller
 
             // subir imagen
             if($request->hasFile('imagen')){
-                $archivo = $request->file('imagen');
-                $nombre = time().'_'.$archivo->getClientOriginalName();
-                $archivo->storeAs('libros',$nombre,'public');
-                $libro->imagen = 'storage/libros/'.$nombre;
+                // store() usa un nombre aleatorio y la extension segun el contenido real del archivo.
+                $libro->imagen = 'storage/'.$request->file('imagen')->store('libros', 'public');
             }
 
             // subir pdf
             if($request->hasFile('archivo_indice')){
-                $archivo = $request->file('archivo_indice');
-                $nombre = time().'_'.$archivo->getClientOriginalName();
-                $archivo->storeAs('indices', $nombre, 'public');
-                $libro->archivo_indice = 'storage/indices/'.$nombre;
+                $libro->archivo_indice = 'storage/'.$request->file('archivo_indice')->store('indices', 'public');
             }
 
             $libro->save();
@@ -285,8 +280,8 @@ class LibroController extends Controller
             'tipo_registro_id' => 'required',
             'codigo' => 'required',
             'codigo_dewey' => 'required',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
-            'archivo_indice' => 'nullable|file|mimes:pdf|max:5120',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|extensions:jpg,jpeg,png,webp|max:3072',
+            'archivo_indice' => 'nullable|file|mimes:pdf|extensions:pdf|max:5120',
         ]);
 
         $libro = Libro::find($request->id);
@@ -329,11 +324,8 @@ class LibroController extends Controller
                 Storage::disk('public')->delete(ltrim(str_replace('storage/', '', (string) $libro->imagen), '/'));
             }
 
-            $archivo = $request->file('imagen');
-            $nombre = time().'_'.$archivo->getClientOriginalName();
-            $archivo->storeAs('libros',$nombre,'public');
-
-            $libro->imagen = 'storage/libros/'.$nombre;
+            // store() usa un nombre aleatorio y la extension segun el contenido real del archivo.
+            $libro->imagen = 'storage/'.$request->file('imagen')->store('libros', 'public');
         }
 
         // ================= PDF =================
@@ -342,11 +334,7 @@ class LibroController extends Controller
                 Storage::disk('public')->delete(ltrim(str_replace('storage/', '', (string) $libro->archivo_indice), '/'));
             }
 
-            $archivo = $request->file('archivo_indice');
-            $nombre = time().'_'.$archivo->getClientOriginalName();
-            $archivo->storeAs('indices',$nombre,'public');
-
-            $libro->archivo_indice = 'storage/indices/'.$nombre;
+            $libro->archivo_indice = 'storage/'.$request->file('archivo_indice')->store('indices', 'public');
         }
 
         $libro->save();

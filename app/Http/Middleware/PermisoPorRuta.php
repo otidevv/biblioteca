@@ -10,6 +10,12 @@ class PermisoPorRuta
 {
     protected array $routePermissionMap = [
         'usuarios.buscar.dni' => ['lectores.registro', 'administracion.usuarios'],
+        'lectores.importacion.plantilla' => 'lectores.importacion',
+        'lectores.importacion.preview' => 'lectores.importacion',
+        'lectores.importacion.cargar' => 'lectores.importacion',
+        'administracion.libros.importar' => 'administracion.libros.importar',
+        'administracion.libros.importar.store' => 'administracion.libros.importar',
+        'administracion.libros.traslados' => 'administracion.libros.traslados',
     ];
 
     protected array $pathPermissionMap = [
@@ -41,11 +47,6 @@ class PermisoPorRuta
         'lectores/importacion' => 'lectores.importacion',
         'reportes/grafico' => 'reportes.grafico',
         'reportes/descargas' => 'reportes.descargas',
-        'sincronizar' => 'administracion.libros',
-        'sincronizarImagenesLibrosPorIsbn' => 'administracion.libros',
-        'clasificarLibrosMasivos' => 'administracion.libros',
-        'actualizarCodigosTopograficos' => 'administracion.libros',
-        'sincronizarCirculacion' => 'administracion.libros',
         'obtenerDeweyPorTitulo' => 'administracion.libros',
 
         'api/roles' => 'administracion.roles_permisos',
@@ -150,8 +151,13 @@ class PermisoPorRuta
 
         $permisos = is_array($permiso) ? $permiso : [$permiso];
 
+        // Las asignaciones de rol desactivadas (estado = 0) no otorgan permisos.
         $tienePermiso = auth()->user()
             ->roles()
+            ->where(function ($q) {
+                $q->whereNull('usuario_rol_bibliotecas.estado')
+                  ->orWhere('usuario_rol_bibliotecas.estado', '!=', 0);
+            })
             ->whereHas('permisos', function ($q) use ($permisos) {
                 $q->whereIn('codigo', $permisos)
                   ->orWhereHas('hijos', function ($h) use ($permisos) {

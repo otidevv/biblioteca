@@ -10,6 +10,11 @@ class ConsultaApiController extends Controller
 {
     public function consulta_api(Request $request)
     {
+        // El numero se inserta en la URL del servicio externo: solo se aceptan alfanumericos.
+        $request->validate([
+            'nro_documento' => ['required', 'string', 'regex:/^[A-Za-z0-9]{6,15}$/'],
+        ]);
+
         $consulta = $request->tipo_usuario == "ESTUDIANTE" ? 1 : ($request->tipo_usuario == "DOCENTE" ? 2 : ($request->tipo_usuario == "ADMINISTRATIVO" ? 3 : ($request->tipo_usuario == "EXTERNO" ? 4 : 0)));
 
         if ($consulta == 1) {
@@ -36,7 +41,7 @@ class ConsultaApiController extends Controller
         $token = config('services.unamad_integrations.teacher_token');
         $verifySsl = config('services.unamad_integrations.verify_ssl', true);
         $baseUrl = rtrim((string) config('services.unamad_integrations.teacher_url', 'https://daa-documentos.unamad.edu.pe:8081/api/data/teacher'), '/');
-        $url = "{$baseUrl}/{$dni}";
+        $url = $baseUrl . '/' . rawurlencode((string) $dni);
 
         if (!$token) {
             return response()->json([
@@ -63,7 +68,6 @@ class ConsultaApiController extends Controller
             if (empty($datos) || !isset($datos['name'])) {
                 return response()->json([
                     'message' => 'No se encontraron datos del docente.',
-                    'datos' => $datos,
                 ], 404);
             }
 
@@ -82,7 +86,7 @@ class ConsultaApiController extends Controller
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Error de conexion: ' . $e->getMessage(),
+                'message' => 'Error de conexion con el servicio externo.',
             ], 500);
         }
     }
@@ -90,7 +94,7 @@ class ConsultaApiController extends Controller
     public function consultarExterno($dni)
     {
         $verifySsl = config('services.unamad_integrations.verify_ssl', true);
-        $url = "https://apidatos.unamad.edu.pe/api/consulta/{$dni}";
+        $url = 'https://apidatos.unamad.edu.pe/api/consulta/' . rawurlencode((string) $dni);
 
         try {
             $response = Http::timeout(10)
@@ -122,7 +126,7 @@ class ConsultaApiController extends Controller
             ], 500);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Error de conexion: ' . $e->getMessage(),
+                'message' => 'Error de conexion con el servicio externo.',
             ], 500);
         }
     }
@@ -132,7 +136,7 @@ class ConsultaApiController extends Controller
         $token = config('services.unamad_integrations.student_token');
         $verifySsl = config('services.unamad_integrations.verify_ssl', true);
         $baseUrl = rtrim((string) config('services.unamad_integrations.student_url', 'https://daa-documentos.unamad.edu.pe:8081/api/data/student'), '/');
-        $url = "{$baseUrl}/{$dni}";
+        $url = $baseUrl . '/' . rawurlencode((string) $dni);
 
         if (!$token) {
             return response()->json([
@@ -159,14 +163,12 @@ class ConsultaApiController extends Controller
             if (empty($datos) || !isset($datos['status']) || $datos['status'] !== 'success') {
                 return response()->json([
                     'message' => 'No se encontraron datos del estudiante.',
-                    'datos' => $datos,
                 ], 404);
             }
 
             if (empty($datos['data']) || !isset($datos['data'][0]['info'])) {
                 return response()->json([
                     'message' => 'No se encontraron datos del estudiante.',
-                    'datos' => $datos,
                 ], 404);
             }
 
@@ -187,7 +189,7 @@ class ConsultaApiController extends Controller
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Error de conexion: ' . $e->getMessage(),
+                'message' => 'Error de conexion con el servicio externo.',
             ], 500);
         }
     }

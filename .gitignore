@@ -23,3 +23,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 vite.config.js
+
+# Volcados de base de datos: nunca versionar (contienen datos personales)
+*.sql
+!docker/mysql/init/*.sql

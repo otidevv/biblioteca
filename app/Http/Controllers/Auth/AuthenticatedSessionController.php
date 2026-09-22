@@ -71,10 +71,21 @@ class AuthenticatedSessionController extends Controller
             return false;
         }
 
-        if (str_starts_with($redirect, '/')) {
-            return true;
+        // Rechaza URLs protocol-relative (//host), barras invertidas y caracteres de control.
+        if (str_contains($redirect, '\\') || preg_match('/[\x00-\x1F\x7F]/', $redirect)) {
+            return false;
         }
 
-        return str_starts_with($redirect, url('/'));
+        if (str_starts_with($redirect, '/')) {
+            return !str_starts_with($redirect, '//');
+        }
+
+        $destino = parse_url($redirect);
+        $aplicacion = parse_url(url('/'));
+
+        return isset($destino['host'], $aplicacion['host'])
+            && strcasecmp($destino['host'], $aplicacion['host']) === 0
+            && ($destino['scheme'] ?? null) === ($aplicacion['scheme'] ?? null)
+            && ($destino['port'] ?? null) === ($aplicacion['port'] ?? null);
     }
 }

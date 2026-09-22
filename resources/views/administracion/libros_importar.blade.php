@@ -40,14 +40,6 @@
             </div>
         @endif
 
-        @if (session('import_exception'))
-            <div class="book-import__alert book-import__alert--error">
-                <strong>Detalle tecnico de la importacion</strong>
-                <div>{{ session('import_exception.message') }}</div>
-                <div><small>{{ session('import_exception.file') }}:{{ session('import_exception.line') }}</small></div>
-            </div>
-        @endif
-
         @if (session('success'))
             <div class="book-import__alert book-import__alert--success">
                 {{ session('success') }}

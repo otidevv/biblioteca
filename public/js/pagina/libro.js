@@ -239,7 +239,7 @@ function cargarEjemplares(libroId, bibliotecaId) {
                 return;
             }
 
-            let html = '<option value="">Seleccionar ejemplar...</option>';
+            ejemplarSelect.innerHTML = '<option value="">Seleccionar ejemplar...</option>';
 
             data.forEach((e, i) => {
                 // Numero de ejemplar: el codigo_interno o, si falta, la posicion
@@ -247,10 +247,10 @@ function cargarEjemplares(libroId, bibliotecaId) {
                 // Codigo antiguo: solo el numero, sin etiqueta
                 const codAntiguo = e.codigo_ant ? ` · ${e.codigo_ant}` : '';
 
-                html += `<option value="${e.id}">Ejemplar ${numEjemplar}${codAntiguo}</option>`;
+                // new Option() asigna texto plano: evita inyectar HTML desde los datos del ejemplar.
+                ejemplarSelect.add(new Option(`Ejemplar ${numEjemplar}${codAntiguo}`, e.id));
             });
 
-            ejemplarSelect.innerHTML = html;
             ejemplarSelect.removeAttribute('disabled');
         })
         .catch(() => {

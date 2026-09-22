@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -18,6 +19,81 @@ use Illuminate\Validation\Rule;
 
 class UsuarioController extends Controller
 {
+    // Por id y no por nombre: un rol puede renombrarse desde el modulo de roles.
+    private const ROLES_PRIVILEGIADOS_IDS = [1, 2]; // PROGRAMADOR, ADMINISTRADOR
+    private const ROL_LECTOR_ID = 5;
+
+    private function idsRolesPrivilegiados(): array
+    {
+        return self::ROLES_PRIVILEGIADOS_IDS;
+    }
+
+    private function esPrivilegiado(User $user): bool
+    {
+        return Usuario_rol_biblioteca::where('user_id', $user->id)
+            ->whereIn('rol_id', $this->idsRolesPrivilegiados())
+            ->exists();
+    }
+
+    private function bibliotecasDelActor(User $actor): array
+    {
+        $asignaciones = Usuario_rol_biblioteca::where('user_id', $actor->id)
+            ->where('rol_id', '!=', self::ROL_LECTOR_ID)
+            ->get(['biblioteca_id', 'estado']);
+
+        $bibliotecas = $asignaciones->pluck('biblioteca_id')
+            ->filter(fn ($id) => ! is_null($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $accesoGlobal = empty($bibliotecas)
+            && $asignaciones->contains(fn ($a) => is_null($a->biblioteca_id) && (int) $a->estado === 1);
+
+        return [$bibliotecas, $accesoGlobal];
+    }
+
+    /**
+     * Evita la escalada de privilegios de un gestor de usuarios sin rol privilegiado:
+     * no puede modificarse a si mismo, tocar usuarios privilegiados, asignar roles
+     * privilegiados ni otorgar acceso a bibliotecas que el no tiene.
+     */
+    private function denegarGestionNoPermitida(Request $request, ?User $objetivo, bool $validarAsignacion = true): ?JsonResponse
+    {
+        $actor = $request->user();
+
+        if ($this->esPrivilegiado($actor)) {
+            return null;
+        }
+
+        $denegar = fn (string $mensaje) => response()->json(['success' => false, 'message' => $mensaje], 403);
+
+        if ($objetivo && (int) $objetivo->id === (int) $actor->id) {
+            return $denegar('No puedes modificar tu propio usuario desde este modulo.');
+        }
+
+        if ($objetivo && $this->esPrivilegiado($objetivo)) {
+            return $denegar('No tienes permisos para modificar a este usuario.');
+        }
+
+        if (! $validarAsignacion) {
+            return null;
+        }
+
+        $rolesSolicitados = array_map('intval', (array) $request->input('roles', []));
+        if (array_intersect($rolesSolicitados, $this->idsRolesPrivilegiados())) {
+            return $denegar('No tienes permisos para asignar ese rol.');
+        }
+
+        [$bibliotecas, $accesoGlobal] = $this->bibliotecasDelActor($actor);
+        if (! $accesoGlobal && (! $request->filled('biblioteca') || ! in_array((int) $request->biblioteca, $bibliotecas, true))) {
+            return $denegar('Debes asignar una biblioteca a la que tengas acceso.');
+        }
+
+        return null;
+    }
+
     private function construirNombreUsuario(Request $request): string
     {
         return trim(implode(' ', array_filter([
@@ -108,7 +184,11 @@ class UsuarioController extends Controller
             'roles'             => 'required|array|min:1',
             'roles.*'           => 'exists:roles,id',
         ]);
-        //return $request;    
+
+        if ($denegado = $this->denegarGestionNoPermitida($request, null)) {
+            return $denegado;
+        }
+
         DB::beginTransaction();
 
         try {
@@ -182,11 +262,9 @@ class UsuarioController extends Controller
 
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar usuario',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al registrar usuario', $e, 500, [
+                'action' => 'nuevoUsuario',
+            ]);
         }
     }
     public function edit(Request $request)
@@ -214,6 +292,10 @@ class UsuarioController extends Controller
             'roles'             => 'required|array|min:1',
             'roles.*'           => 'exists:roles,id',
         ]);
+
+        if ($denegado = $this->denegarGestionNoPermitida($request, $user)) {
+            return $denegado;
+        }
 
         DB::beginTransaction();
         try {
@@ -256,11 +338,10 @@ class UsuarioController extends Controller
 
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar usuario',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al actualizar usuario', $e, 500, [
+                'action' => 'editUsuario',
+                'user_id' => $request->id,
+            ]);
         }
     }
     public function cambiarContrasena(Request $request)
@@ -271,6 +352,11 @@ class UsuarioController extends Controller
         ]);
 
         $user = User::findOrFail($request->id);
+
+        if ($denegado = $this->denegarGestionNoPermitida($request, $user, false)) {
+            return $denegado;
+        }
+
         $user->password = Hash::make($request->password);
         $user->save();
 
@@ -426,7 +512,11 @@ class UsuarioController extends Controller
     }
     public function editLector(Request $request)
     {
-        $user = User::findOrFail($request->id);
+        // Solo se pueden editar desde este modulo usuarios cuyo unico rol es LECTOR.
+        $user = User::whereKey($request->id)
+            ->whereHas('roles', fn ($q) => $q->where('rol_id', self::ROL_LECTOR_ID))
+            ->whereDoesntHave('roles', fn ($q) => $q->where('rol_id', '!=', self::ROL_LECTOR_ID))
+            ->firstOrFail();
         $persona = Persona::findOrFail($user->persona_id);
 
         $request->validate([
@@ -571,7 +661,10 @@ class UsuarioController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage() ?: 'No se pudo completar la importacion de lectores.',
+                // Solo se muestran los mensajes de validacion propios del servicio, no errores de BD.
+                'message' => in_array(get_class($e), [\RuntimeException::class, \InvalidArgumentException::class], true) && $e->getMessage() !== ''
+                    ? $e->getMessage()
+                    : 'No se pudo completar la importacion de lectores.',
             ], 422);
         }
     }

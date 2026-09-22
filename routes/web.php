@@ -313,12 +313,8 @@ Route::get('/libro', [PaginaController::class, '_libro']);
 Route::get('/{id}/libro', [PaginaController::class, 'libro'])->name('pagina.libro');
 */
 
+// Las sincronizaciones masivas (modifican o borran datos) ya no se exponen por HTTP:
+// se ejecutan con `php artisan biblioteca:sincronizar {accion}` (ver routes/console.php).
 Route::middleware(['auth', 'permiso.ruta'])->group(function () {
-    Route::get('/sincronizar', [SincronizarController::class, 'sincronizar']);
-    Route::get('/sincronizarImagenesLibrosPorIsbn', [SincronizarController::class, 'sincronizarImagenesLibrosPorIsbn']);
-    Route::get('/clasificarLibrosMasivos', [SincronizarController::class, 'clasificarLibrosMasivos']);
-    Route::get('/actualizarCodigosTopograficos', [SincronizarController::class, 'actualizarCodigosTopograficos']);
-    
-    Route::get('/sincronizarCirculacion', [SincronizarController::class, 'sincronizarCirculacion']);
     Route::get('/obtenerDeweyPorTitulo', [SincronizarController::class, 'obtenerDeweyPorTitulo']);
 });

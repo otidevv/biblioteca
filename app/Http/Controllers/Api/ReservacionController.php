@@ -291,13 +291,24 @@ class ReservacionController extends Controller
 
     public function cancelarReservaAdmin($id)
     {
-        $resultado = DB::transaction(function () use ($id) {
-            $reserva = Reservacion::lockForUpdate()->find($id);
+        $userId = (int) auth()->id();
+
+        $resultado = DB::transaction(function () use ($id, $userId) {
+            [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($userId);
+
+            $reserva = Reservacion::with('ejemplar')->lockForUpdate()->find($id);
 
             if (! $reserva) {
                 return [
                     'status' => 404,
                     'payload' => ['error' => 'Reserva no encontrada'],
+                ];
+            }
+
+            if (! $accesoGlobal && ! $bibliotecasAsignadas->contains((int) optional($reserva->ejemplar)->biblioteca_id)) {
+                return [
+                    'status' => 403,
+                    'payload' => ['error' => 'No puedes cancelar reservas de otra biblioteca'],
                 ];
             }
 

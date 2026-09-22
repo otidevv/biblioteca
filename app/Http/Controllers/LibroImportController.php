@@ -9,6 +9,7 @@ use App\Http\Requests\ImportarLibrosRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -67,15 +68,18 @@ class LibroImportController extends Controller
                 File::delete($temporaryFilePath);
             }
 
+            // El detalle tecnico va al log, no al usuario (evita exponer rutas y SQL).
+            Log::error('Error al importar libros.', [
+                'exception' => get_class($e),
+                'exception_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
             $payload = [
                 'success' => false,
                 'message' => 'No fue posible completar la importacion.',
                 'errors' => [],
-                'exception' => [
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                ],
             ];
 
             if ($request->expectsJson()) {
@@ -87,8 +91,7 @@ class LibroImportController extends Controller
                 ->withInput()
                 ->withErrors([
                     'archivo' => $payload['message'],
-                ])
-                ->with('import_exception', $payload['exception']);
+                ]);
         }
 
         if ($temporaryFilePath && File::exists($temporaryFilePath)) {

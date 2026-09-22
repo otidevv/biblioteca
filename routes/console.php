@@ -88,6 +88,35 @@ Artisan::command('sanciones:procesar', function () {
     $this->info("Sanciones procesadas. Prestamos: {$sancionesPrestamo}. " . trim(Artisan::output()));
 })->purpose('Aplica sanciones automaticas por tardanza, deterioro y reservas no recogidas');
 
+Artisan::command('biblioteca:sincronizar {accion : sincronizar|circulacion|imagenes|clasificar|codigos}', function () {
+    $acciones = [
+        'sincronizar' => 'sincronizar',
+        'circulacion' => 'sincronizarCirculacion',
+        'imagenes' => 'sincronizarImagenesLibrosPorIsbn',
+        'clasificar' => 'clasificarLibrosMasivos',
+        'codigos' => 'actualizarCodigosTopograficos',
+    ];
+
+    $accion = $this->argument('accion');
+
+    if (! isset($acciones[$accion])) {
+        $this->error('Accion no valida. Usa: ' . implode(', ', array_keys($acciones)));
+        return 1;
+    }
+
+    if (! $this->confirm("Se ejecutara '{$accion}', que modifica datos de forma masiva. ¿Continuar?")) {
+        return 1;
+    }
+
+    $respuesta = app()->call([app(\App\Http\Controllers\SincronizarController::class), $acciones[$accion]]);
+
+    $this->line($respuesta instanceof \Symfony\Component\HttpFoundation\Response
+        ? $respuesta->getContent()
+        : json_encode($respuesta, JSON_UNESCAPED_UNICODE));
+
+    return 0;
+})->purpose('Ejecuta las sincronizaciones masivas con la base de datos anterior');
+
 Schedule::command('reservas:procesar-vencidas')
     ->everyMinute()
     ->withoutOverlapping()

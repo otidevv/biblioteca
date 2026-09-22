@@ -67,11 +67,9 @@ class RolController extends Controller
 
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar biblioteca',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al registrar rol', $e, 500, [
+                'action' => 'nuevoRol',
+            ]);
         }
     }
     public function edit(Request $request)
@@ -103,11 +101,10 @@ class RolController extends Controller
             ], 200);
         } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar rol',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->jsonServerError('Error al actualizar rol', $e, 500, [
+                'action' => 'editRol',
+                'rol_id' => $request->id,
+            ]);
         }
     }
 
