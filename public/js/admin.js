@@ -1158,47 +1158,42 @@ function alerta_cerrar(notif)
 }
 
 
-function response_helper(response) {    
-   
-   var res_text = JSON.stringify(response);
-   if(res_text.indexOf("CSRF token mismatch.") !== -1) {
-       setTimeout(function () { location.reload(); }, 3000);
-       return "La sesión ha expirado"; 
-   }        
-   
-   if(response.hasOwnProperty('responseJSON'))   
-   {
-       console.log('Tiene responseJSON');
-       return JSON.stringify(response.responseJSON.message); 
-   } 
-       
-   
-   else if(response.hasOwnProperty('responseText'))        
-   {
-       console.log('Tiene responseText');
-       var converted = JSON.parse(response.responseText);
-       if(converted.hasOwnProperty('message'))
-       {
-           console.log('Tiene responseText message');
-           return converted.message;
-       }
-       else
-       {
-           console.log('Tiene responseText sin message');
-           return textoMax(JSON.stringify(converted), 150);
-       }
-   }
-       
-   var converted = JSON.parse(response);
-   if(converted.hasOwnProperty('message'))
-   {
-       console.log('Tiene  message');
-       return JSON.stringify(converted.message); 
-   }   
-   
-   console.log('No tiene nada ');
-   return textoMax(JSON.stringify(response), 150);          
-   
+function response_helper(response) {
+    var status = response && response.status;
+    var payload = response;
+
+    if (response && typeof response === 'object') {
+        payload = response.responseJSON != null ? response.responseJSON
+            : (typeof response.responseText === 'string' ? response.responseText : response);
+    }
+
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload);
+        } catch (error) {
+            payload = null;
+        }
+    }
+
+    var message = payload && typeof payload === 'object' ? payload.message : null;
+    if (status === 419 || message === 'CSRF token mismatch.') {
+        setTimeout(function () { location.reload(); }, 3000);
+        return 'La sesi?n ha expirado';
+    }
+
+    if (typeof message === 'string' && message.trim()) {
+        // alerta inserta el mensaje en HTML: tratar la respuesta como texto.
+        return message.replace(/[&<>"']/g, function (character) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+        });
+    }
+
+    if (status === 0) return 'No se pudo conectar con el servidor. Intente nuevamente.';
+    if (status === 401) return 'La sesi?n ha expirado. Inicie sesi?n nuevamente.';
+    if (status === 403) return 'No tiene permisos para realizar esta acci?n.';
+    if (status === 404) return 'El servidor no pudo atender la solicitud (HTTP 404).';
+    if (status) return 'No se pudo completar la solicitud (HTTP ' + Number(status) + ').';
+    return 'El servidor devolvi? una respuesta no v?lida.';
 }
 
 function url_time(url) {
