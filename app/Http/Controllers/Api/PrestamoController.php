@@ -53,21 +53,17 @@ class PrestamoController extends Controller
                 return '<span class="loan-table__date">' . ($fechaPrestamo ?: '-') . '</span>';
             })
             ->addColumn('fecha_limite_raw', function ($row) {
-                $fechaBase = Carbon::parse($row->fecha_prestamo)->addDays($row->duracion);
-                $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
-
-                return $fechaLimite->toDateTimeString();
+                return $row->fecha_limite_real->toDateTimeString();
             })
             ->addColumn('fecha_limite', function ($row) {
-                $fechaBase = Carbon::parse($row->fecha_prestamo)->addDays($row->duracion);
-                $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
-
-                return '<span class="loan-table__date">' . $fechaLimite->format('d/m/Y H:i') . '</span>';
+                return '<span class="loan-table__date">' . $row->fecha_limite_real->format('d/m/Y H:i') . '</span>';
             })
             ->addColumn('fechas', function ($row) {
-                $fp = optional($row->fecha_prestamo)->format('d/m/Y');
-                $fechaBase = Carbon::parse($row->fecha_prestamo)->addDays($row->duracion);
-                $fl = $fechaBase->copy()->setTime(20, 0, 0)->format('d/m/Y');
+                // Los prestamos anteriores a guardar la hora quedan en 00:00: solo se muestra la fecha.
+                $fp = $row->fecha_prestamo
+                    ? $row->fecha_prestamo->format($row->fecha_prestamo->format('H:i:s') === '00:00:00' ? 'd/m/Y' : 'd/m/Y H:i')
+                    : null;
+                $fl = $row->fecha_limite_real->format('d/m/Y H:i');
 
                 return '<div class="loan-dates">' .
                     '<span class="loan-dates__row"><i class="bi bi-calendar-event me-1"></i>' . ($fp ?: '-') . '</span>' .
@@ -76,8 +72,16 @@ class PrestamoController extends Controller
             })
             ->addColumn('libro', function ($row) {
                 $titulo = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
+                $obsPrestamo = trim((string) $row->observaciones_prestamo);
+                $obsDevolucion = trim((string) $row->observaciones_devolucion);
 
-                return '<div class="loan-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>';
+                return '<div class="loan-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>' .
+                    ($obsPrestamo !== ''
+                        ? '<small class="loan-table__obs" title="' . e($obsPrestamo) . '"><i class="bi bi-chat-left-text me-1"></i>' . e($obsPrestamo) . '</small>'
+                        : '') .
+                    ($obsDevolucion !== ''
+                        ? '<small class="loan-table__obs" title="' . e($obsDevolucion) . '"><i class="bi bi-arrow-return-left me-1"></i>' . e($obsDevolucion) . '</small>'
+                        : '');
             })
             ->addColumn('ejemplar', function ($row) {
                 $ejemplar      = $row->ejemplar;
@@ -129,8 +133,7 @@ class PrestamoController extends Controller
             })
             ->addColumn('estado', function ($row) {
                 $now = Carbon::now();
-                $fechaBase = Carbon::parse($row->fecha_prestamo)->addDays($row->duracion);
-                $fechaLimite = $fechaBase->copy()->setTime(20, 0, 0);
+                $fechaLimite = $row->fecha_limite_real;
                 $diff = $now->diffInSeconds($fechaLimite, false);
 
                 if ($now->greaterThan($fechaLimite) && (int) $row->estado === 1) {
@@ -282,9 +285,7 @@ class PrestamoController extends Controller
         }
 
         $now = Carbon::now();
-        $fechaLimite = Carbon::parse($prestamo->fecha_prestamo)
-            ->addDays($prestamo->duracion)
-            ->setTime(20, 0, 0);
+        $fechaLimite = $prestamo->fecha_limite_real;
 
         $estadoLibro = (int) ($request->estado_libro ?? 1);
         $estadoPrestamo = $estadoLibro !== 1
@@ -405,11 +406,22 @@ class PrestamoController extends Controller
             'lector_id'      => 'required|exists:users,id',
             'ejemplar_id'    => 'required|exists:ejemplares,id',
             'prestamo_lugar' => 'required|integer|in:0,1',
-            'dias'           => 'required|integer|min:1',
+            'dias'           => 'exclude_if:prestamo_lugar,0|required|integer|min:1',
             'observaciones'  => 'nullable|string',
         ]);
 
-        $resultado = DB::transaction(function () use ($request) {
+        // En sala: vence hoy al cierre, por eso no se registra despues de esa hora.
+        $enSala = (int) $request->prestamo_lugar === Prestamo::EN_SALA;
+
+        if ($enSala && now()->gte(Prestamo::cierreDeHoy())) {
+            return response()->json([
+                'error' => 'Los préstamos en sala solo se registran hasta las ' . Prestamo::cierreDeHoy()->format('H:i') . '.',
+            ], 422);
+        }
+
+        $dias = $enSala ? 0 : (int) $request->dias;
+
+        $resultado = DB::transaction(function () use ($request, $dias) {
             $user = auth()->user();
             [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
@@ -424,20 +436,19 @@ class PrestamoController extends Controller
             }
 
             $tieneSancion = Sancion::where('user_id', $request->lector_id)
-                ->where('estado', 1)
-                ->whereDate('fecha_fin', '>=', now()->toDateString())
+                ->vigenteEnBiblioteca($ejemplar->biblioteca_id)
                 ->exists();
 
             if ($tieneSancion) {
-                return ['status' => 422, 'payload' => ['error' => 'El lector tiene una sanción vigente y no puede recibir préstamos']];
+                return ['status' => 422, 'payload' => ['error' => 'El lector tiene una sanción vigente en esta biblioteca y no puede recibir préstamos']];
             }
 
             $prestamo = new Prestamo;
             $prestamo->lector_id      = $request->lector_id;
             $prestamo->prestamo_lugar = $request->prestamo_lugar;
-            $prestamo->duracion       = $request->dias;
+            $prestamo->duracion       = $dias;
             $prestamo->fecha_prestamo = now();
-            $prestamo->fecha_limite   = now()->addDays($request->dias);
+            $prestamo->fecha_limite   = now()->addDays($dias);
             $prestamo->observaciones_prestamo = $request->observaciones;
             $prestamo->ejemplar_id    = $request->ejemplar_id;
             $prestamo->estado         = 1;

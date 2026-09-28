@@ -86,9 +86,7 @@
                         $libroRelacionado = $referenciaPrestamo?->ejemplar?->libro?->titulo
                             ?? $referenciaReserva?->ejemplar?->libro?->titulo
                             ?? 'Sin libro relacionado';
-                        $bibliotecaRelacionada = $referenciaPrestamo?->ejemplar?->biblioteca?->nombre
-                            ?? $referenciaReserva?->ejemplar?->biblioteca?->nombre
-                            ?? 'Biblioteca no disponible';
+                        $bibliotecaRelacionada = $sancion->biblioteca?->nombre ?? 'Todas las bibliotecas';
                         $origen = $referenciaPrestamo ? 'Prestamo' : ($referenciaReserva ? 'Reservacion' : 'Registro manual');
                         $duracionTexto = $sancion->duracion ? $sancion->duracion . ' dia' . ((int) $sancion->duracion === 1 ? '' : 's') : '-';
                     @endphp

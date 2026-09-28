@@ -168,6 +168,12 @@ $(document).ready(function () {
         let tipoClass = tipo === 'A CASA' ? 'rsv-tipo-pill--casa' : 'rsv-tipo-pill--sala';
         $('#rsv-ctx-tipo').html(tipoIcon + tipo).attr('class', 'rsv-tipo-pill ' + tipoClass);
 
+        // En sala vence hoy al cierre: no se piden dias.
+        const enSala = tipo !== 'A CASA';
+        $('#rsv-dias-row').toggleClass('d-none', enSala);
+        $('#rsv-sala-row').toggleClass('d-none', ! enSala);
+        $('#dias').prop('required', ! enSala);
+
         modal.show();
     });
 
@@ -175,7 +181,7 @@ $(document).ready(function () {
         e.preventDefault();
 
         let id = $('#reserva_id').val();
-        let dias = $('#dias').val();
+        let dias = $('#dias').prop('required') ? $('#dias').val() : null;
         let observaciones = $('#observaciones').val();
 
         fetch(`/api/prestamos/reserva/${id}/entregar`, {

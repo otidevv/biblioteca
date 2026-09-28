@@ -736,6 +736,18 @@
                     </select>
                 </div>
 
+                @if($bibliotecas->count() > 1)
+                    <div class="penalty-field">
+                        <label for="filtro_biblioteca_id">Biblioteca</label>
+                        <select id="filtro_biblioteca_id" name="biblioteca_id">
+                            <option value="">Todas</option>
+                            @foreach($bibliotecas as $biblioteca)
+                                <option value="{{ $biblioteca->id }}" @selected(request('biblioteca_id') == $biblioteca->id)>{{ $biblioteca->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
                 <div class="penalty-field">
                     <label for="estado">Estado</label>
                     <select id="estado" name="estado">
@@ -784,9 +796,9 @@
                         $libroRelacionado = $referenciaPrestamo?->ejemplar?->libro?->titulo
                             ?? $referenciaReserva?->ejemplar?->libro?->titulo
                             ?? 'Sin libro relacionado';
-                        $bibliotecaRelacionada = $referenciaPrestamo?->ejemplar?->biblioteca?->nombre
-                            ?? $referenciaReserva?->ejemplar?->biblioteca?->nombre
-                            ?? 'Biblioteca no disponible';
+                        $bibliotecaRelacionada = $sancion->biblioteca?->nombre ?? 'Todas las bibliotecas';
+                        $puedeLevantar = $esActiva
+                            && ($accesoGlobal || $bibliotecasAsignadas->contains((int) $sancion->biblioteca_id));
                         $origen = $referenciaPrestamo ? 'Prestamo' : ($referenciaReserva ? 'Reservacion' : 'Registro manual');
                         $duracionTexto = $sancion->duracion ? $sancion->duracion . ' dia' . ((int) $sancion->duracion === 1 ? '' : 's') : '-';
                     @endphp
@@ -853,7 +865,7 @@
                                 Ver sancion
                             </button>
 
-                            @if($esActiva)
+                            @if($puedeLevantar)
                                 <form method="POST" action="{{ route('prestamos.multas.levantar', $sancion) }}">
                                     @csrf
                                     <input type="hidden" name="detalles_termino" value="Sancion levantada manualmente.">
@@ -887,9 +899,7 @@
         $libroRelacionado = $referenciaPrestamo?->ejemplar?->libro?->titulo
             ?? $referenciaReserva?->ejemplar?->libro?->titulo
             ?? 'Sin libro relacionado';
-        $bibliotecaRelacionada = $referenciaPrestamo?->ejemplar?->biblioteca?->nombre
-            ?? $referenciaReserva?->ejemplar?->biblioteca?->nombre
-            ?? 'Biblioteca no disponible';
+        $bibliotecaRelacionada = $sancion->biblioteca?->nombre ?? 'Todas las bibliotecas';
         $origen = $referenciaPrestamo ? 'Prestamo' : ($referenciaReserva ? 'Reservacion' : 'Registro manual');
     @endphp
     <div class="modal fade" id="modalSancion{{ $sancion->id }}" tabindex="-1" aria-hidden="true">
@@ -976,6 +986,19 @@
                         </div>
 
                         <div class="col-md-6">
+                            <label for="nueva_biblioteca_id" class="form-label">Biblioteca</label>
+                            <select id="nueva_biblioteca_id" name="biblioteca_id" class="form-select" required>
+                                <option value="">Seleccione una biblioteca</option>
+                                @foreach($bibliotecas as $biblioteca)
+                                    <option value="{{ $biblioteca->id }}" @selected(old('biblioteca_id', $bibliotecas->count() === 1 ? $biblioteca->id : null) == $biblioteca->id)>
+                                        {{ $biblioteca->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">La sancion solo restringe prestamos y reservas en esta biblioteca.</small>
+                        </div>
+
+                        <div class="col-12">
                             <label for="tipo_sancion_id" class="form-label">Tipo de sancion</label>
                             <select id="tipo_sancion_id" name="tipo_sancion_id" class="form-select" required>
                                 <option value="">Seleccione un tipo</option>

@@ -8,7 +8,7 @@
 
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('/js/prestamo/prestamo.js') }}"></script>
+    <script src="{{ asset('/js/prestamo/prestamo.js') }}?v={{ filemtime(public_path('js/prestamo/prestamo.js')) }}"></script>
 @endsection
 
 @section('content')
@@ -216,19 +216,20 @@
         </div>
         <div class="row g-3">
           <div class="col-md-4">
-            <label class="form-label fw-semibold">Días de préstamo</label>
-            <input type="number" id="pd-dias" class="form-control" min="1" placeholder="Ej. 7" required>
-          </div>
-          <div class="col-md-4">
             <label class="form-label fw-semibold">Tipo de préstamo</label>
             <select id="pd-tipo" class="form-select">
               <option value="0">En sala</option>
               <option value="1">A casa</option>
             </select>
           </div>
+          <div class="col-md-4 d-none" id="pd-dias-wrap">
+            <label class="form-label fw-semibold">Días de préstamo</label>
+            <input type="number" id="pd-dias" class="form-control" min="1" placeholder="Ej. 7">
+          </div>
           <div class="col-md-4">
-            <label class="form-label fw-semibold">Fecha límite estimada</label>
+            <label class="form-label fw-semibold">Fecha límite</label>
             <input type="text" id="pd-fecha-est" class="form-control" readonly style="background:#f1f5f9;">
+            <small class="text-muted d-block mt-1" id="pd-sala-ayuda">En sala se devuelve el mismo día, antes del cierre.</small>
           </div>
         </div>
         <div class="mt-3">
@@ -280,6 +281,11 @@
             <div class="loan-register__summary-item">
               <span>Ejemplar</span>
               <strong id="ejemplar_codigo"></strong>
+            </div>
+
+            <div id="obs_prestamo_wrap" class="loan-register__summary-item loan-register__summary-item--full d-none">
+              <span>Observacion del prestamo</span>
+              <strong id="obs_prestamo"></strong>
             </div>
           </div>
 

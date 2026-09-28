@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Biblioteca;
 use App\Models\Prestamo;
 use App\Models\Sancion;
 use App\Models\TipoSancion;
@@ -41,16 +42,37 @@ class PrestamoController extends Controller
         $tipo = trim((string) request('tipo', ''));
         $fechaDesde = request('fecha_desde');
         $fechaHasta = request('fecha_hasta');
+        $bibliotecaId = request('biblioteca_id');
+
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario(Auth::id());
 
         $query = Sancion::with([
             'usuario',
             'bibliotecario',
             'tipoSancion',
+            'biblioteca',
             'prestamo.ejemplar.libro',
             'prestamo.ejemplar.biblioteca',
             'reservacion.ejemplar.libro',
             'reservacion.ejemplar.biblioteca',
         ]);
+
+        // Cada bibliotecario solo ve las sanciones de sus bibliotecas
+        // (y las antiguas sin biblioteca, que aplican en todas).
+        if (! $accesoGlobal) {
+            if ($bibliotecasAsignadas->isEmpty()) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->where(function ($subQuery) use ($bibliotecasAsignadas) {
+                    $subQuery->whereIn('biblioteca_id', $bibliotecasAsignadas->all())
+                        ->orWhereNull('biblioteca_id');
+                });
+            }
+        }
+
+        if ($bibliotecaId !== null && $bibliotecaId !== '') {
+            $query->where('biblioteca_id', (int) $bibliotecaId);
+        }
 
         if ($busqueda !== '') {
             $query->where(function ($subQuery) use ($busqueda) {
@@ -114,18 +136,40 @@ class PrestamoController extends Controller
             ->orderBy('nombre')
             ->get(['id', 'codigo', 'nombre', 'dias_duracion']);
 
-        return view('prestamos.multas', compact('sanciones', 'resumen', 'lectorFiltro', 'lectorFormulario', 'tiposSancion'));
+        $bibliotecas = Biblioteca::orderBy('nombre')
+            ->when(! $accesoGlobal, fn ($q) => $q->whereIn('id', $bibliotecasAsignadas->all()))
+            ->get(['id', 'nombre']);
+
+        return view('prestamos.multas', compact(
+            'sanciones',
+            'resumen',
+            'lectorFiltro',
+            'lectorFormulario',
+            'tiposSancion',
+            'bibliotecas',
+            'bibliotecasAsignadas',
+            'accesoGlobal'
+        ));
     }
 
     public function guardarSancion(Request $request)
     {
         $data = $request->validate([
             'lector_id' => ['required', 'exists:users,id'],
+            'biblioteca_id' => ['required', 'exists:bibliotecas,id'],
             'tipo_sancion_id' => ['required', 'exists:tipo_sanciones,id'],
             'fecha_inicio' => ['required', 'date'],
             'fecha_fin' => ['required', 'date', 'after_or_equal:fecha_inicio'],
             'motivo' => ['required', 'string', 'max:500'],
         ]);
+
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario(Auth::id());
+
+        if (! $accesoGlobal && ! $bibliotecasAsignadas->contains((int) $data['biblioteca_id'])) {
+            return back()
+                ->withInput()
+                ->withErrors(['biblioteca_id' => 'No puedes registrar sanciones en una biblioteca que no tienes asignada.']);
+        }
 
         $tipoSancion = TipoSancion::findOrFail($data['tipo_sancion_id']);
         $fechaInicio = \Carbon\Carbon::parse($data['fecha_inicio']);
@@ -133,6 +177,7 @@ class PrestamoController extends Controller
 
         Sancion::create([
             'user_id' => $data['lector_id'],
+            'biblioteca_id' => $data['biblioteca_id'],
             'tipo_sancion_id' => $tipoSancion->id,
             'tipo' => $tipoSancion->codigo,
             'motivo' => $data['motivo'],
@@ -189,6 +234,12 @@ class PrestamoController extends Controller
 
     public function levantarSancion(Sancion $sancion)
     {
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario(Auth::id());
+
+        if (! $accesoGlobal && ! $bibliotecasAsignadas->contains((int) $sancion->biblioteca_id)) {
+            abort(403, 'No puedes levantar sanciones de otra biblioteca.');
+        }
+
         if ((int) $sancion->estado !== 1) {
             return back()->with('status', 'La sancion ya se encuentra cerrada.');
         }
@@ -261,5 +312,24 @@ class PrestamoController extends Controller
             ->withQueryString();
 
         return view('lectores.historial', compact('historial'));
+    }
+
+    private function resolverBibliotecasUsuario(int $userId): array
+    {
+        $asignaciones = Usuario_rol_biblioteca::query()
+            ->where('user_id', $userId)
+            ->get(['biblioteca_id', 'estado']);
+
+        $bibliotecasAsignadas = $asignaciones
+            ->pluck('biblioteca_id')
+            ->filter(fn ($id) => ! is_null($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $accesoGlobal = $bibliotecasAsignadas->isEmpty()
+            && $asignaciones->contains(fn ($asignacion) => is_null($asignacion->biblioteca_id) && (int) $asignacion->estado === 1);
+
+        return [$bibliotecasAsignadas, $accesoGlobal];
     }
 }

@@ -173,18 +173,6 @@ class ReservacionController extends Controller
         ]);
 
         $resultado = DB::transaction(function () use ($request) {
-            $tieneSancionVigente = Sancion::where('user_id', auth()->id())
-                ->where('estado', 1)
-                ->whereDate('fecha_fin', '>=', now()->toDateString())
-                ->exists();
-
-            if ($tieneSancionVigente) {
-                return [
-                    'status' => 422,
-                    'payload' => ['error' => 'No puedes realizar reservas porque tienes una sancion vigente.'],
-                ];
-            }
-
             $ejemplar = Ejemplar::with('libro')
                 ->lockForUpdate()
                 ->find($request->ejemplar_id);
@@ -193,6 +181,17 @@ class ReservacionController extends Controller
                 return [
                     'status' => 404,
                     'payload' => ['error' => 'Ejemplar no encontrado'],
+                ];
+            }
+
+            $tieneSancionVigente = Sancion::where('user_id', auth()->id())
+                ->vigenteEnBiblioteca($ejemplar->biblioteca_id)
+                ->exists();
+
+            if ($tieneSancionVigente) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'No puedes realizar reservas en esta biblioteca porque tienes una sancion vigente.'],
                 ];
             }
 
@@ -342,7 +341,7 @@ class ReservacionController extends Controller
         }
 
         $request->validate([
-            'dias' => 'required|integer|min:1',
+            'dias' => 'nullable|integer|min:1',
             'observaciones' => 'nullable|string',
         ]);
 
@@ -367,6 +366,25 @@ class ReservacionController extends Controller
                     'payload' => ['error' => 'No se puede entregar esta reserva'],
                 ];
             }
+
+            // En sala: vence hoy al cierre. A casa: requiere los dias de prestamo.
+            $enSala = (int) $reserva->prestamo === Prestamo::EN_SALA;
+
+            if ($enSala && now()->gte(Prestamo::cierreDeHoy())) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'Los préstamos en sala solo se registran hasta las ' . Prestamo::cierreDeHoy()->format('H:i') . '.'],
+                ];
+            }
+
+            if (! $enSala && $dias < 1) {
+                return [
+                    'status' => 422,
+                    'payload' => ['error' => 'Ingresa los días de préstamo.'],
+                ];
+            }
+
+            $dias = $enSala ? 0 : $dias;
 
             $reserva->estado = 1;
             $reserva->bibliotecario_id = $user->id;

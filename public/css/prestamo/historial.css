@@ -401,6 +401,16 @@
     color: #0f172a;
 }
 
+.loan-history__item--full {
+    grid-column: 1 / -1;
+}
+
+.loan-history__item--full strong {
+    font-weight: 600;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
 .loan-history__empty {
     padding: 22px;
     border-radius: 20px;

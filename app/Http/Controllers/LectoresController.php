@@ -179,14 +179,28 @@ class LectoresController extends Controller
         $fechaDesde = request('fecha_desde');
         $fechaHasta = request('fecha_hasta');
 
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario(Auth::id());
+
         $query = Sancion::with([
             'usuario',
             'bibliotecario',
+            'biblioteca',
             'prestamo.ejemplar.libro',
             'prestamo.ejemplar.biblioteca',
             'reservacion.ejemplar.libro',
             'reservacion.ejemplar.biblioteca',
         ]);
+
+        if (! $accesoGlobal) {
+            if ($bibliotecasAsignadas->isEmpty()) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->where(function ($subQuery) use ($bibliotecasAsignadas) {
+                    $subQuery->whereIn('biblioteca_id', $bibliotecasAsignadas->all())
+                        ->orWhereNull('biblioteca_id');
+                });
+            }
+        }
 
         if ($busqueda !== '') {
             $query->where(function ($subQuery) use ($busqueda) {
@@ -246,5 +260,24 @@ class LectoresController extends Controller
         }, 'plantilla_lectores.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+    }
+
+    private function resolverBibliotecasUsuario(int $userId): array
+    {
+        $asignaciones = Usuario_rol_biblioteca::query()
+            ->where('user_id', $userId)
+            ->get(['biblioteca_id', 'estado']);
+
+        $bibliotecasAsignadas = $asignaciones
+            ->pluck('biblioteca_id')
+            ->filter(fn ($id) => ! is_null($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $accesoGlobal = $bibliotecasAsignadas->isEmpty()
+            && $asignaciones->contains(fn ($asignacion) => is_null($asignacion->biblioteca_id) && (int) $asignacion->estado === 1);
+
+        return [$bibliotecasAsignadas, $accesoGlobal];
     }
 }

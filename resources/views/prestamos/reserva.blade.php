@@ -8,7 +8,7 @@
 
 @section('js')
     <script src="{{ asset('lib/datatables/datatables.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('/js/prestamo/reserva.js') }}"></script>
+    <script src="{{ asset('/js/prestamo/reserva.js') }}?v={{ filemtime(public_path('js/prestamo/reserva.js')) }}"></script>
 @endsection
 
 @section('content')
@@ -173,7 +173,7 @@
           {{-- Formulario en 2 columnas --}}
           <div class="rsv-modal-form-section">
             <div class="rsv-modal-form-grid">
-              <div class="rsv-modal-form-row">
+              <div class="rsv-modal-form-row" id="rsv-dias-row">
                 <div class="rsv-modal-form-icon">
                   <i class="bi bi-calendar-week"></i>
                 </div>
@@ -181,6 +181,16 @@
                   <label class="form-label fw-semibold mb-1">Dias de prestamo</label>
                   <input type="number" id="dias" class="form-control" min="1" placeholder="Ej. 7" required>
                   <small class="text-muted d-block mt-1">Calcula la fecha limite automaticamente.</small>
+                </div>
+              </div>
+              <div class="rsv-modal-form-row d-none" id="rsv-sala-row">
+                <div class="rsv-modal-form-icon">
+                  <i class="bi bi-clock"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <label class="form-label fw-semibold mb-1">Fecha limite</label>
+                  <div class="fw-semibold">Hoy a las 20:00</div>
+                  <small class="text-muted d-block mt-1">En sala se devuelve el mismo dia, antes del cierre.</small>
                 </div>
               </div>
               <div class="rsv-modal-form-row">

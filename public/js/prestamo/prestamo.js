@@ -32,7 +32,7 @@ function renderizarPreviewSancion(data) {
             '<div class="loan-register__sanction-entry">' +
                 '<div class="loan-register__sanction-entry-name">' + (item.nombre || item.codigo) + '</div>' +
                 '<div class="loan-register__sanction-copy">' + (item.descripcion || item.motivo || 'La devolucion activa una sancion automatica.') + '</div>' +
-                (extras.length ? '<div class="loan-register__sanction-meta">' + extras.join(' � ') + '</div>' : '') +
+                (extras.length ? '<div class="loan-register__sanction-meta">' + extras.join(' · ') + '</div>' : '') +
             '</div>'
         );
     }).join('');
@@ -129,6 +129,13 @@ $(document).ready(function () {
         let ejemplarEl = $('<div>').html(data.ejemplar);
         $('#ejemplar_codigo').text(ejemplarEl.find('.loan-table__code').text() || ejemplarEl.text());
 
+        // DataTables envia el campo escapado; se decodifica para mostrarlo como texto.
+        const obsPrestamo = (new DOMParser()
+            .parseFromString(data.observaciones_prestamo || '', 'text/html')
+            .documentElement.textContent || '').trim();
+        $('#obs_prestamo').text(obsPrestamo);
+        $('#obs_prestamo_wrap').toggleClass('d-none', obsPrestamo === '');
+
         let ahora = new Date();
         let fechaLimite = new Date(data.fecha_limite_raw);
         let diffTime = ahora - fechaLimite;
@@ -212,9 +219,31 @@ $(document).ready(function () {
         $('#pd-dias').val('');
         $('#pd-tipo').val('0');
         $('#pd-obs').val('');
-        $('#pd-fecha-est').val('');
+        pdActualizarFechaLimite();
 
         pdShowStep(1);
+    }
+
+    // En sala vence hoy al cierre; a casa, tras los dias indicados.
+    function pdActualizarFechaLimite() {
+        const enSala = $('#pd-tipo').val() === '0';
+        $('#pd-dias-wrap').toggleClass('d-none', enSala);
+        $('#pd-sala-ayuda').toggleClass('d-none', ! enSala);
+
+        const fecha = new Date();
+        if (! enSala) {
+            const dias = parseInt($('#pd-dias').val());
+            if (isNaN(dias) || dias < 1) {
+                $('#pd-fecha-est').val('');
+                return;
+            }
+            fecha.setDate(fecha.getDate() + dias);
+        }
+
+        $('#pd-fecha-est').val(
+            (enSala ? 'Hoy, ' : '') +
+            fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a las 20:00'
+        );
     }
 
     function pdShowStep(n) {
@@ -446,19 +475,9 @@ $(document).ready(function () {
             $('#pd-libro-q').val('').focus();
         });
 
-        // ── Calcular fecha límite estimada ──
-        $('#pd-dias').on('input', function () {
-            const dias = parseInt($(this).val());
-            if (! isNaN(dias) && dias > 0) {
-                const fecha = new Date();
-                fecha.setDate(fecha.getDate() + dias);
-                $('#pd-fecha-est').val(
-                    fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a las 20:00'
-                );
-            } else {
-                $('#pd-fecha-est').val('');
-            }
-        });
+        // ── Calcular fecha límite ──
+        $('#pd-dias').on('input', pdActualizarFechaLimite);
+        $('#pd-tipo').on('change', pdActualizarFechaLimite);
 
         // ── Navegación ──
         $('#pd-btn-next').on('click', function () {
@@ -480,8 +499,9 @@ $(document).ready(function () {
 
         // ── Confirmar ──
         $('#pd-btn-confirm').on('click', function () {
+            const enSala = $('#pd-tipo').val() === '0';
             const dias = parseInt($('#pd-dias').val());
-            if (! dias || dias < 1) { alerta('Ingresa un número válido de días.', false); return; }
+            if (! enSala && (! dias || dias < 1)) { alerta('Ingresa un número válido de días.', false); return; }
 
             const btn = $(this).prop('disabled', true);
 
@@ -495,7 +515,7 @@ $(document).ready(function () {
                     lector_id:      pdLectorId,
                     ejemplar_id:    pdEjemplarId,
                     prestamo_lugar: parseInt($('#pd-tipo').val()),
-                    dias:           dias,
+                    dias:           enSala ? null : dias,
                     observaciones:  $('#pd-obs').val()
                 })
             })

@@ -255,6 +255,18 @@
                                 <span>Registrado por</span>
                                 <strong>{{ $prestamo->bibliotecario->name ?? 'No disponible' }}</strong>
                             </div>
+                            @if(filled($prestamo->observaciones_prestamo))
+                                <div class="loan-history__item loan-history__item--full">
+                                    <span>Observación del préstamo</span>
+                                    <strong>{{ $prestamo->observaciones_prestamo }}</strong>
+                                </div>
+                            @endif
+                            @if(filled($prestamo->observaciones_devolucion))
+                                <div class="loan-history__item loan-history__item--full">
+                                    <span>Observación de la devolución</span>
+                                    <strong>{{ $prestamo->observaciones_devolucion }}</strong>
+                                </div>
+                            @endif
                         </div>
                     </article>
                 @endforeach

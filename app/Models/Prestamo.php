@@ -7,7 +7,13 @@ use Carbon\Carbon;
 
 class Prestamo extends Model
 {
-    //
+    const EN_SALA = 0;
+    const A_CASA = 1;
+
+    // Hora de cierre: los prestamos vencen a esta hora del dia limite.
+    // Los prestamos en sala (duracion 0) vencen hoy a esta hora.
+    const HORA_CIERRE = 20;
+
     protected $fillable = [
         'lector_id',
         'prestamo_lugar',
@@ -32,17 +38,22 @@ class Prestamo extends Model
 
     public function getFechaLimiteRealAttribute()
     {
-        if ($this->fecha_prestamo && $this->duracion) {
+        if ($this->fecha_prestamo && $this->duracion !== null) {
             return Carbon::parse($this->fecha_prestamo)
                 ->addDays($this->duracion)
-                ->setTime(20, 0, 0);
+                ->setTime(self::HORA_CIERRE, 0, 0);
         }
 
         if ($this->fecha_limite) {
-            return Carbon::parse($this->fecha_limite)->setTime(20, 0, 0);
+            return Carbon::parse($this->fecha_limite)->setTime(self::HORA_CIERRE, 0, 0);
         }
 
         return null;
+    }
+
+    public static function cierreDeHoy(): Carbon
+    {
+        return today()->setTime(self::HORA_CIERRE, 0, 0);
     }
 
     public function lector() { return $this->belongsTo(User::class,'lector_id'); }
