@@ -17,6 +17,7 @@ class Prestamo extends Model
     protected $fillable = [
         'lector_id',
         'prestamo_lugar',
+        'es_libre',
         'duracion',
         'fecha_prestamo',
         'fecha_limite',
@@ -31,6 +32,7 @@ class Prestamo extends Model
         ];
 
     protected $casts = [
+        'es_libre' => 'boolean',
         'fecha_prestamo' => 'datetime',
         'fecha_limite' => 'date',
         'fecha_devolucion' => 'datetime',

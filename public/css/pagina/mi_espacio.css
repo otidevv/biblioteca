@@ -1,0 +1,627 @@
+/* ==========================================================================
+   Mi espacio: "Mis prestamos" y "Mis reservas".
+   Usa los tokens y componentes de panel_lector.css (.lp, .lp-panel, .lp-kpi...).
+   ========================================================================== */
+
+/* ─────────── Encabezado ─────────── */
+
+.me-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 3vw, 1.9rem);
+    border: 1px solid var(--lp-border);
+    border-radius: 28px;
+    background:
+        radial-gradient(120% 160% at 100% 0%, rgba(216, 177, 92, 0.16), transparent 45%),
+        var(--lp-surface);
+    box-shadow: var(--lp-shadow);
+}
+
+.me-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    flex-shrink: 0;
+}
+
+.lp-kpi.is-danger .lp-kpi__value {
+    color: var(--lp-critical);
+}
+
+.lp-kpi.is-danger .lp-kpi__icon {
+    background: var(--lp-critical-soft);
+    color: var(--lp-critical);
+}
+
+/* Botones de accion destructiva (cancelar reserva) */
+.lp-btn--danger {
+    background: #b42f2f;
+    color: #fff;
+}
+
+.lp-btn--danger:hover {
+    background: #962626;
+    color: #fff;
+}
+
+.lp-btn--danger-ghost {
+    min-height: 38px;
+    padding: 0.45rem 0.85rem;
+    border-color: rgba(180, 47, 47, 0.28);
+    background: transparent;
+    color: var(--lp-critical);
+    font-size: 0.84rem;
+}
+
+.lp-btn--danger-ghost:hover {
+    background: var(--lp-critical-soft);
+    color: var(--lp-critical);
+}
+
+/* ─────────── Pasos (como funcionan las reservas) ─────────── */
+
+.me-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.me-steps li {
+    display: flex;
+    gap: 0.8rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--lp-border);
+    border-radius: 18px;
+    background: var(--lp-surface-2);
+}
+
+.me-steps__n {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--lp-gold-soft);
+    color: var(--lp-gold);
+    font-weight: 800;
+}
+
+.me-steps strong {
+    display: block;
+    color: var(--lp-ink);
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.me-steps span:not(.me-steps__n) {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--lp-ink-2);
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+/* ─────────── Tarjetas de lo que tiene ahora ─────────── */
+
+.me-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 0 1.3rem 1.3rem;
+}
+
+.me-card {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--lp-border);
+    border-radius: 18px;
+    background: var(--lp-surface-2);
+}
+
+.me-card.is-late {
+    border-color: rgba(194, 52, 52, 0.35);
+    background: var(--lp-critical-soft);
+}
+
+.me-card__cover {
+    flex-shrink: 0;
+    width: 64px;
+    height: 92px;
+    border-radius: 10px;
+    background: var(--lp-surface);
+    object-fit: cover;
+    box-shadow: 0 8px 18px rgba(15, 48, 37, 0.18);
+}
+
+.me-card__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.me-card__title {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--lp-ink);
+    font-size: 0.98rem;
+    font-weight: 800;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.me-card__authors {
+    margin: 0.2rem 0 0;
+    overflow: hidden;
+    color: var(--lp-muted);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.me-card__side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.me-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.55rem;
+}
+
+.me-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+}
+
+.me-dates dt {
+    color: var(--lp-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.me-dates dd {
+    margin: 0.1rem 0 0;
+    color: var(--lp-ink);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.me-note,
+.me-where {
+    display: flex;
+    gap: 0.45rem;
+    margin: 0.6rem 0 0;
+    color: var(--lp-ink-2);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.me-note > i,
+.me-where > i {
+    flex-shrink: 0;
+    color: var(--lp-muted);
+}
+
+.me-note b,
+.me-where b {
+    color: var(--lp-ink);
+    font-weight: 700;
+}
+
+.me-note--sancion > i {
+    color: var(--lp-critical);
+}
+
+.me-note--sancion.is-vigente {
+    color: var(--lp-critical);
+}
+
+.me-late {
+    color: var(--lp-critical);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* ─────────── Barra de filtros ─────────── */
+
+.me-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0 1.3rem 1rem;
+}
+
+.me-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.me-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 36px;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--lp-border);
+    border-radius: 999px;
+    background: var(--lp-surface);
+    color: var(--lp-ink-2);
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.me-filter span {
+    min-width: 1.5rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: var(--lp-surface-2);
+    color: var(--lp-muted);
+    font-size: 0.74rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.me-filter:hover {
+    border-color: var(--lp-accent);
+    color: var(--lp-ink);
+}
+
+.me-filter:focus-visible,
+.me-search input:focus-visible {
+    outline: 3px solid var(--lp-gold-bright);
+    outline-offset: 2px;
+}
+
+.me-filter.is-active {
+    border-color: var(--lp-forest);
+    background: var(--lp-forest);
+    color: #fff;
+}
+
+.me-filter.is-active span {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+body.library-dark .me-filter.is-active {
+    border-color: #2f7a5d;
+    background: #2f7a5d;
+}
+
+.me-search {
+    position: relative;
+    flex: 0 1 300px;
+    min-width: 200px;
+    margin: 0;
+}
+
+.me-search > i {
+    position: absolute;
+    top: 50%;
+    left: 0.8rem;
+    color: var(--lp-muted);
+    transform: translateY(-50%);
+}
+
+.me-search input {
+    width: 100%;
+    min-height: 40px;
+    padding: 0.45rem 0.8rem 0.45rem 2.2rem;
+    border: 1px solid var(--lp-border);
+    border-radius: 12px;
+    background: var(--lp-surface);
+    color: var(--lp-ink);
+    font-size: 0.88rem;
+}
+
+.me-search input::placeholder {
+    color: var(--lp-muted);
+}
+
+/* ─────────── Historial agrupado por mes ─────────── */
+
+.me-group__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.7rem 1.3rem;
+    border-top: 1px solid var(--lp-grid);
+    background: var(--lp-surface-2);
+    color: var(--lp-ink-2);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.me-group__title span {
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: var(--lp-surface);
+    color: var(--lp-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0;
+}
+
+.me-item {
+    display: flex;
+    gap: 0.95rem;
+    padding: 1rem 1.3rem;
+    border-top: 1px solid var(--lp-grid);
+}
+
+.me-item__cover {
+    flex-shrink: 0;
+    width: 46px;
+    height: 66px;
+    border-radius: 8px;
+    background: var(--lp-surface-2);
+    object-fit: cover;
+    box-shadow: 0 6px 14px rgba(15, 48, 37, 0.14);
+}
+
+.me-item__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.me-item__title {
+    color: var(--lp-ink);
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.me-item__authors {
+    margin-top: 0.1rem;
+    color: var(--lp-muted);
+    font-size: 0.82rem;
+}
+
+.me-item__meta,
+.me-item__when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    margin-top: 0.35rem;
+    color: var(--lp-ink-2);
+    font-size: 0.82rem;
+}
+
+.me-item__meta span + span::before {
+    content: "·";
+    margin-right: 0.9rem;
+    margin-left: -0.55rem;
+    color: var(--lp-axis);
+}
+
+.me-item__when i {
+    margin-right: 0.2rem;
+    color: var(--lp-muted);
+}
+
+.me-item__side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+/* Estados: siempre icono + texto (el color nunca va solo). */
+.me-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.me-status--a-tiempo,
+.me-status--entregada,
+.me-status--curso {
+    background: var(--lp-accent-soft);
+    color: var(--lp-accent);
+}
+
+.me-status--tardanza,
+.me-status--vencido,
+.me-status--vencida {
+    background: var(--lp-critical-soft);
+    color: var(--lp-critical);
+}
+
+.me-status--deterioro {
+    background: rgba(107, 69, 176, 0.12);
+    color: var(--lp-damaged);
+}
+
+.me-status--cancelada {
+    background: var(--lp-surface-2);
+    color: var(--lp-muted);
+    border: 1px solid var(--lp-border);
+}
+
+.me-status--pendiente {
+    background: var(--lp-warning-soft);
+    color: var(--lp-warning);
+}
+
+.me-noresults {
+    border-top: 1px solid var(--lp-grid);
+}
+
+/* display:flex anula el atributo hidden: los filtros lo necesitan. */
+.me-item[hidden],
+.me-group[hidden],
+.me-noresults[hidden] {
+    display: none !important;
+}
+
+/* ─────────── Modal cancelar reserva ─────────── */
+
+.me-modal {
+    border: 0;
+    border-radius: 22px;
+    background: #fff;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.me-modal .modal-body {
+    padding: 1.8rem 1.6rem 1rem;
+}
+
+.me-modal__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    background: #fdeeee;
+    color: #b42f2f;
+    font-size: 1.45rem;
+}
+
+.me-modal__title {
+    margin: 0.9rem 0 0.3rem;
+    color: #13241d;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.me-modal__book {
+    margin: 0 0 0.6rem;
+    color: #13241d;
+    font-weight: 700;
+}
+
+.me-modal__copy {
+    margin: 0;
+    color: #4a5c55;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.me-modal__actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.4rem 1.6rem 1.6rem;
+}
+
+body.library-dark .me-modal {
+    background: #141c25;
+}
+
+body.library-dark .me-modal__title,
+body.library-dark .me-modal__book {
+    color: #eef3f1;
+}
+
+body.library-dark .me-modal__copy {
+    color: #b3c1bb;
+}
+
+body.library-dark .me-modal .lp-btn--ghost {
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #eef3f1;
+}
+
+/* ─────────── Responsive ─────────── */
+
+@media (max-width: 1199.98px) {
+    .me-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .me-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .me-steps {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .me-hero__actions,
+    .me-hero__actions .lp-btn {
+        width: 100%;
+    }
+
+    .me-cards {
+        padding: 0 1rem 1rem;
+    }
+
+    .me-card {
+        flex-wrap: wrap;
+    }
+
+    .me-card__side {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .me-toolbar {
+        padding: 0 1rem 1rem;
+    }
+
+    .me-search {
+        flex: 1 1 100%;
+    }
+
+    .me-group__title,
+    .me-item {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .me-item {
+        flex-wrap: wrap;
+    }
+
+    .me-item__side {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        margin-left: calc(46px + 0.95rem);
+    }
+
+    .me-dates {
+        grid-template-columns: 1fr 1fr;
+    }
+}

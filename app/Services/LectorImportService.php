@@ -139,6 +139,7 @@ class LectorImportService
                     'codigo_institucional' => $data['codigo_institucional'] !== '' ? $data['codigo_institucional'] : null,
                     'carrera_id' => $data['carrera_id'],
                     'estado_academico' => null,
+                    'tipo_carnet' => Persona::CARNET_ORIGINAL,
                 ]);
 
                 $user = User::create([
@@ -151,7 +152,7 @@ class LectorImportService
                     'persona_id' => $persona->id,
                 ]);
 
-                $user->roles()->sync([5]);
+                $user->roles()->sync([5 => ['estado' => 1]]);
                 $total++;
             }
 

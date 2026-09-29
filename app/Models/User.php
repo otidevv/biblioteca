@@ -86,6 +86,21 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Usuario_rol_biblioteca::class, 'user_id');
     }
 
+    const ROL_LECTOR = 5;
+
+    /**
+     * Personal de biblioteca: tiene algun rol activo distinto de LECTOR.
+     * Solo el personal entra al panel; los lectores van al catalogo.
+     * Estado NULL cuenta como activo (igual que en PermisoPorRuta); 0 es desactivado.
+     */
+    public function esPersonal(): bool
+    {
+        return $this->usuarioRolBibliotecas()
+            ->where('rol_id', '!=', self::ROL_LECTOR)
+            ->where(fn ($q) => $q->whereNull('estado')->orWhere('estado', '!=', 0))
+            ->exists();
+    }
+
     public function notificacionDestinatarios()
     {
         return $this->hasMany(NotificacionDestinatario::class, 'user_id');

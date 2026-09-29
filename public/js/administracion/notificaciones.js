@@ -1,15 +1,33 @@
 let tablaNotificaciones;
-let recursosNotificaciones = { usuarios: [], actividades: [] };
-let destinatariosSeleccionados = [];
+
+const ICONOS_TIPO = {
+    aviso: 'bi-bell-fill',
+    actividad: 'bi-calendar-event-fill',
+    recordatorio: 'bi-clock-history',
+    personal: 'bi-person-badge-fill',
+    critico: 'bi-exclamation-triangle-fill',
+    disponibilidad_libro: 'bi-book-half'
+};
+
+const AYUDA_AUDIENCIA = {
+    admins: 'Todo el personal con un rol activo distinto de lector (incluye bibliotecas especializadas).',
+    lectores: 'Todos los usuarios con rol de lector activo.',
+    personal: 'Solo las personas que elijas abajo. Verás cuántas la leyeron.',
+    global: 'Todas las personas que inicien sesión.'
+};
 
 $(document).ready(function () {
-    cargarRecursosFormulario();
+    cargarActividades();
     inicializarSelectDestinatarios();
 
     tablaNotificaciones = $('#tabla-notificaciones').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '/api/notificaciones/listar',
+        order: [],
+        ajax: {
+            url: '/api/notificaciones/listar',
+            error: typeof default_error_handler === 'function' ? default_error_handler : undefined
+        },
         columns: [
             { data: 'titulo', name: 'titulo' },
             { data: 'tipo_badge', name: 'tipo', orderable: false, searchable: false },
@@ -17,7 +35,7 @@ $(document).ready(function () {
             { data: 'destino', name: 'destino', orderable: false, searchable: false },
             { data: 'fecha_publicacion_texto', name: 'fecha_publicacion' },
             { data: 'fecha_expiracion_texto', name: 'fecha_expiracion' },
-            { data: 'estado_badge', name: 'estado', orderable: false, searchable: false },
+            { data: 'vigencia', name: 'estado', orderable: false, searchable: false },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
         ],
         dom: default_datatable_dom,
@@ -31,21 +49,24 @@ $(document).ready(function () {
         }
     });
 
+    // Indicadores del encabezado: vienen en la misma respuesta de la tabla.
+    $('#tabla-notificaciones').on('xhr.dt', function (e, settings, json) {
+        if (!json || !json.resumen) return;
+        Object.entries(json.resumen).forEach(function ([clave, valor]) {
+            $('[data-resumen="' + clave + '"]').text(valor);
+        });
+    });
+
     $('#btnNuevaNotificacion').on('click', function () {
         resetFormNotificaciones();
         $('#modalNotificacion').modal('show');
     });
 
-    $('#audiencia').on('change', actualizarVisibilidadNotificacion);
-    $('#tipo').on('change', actualizarVisibilidadNotificacion);
+    $('#audiencia, #tipo').on('change', actualizarVisibilidadNotificacion);
+    $('#titulo, #contenido, #accion_url, #tipo').on('input change', actualizarVistaPrevia);
 
     $('#user_ids').on('change', function () {
-        destinatariosSeleccionados = ($(this).val() || []).map(String);
         $(this).next('.select2-container').find('.select2-selection').removeClass('is-invalid');
-    });
-
-    $('#modalNotificacion').on('shown.bs.modal', function () {
-        inicializarSelectDestinatarios();
     });
 
     $(document).on('click', '.editarNotificacion', function () {
@@ -54,24 +75,22 @@ $(document).ready(function () {
 
         resetFormNotificaciones();
         $('#id').val(data.id);
-        $('#titulo').val(data.titulo);
-        $('#contenido').val(data.contenido);
+        $('#titulo').val(decodificarHtml(data.titulo));
+        $('#contenido').val(decodificarHtml(data.contenido));
         $('#tipo').val(data.tipo);
         $('#audiencia').val(data.audiencia);
-        $('#accion_url').val(data.accion_url || '');
-        $('#estado').val(data.estado);
+        $('#accion_url').val(decodificarHtml(data.accion_url || ''));
+        $('#estado').val(String(Number(data.estado)));
+        // Hora local (el JSON del modelo viene en UTC).
+        $('#fecha_publicacion').val(data.fecha_publicacion_input || '');
+        $('#fecha_expiracion').val(data.fecha_expiracion_input || '');
 
-        if (data.fecha_publicacion) {
-            $('#fecha_publicacion').val(normalizarFechaInput(data.fecha_publicacion));
-        }
-
-        if (data.fecha_expiracion) {
-            $('#fecha_expiracion').val(normalizarFechaInput(data.fecha_expiracion));
-        }
-
-        if (Array.isArray(data.destinatarios)) {
-            destinatariosSeleccionados = data.destinatarios.map(item => String(item.user_id));
-        }
+        // Destinatarios actuales: se agregan como opciones seleccionadas.
+        const $usuarios = $('#user_ids');
+        (data.destinatarios_opciones || []).forEach(function (opcion) {
+            $usuarios.append(new Option(decodificarHtml(opcion.text), opcion.id, true, true));
+        });
+        $usuarios.trigger('change');
 
         if (data.entidad_tipo === 'actividad' && data.entidad_id) {
             $('#actividad_id').val(String(data.entidad_id));
@@ -89,10 +108,10 @@ $(document).ready(function () {
         }
 
         const esEdicion = $('#id').val() !== '';
-        const url = esEdicion ? '/api/notificaciones/edit' : '/api/notificaciones/nuevo';
+        const $boton = $(this).find('button[type="submit"]').prop('disabled', true);
 
         $.ajax({
-            url: url,
+            url: esEdicion ? '/api/notificaciones/edit' : '/api/notificaciones/nuevo',
             type: 'POST',
             data: $(this).serialize(),
             headers: {
@@ -104,46 +123,75 @@ $(document).ready(function () {
                 alerta(response.message, true);
             },
             error: function (xhr) {
-                $('.invalid-feedback').remove();
-                $('.is-invalid').removeClass('is-invalid');
-                $('#user_ids').next('.select2-container').find('.select2-selection').removeClass('is-invalid');
+                limpiarErrores();
 
                 if (xhr.status === 422 && xhr.responseJSON?.errors) {
                     $.each(xhr.responseJSON.errors, function (campo, mensajes) {
                         let input = $('[name="' + campo + '"]');
-                        if (campo.includes('.')) {
+                        if (campo.includes('.') || !input.length) {
                             input = $('[name="' + campo.split('.')[0] + '[]"]');
                         }
+                        const $error = $('<div class="invalid-feedback d-block">').text(mensajes[0]);
                         input.addClass('is-invalid');
+
                         if (input.attr('id') === 'user_ids' && input.next('.select2-container').length) {
                             input.next('.select2-container').find('.select2-selection').addClass('is-invalid');
-                            input.next('.select2-container').after('<div class="invalid-feedback d-block">' + mensajes[0] + '</div>');
+                            input.next('.select2-container').after($error);
                         } else {
-                            input.after('<div class="invalid-feedback">' + mensajes[0] + '</div>');
+                            input.after($error);
                         }
                     });
                     return;
                 }
 
-                alerta(xhr.responseJSON?.message || 'No se pudo guardar la notificacion.', false);
+                alerta(xhr.responseJSON?.message || 'No se pudo guardar la notificación.', false);
+            },
+            complete: function () {
+                $boton.prop('disabled', false);
             }
         });
     });
 });
 
-function cargarRecursosFormulario() {
+function cargarActividades() {
     $.get('/api/notificaciones/recursos', function (response) {
-        recursosNotificaciones = response;
-
-        const actividades = response.actividades || [];
         const $actividades = $('#actividad_id');
-
-        reconstruirOpcionesUsuarios();
         $actividades.find('option:not(:first)').remove();
 
-        actividades.forEach(actividad => {
-            $actividades.append(`<option value="${actividad.id}">${actividad.titulo}</option>`);
+        (response.actividades || []).forEach(function (actividad) {
+            // Texto, nunca HTML: el titulo lo escribe un usuario.
+            $actividades.append(new Option(actividad.titulo, actividad.id));
         });
+    });
+}
+
+// Destinatarios: busqueda en el servidor (nombre, correo o DNI), agrupada por tipo de usuario.
+function inicializarSelectDestinatarios() {
+    const $usuarios = $('#user_ids');
+
+    if (!$usuarios.length || typeof $usuarios.select2 !== 'function' || $usuarios.hasClass('select2-hidden-accessible')) {
+        return;
+    }
+
+    $usuarios.select2({
+        dropdownParent: $('#modalNotificacion'),
+        width: '100%',
+        language: 'es',
+        closeOnSelect: false,
+        allowClear: true,
+        minimumInputLength: 2,
+        placeholder: $usuarios.data('placeholder') || 'Buscar usuarios por nombre, correo o DNI',
+        ajax: {
+            url: '/api/notificaciones/usuarios',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return { q: params.term || '' };
+            },
+            processResults: function (data) {
+                return { results: data.results || [] };
+            }
+        }
     });
 }
 
@@ -153,105 +201,40 @@ function actualizarVisibilidadNotificacion() {
 
     $('#grupoDestinatarios').toggleClass('d-none', audiencia !== 'personal');
     $('#grupoActividad').toggleClass('d-none', tipo !== 'actividad');
+    $('#ayudaAudiencia').text(AYUDA_AUDIENCIA[audiencia] || '');
+    actualizarVistaPrevia();
+}
 
-    if (audiencia === 'personal') {
-        reconstruirOpcionesUsuarios();
-        inicializarSelectDestinatarios();
-    }
+// Vista previa de como se vera en la campana.
+function actualizarVistaPrevia() {
+    const tipo = $('#tipo').val();
+    const titulo = ($('#titulo').val() || '').trim();
+    const contenido = ($('#contenido').val() || '').trim();
+    const enlace = ($('#accion_url').val() || '').trim();
+
+    $('#previewIcono').attr('class', 'bi ' + (ICONOS_TIPO[tipo] || 'bi-bell-fill'));
+    $('#previewTarjeta').toggleClass('is-critical', tipo === 'critico');
+    $('#previewTitulo').text(titulo || 'Título de la notificación');
+    $('#previewContenido').text(contenido || 'Aquí aparecerá el mensaje que verá el usuario.');
+    $('#previewEnlace').toggleClass('d-none', enlace === '').text(enlace ? 'Abrir: ' + enlace : '');
 }
 
 function resetFormNotificaciones() {
     $('#formNotificacion')[0].reset();
     $('#id').val('');
-    destinatariosSeleccionados = [];
-    $('#user_ids').val([]).trigger('change');
+    $('#user_ids').empty().val(null).trigger('change');
     $('#actividad_id').val('');
-    $('.invalid-feedback').remove();
-    $('.is-invalid').removeClass('is-invalid');
-    $('#user_ids').next('.select2-container').find('.select2-selection').removeClass('is-invalid');
+    limpiarErrores();
     actualizarVisibilidadNotificacion();
 }
 
-function normalizarFechaInput(value) {
-    return String(value).replace(' ', 'T').slice(0, 16);
+function limpiarErrores() {
+    $('#formNotificacion .invalid-feedback').remove();
+    $('#formNotificacion .is-invalid').removeClass('is-invalid');
+    $('#user_ids').next('.select2-container').find('.select2-selection').removeClass('is-invalid');
 }
 
-function inicializarSelectDestinatarios() {
-    const $usuarios = $('#user_ids');
-
-    if (!$usuarios.length || typeof $usuarios.select2 !== 'function') {
-        return;
-    }
-
-    if ($usuarios.hasClass('select2-hidden-accessible')) {
-        $usuarios.select2('destroy');
-    }
-
-    $usuarios.select2({
-        dropdownParent: $('#modalNotificacion'),
-        width: '100%',
-        language: 'es',
-        closeOnSelect: false,
-        allowClear: true,
-        placeholder: $usuarios.data('placeholder') || 'Buscar usuarios por nombre, correo o rol'
-    });
-}
-
-function reconstruirOpcionesUsuarios() {
-    const usuarios = recursosNotificaciones.usuarios || [];
-    const $usuarios = $('#user_ids');
-    const seleccionados = destinatariosSeleccionados.length
-        ? destinatariosSeleccionados
-        : (($usuarios.val() || []).map(String));
-    const grupos = {
-        personal: [],
-        lectores: [],
-        otros: []
-    };
-
-    $usuarios.empty();
-
-    usuarios.forEach(usuario => {
-        const roles = obtenerRolesUsuario(usuario);
-        const etiquetaRol = roles.length ? roles.join(', ') : (usuario.tipo_usuario || 'Sin rol definido');
-        const texto = `${usuario.name} - ${usuario.email} | ${etiquetaRol}`;
-        const opcion = `<option value="${usuario.id}">${escapeHtml(texto)}</option>`;
-
-        if (roles.includes('LECTOR') || String(usuario.tipo_usuario || '').toLowerCase() === 'lector') {
-            grupos.lectores.push(opcion);
-        } else if (roles.some(rol => ['PROGRAMADOR', 'ADMINISTRADOR', 'ENCARGADO', 'ATENCION A ESTUDIANTES'].includes(rol))) {
-            grupos.personal.push(opcion);
-        } else {
-            grupos.otros.push(opcion);
-        }
-    });
-
-    agregarGrupoOpciones($usuarios, 'Personal interno', grupos.personal);
-    agregarGrupoOpciones($usuarios, 'Lectores', grupos.lectores);
-    agregarGrupoOpciones($usuarios, 'Otros usuarios', grupos.otros);
-
-    $usuarios.val(seleccionados).trigger('change');
-}
-
-function agregarGrupoOpciones($select, etiqueta, opciones) {
-    if (!opciones.length) return;
-
-    $select.append(`<optgroup label="${escapeHtml(etiqueta)}">${opciones.join('')}</optgroup>`);
-}
-
-function obtenerRolesUsuario(usuario) {
-    return Array.isArray(usuario.roles)
-        ? usuario.roles
-            .map(rol => String(rol.nombre || '').trim().toUpperCase())
-            .filter(Boolean)
-        : [];
-}
-
-function escapeHtml(value) {
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+// DataTables envia los textos escapados; se decodifican para editarlos como texto.
+function decodificarHtml(valor) {
+    return new DOMParser().parseFromString(String(valor || ''), 'text/html').documentElement.textContent;
 }

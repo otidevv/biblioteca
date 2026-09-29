@@ -128,29 +128,75 @@
 
       {{-- Paso 1: buscar lector --}}
       <div class="modal-body pd-step-body" id="pd-body-1">
-        <div class="pd-body-intro">
-          <i class="bi bi-person-lines-fill"></i>
-          <span>Ingresa el nombre, DNI o correo del estudiante para buscarlo en el sistema.</span>
+        <div class="btn-group w-100 mb-3" role="group" aria-label="Tipo de préstamo por lector">
+          <input type="radio" class="btn-check" name="pd-modo" id="pd-modo-lector" value="lector" autocomplete="off" checked>
+          <label class="btn btn-outline-primary" for="pd-modo-lector">
+            <i class="bi bi-person-badge me-1"></i> Lector registrado
+          </label>
+          <input type="radio" class="btn-check" name="pd-modo" id="pd-modo-libre" value="libre" autocomplete="off">
+          <label class="btn btn-outline-primary" for="pd-modo-libre">
+            <i class="bi bi-person-vcard me-1"></i> Préstamo libre (DNI)
+          </label>
         </div>
-        <div class="input-group mb-3">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input type="text" id="pd-lector-q" class="form-control" placeholder="Nombre, DNI o correo...">
-          <button class="btn btn-outline-secondary" id="pd-lector-buscar" type="button">Buscar</button>
-        </div>
-        <div id="pd-lector-results"></div>
-        <div id="pd-lector-sel" class="d-none mt-2 pd-sel-card">
-          <div class="d-flex align-items-center gap-3">
-            <div class="pd-sel-card__avatar flex-shrink-0">
-              <i class="bi bi-person-check-fill fs-5"></i>
-            </div>
-            <div class="flex-grow-1 min-width-0">
-              <strong class="pd-sel-card__name" id="pd-lector-sel-nombre"></strong>
-              <small class="pd-sel-card__sub d-block" id="pd-lector-sel-info"></small>
-            </div>
-            <button type="button" class="pd-sel-card__btn ms-auto flex-shrink-0" id="pd-lector-cambiar">
-              <i class="bi bi-arrow-repeat"></i> Cambiar
-            </button>
+
+        <div id="pd-panel-lector">
+          <div class="pd-body-intro">
+            <i class="bi bi-person-lines-fill"></i>
+            <span>Ingresa el nombre, DNI o correo del estudiante para buscarlo en el sistema.</span>
           </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="pd-lector-q" class="form-control" placeholder="Nombre, DNI o correo...">
+            <button class="btn btn-outline-secondary" id="pd-lector-buscar" type="button">Buscar</button>
+          </div>
+          <div id="pd-lector-results"></div>
+          <div id="pd-lector-sel" class="d-none mt-2 pd-sel-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="pd-sel-card__avatar flex-shrink-0">
+                <i class="bi bi-person-check-fill fs-5"></i>
+              </div>
+              <div class="flex-grow-1 min-width-0">
+                <strong class="pd-sel-card__name" id="pd-lector-sel-nombre"></strong>
+                <small class="pd-sel-card__sub d-block" id="pd-lector-sel-info"></small>
+              </div>
+              <button type="button" class="pd-sel-card__btn ms-auto flex-shrink-0" id="pd-lector-cambiar">
+                <i class="bi bi-arrow-repeat"></i> Cambiar
+              </button>
+            </div>
+          </div>
+          <div id="pd-lector-carnet" class="pd-carnet-alert d-none" role="alert"></div>
+        </div>
+
+        <div id="pd-panel-libre" class="d-none">
+          <div class="pd-body-intro">
+            <i class="bi bi-person-vcard"></i>
+            <span>Para estudiantes que no están registrados como lectores. Ingresa el DNI para consultarlo en el sistema académico. El préstamo libre es <strong>solo en sala</strong>.</span>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+            <input type="text" id="pd-libre-dni" class="form-control" placeholder="DNI (8 dígitos)" inputmode="numeric" maxlength="8" autocomplete="off">
+            <button class="btn btn-outline-secondary" id="pd-libre-buscar" type="button">Consultar</button>
+          </div>
+          <div id="pd-libre-msg"></div>
+          <div id="pd-libre-sel" class="d-none mt-2 pd-sel-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="pd-sel-card__avatar flex-shrink-0">
+                <i class="bi bi-person-check-fill fs-5"></i>
+              </div>
+              <div class="flex-grow-1 min-width-0">
+                <strong class="pd-sel-card__name d-block" id="pd-libre-nombre"></strong>
+                <small class="pd-sel-card__sub d-block" id="pd-libre-info"></small>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                  <span class="pd-sel-card__tag" id="pd-libre-estado"></span>
+                  <span class="pd-sel-card__tag"><i class="bi bi-building me-1"></i>Solo en sala</span>
+                </div>
+              </div>
+              <button type="button" class="pd-sel-card__btn ms-auto flex-shrink-0" id="pd-libre-cambiar">
+                <i class="bi bi-arrow-repeat"></i> Cambiar
+              </button>
+            </div>
+          </div>
+          <div id="pd-libre-carnet" class="pd-carnet-alert d-none" role="alert"></div>
         </div>
       </div>
 
@@ -213,6 +259,7 @@
               <small class="text-muted d-block" id="pd-ctx-codigo"></small>
             </div>
           </div>
+          <div id="pd-ctx-carnet" class="pd-carnet-alert d-none" role="alert"></div>
         </div>
         <div class="row g-3">
           <div class="col-md-4">
@@ -221,6 +268,7 @@
               <option value="0">En sala</option>
               <option value="1">A casa</option>
             </select>
+            <div class="small text-muted mt-1 d-none" id="pd-libre-ayuda">El préstamo libre solo puede ser en sala.</div>
           </div>
           <div class="col-md-4 d-none" id="pd-dias-wrap">
             <label class="form-label fw-semibold">Días de préstamo</label>
@@ -229,7 +277,7 @@
           <div class="col-md-4">
             <label class="form-label fw-semibold">Fecha límite</label>
             <input type="text" id="pd-fecha-est" class="form-control" readonly style="background:#f1f5f9;">
-            <small class="text-muted d-block mt-1" id="pd-sala-ayuda">En sala se devuelve el mismo día, antes del cierre.</small>
+            <div class="small text-muted mt-1" id="pd-sala-ayuda">En sala se devuelve el mismo día, antes del cierre.</div>
           </div>
         </div>
         <div class="mt-3">

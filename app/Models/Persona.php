@@ -22,12 +22,23 @@ class Persona extends Model
         'tipo_persona',
         'carrera_id',
         'estado_academico',
+        'tipo_carnet',
+        'fecha_carnet_duplicado',
         'estado'
     ];
 
+    const CARNET_ORIGINAL = 'ORIGINAL';
+    const CARNET_DUPLICADO = 'DUPLICADO';
+
     protected $casts = [
         'fecha_nacimiento' => 'date',
+        'fecha_carnet_duplicado' => 'date:Y-m-d',
     ];
+
+    public function tieneCarnetDuplicado(): bool
+    {
+        return $this->tipo_carnet === self::CARNET_DUPLICADO;
+    }
 
     public function carrera()
     {

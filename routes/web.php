@@ -56,7 +56,7 @@ Route::middleware(['auth', 'no.lector.dashboard'])
     ->get('/dashboard', [AdministracionController::class, 'inicio'])
     ->name('dashboard');
 
-Route::middleware('auth')
+Route::middleware(['auth', 'no.lector.dashboard'])
     ->get('/manuales/codificacion', function () {
         $rutaManual = base_path('MANUAL_CODIFICACION.md');
         abort_unless(File::exists($rutaManual), 404);
@@ -67,7 +67,7 @@ Route::middleware('auth')
     })
     ->name('manual.codificacion');
 
-Route::middleware('auth')
+Route::middleware(['auth', 'no.lector.dashboard'])
     ->get('/dashboard/aprendizaje-clasificacion', function () {
         return view('administracion.aprendizaje_clasificacion');
     })
@@ -194,6 +194,7 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
         Route::prefix('notificaciones')->group(function () {
             Route::get('/listar', [ApiNotificacionController::class, 'listar']);
             Route::get('/recursos', [ApiNotificacionController::class, 'recursosFormulario']);
+            Route::get('/usuarios', [ApiNotificacionController::class, 'buscarUsuarios']);
             Route::post('/nuevo', [ApiNotificacionController::class, 'nuevo']);
             Route::post('/edit', [ApiNotificacionController::class, 'edit']);
         });
@@ -265,6 +266,8 @@ Route::middleware(['auth', 'permiso.ruta'])->group(function () {
             Route::get('ejemplares/disponibles', [ApiPrestamoController::class, 'buscarEjemplaresDisponibles']);
             Route::get('bibliotecas/accesibles', [ApiPrestamoController::class, 'biblioteacasAccesibles']);
             Route::post('prestamo/directo', [ApiPrestamoController::class, 'prestamoDirecto']);
+            Route::get('libre/estudiante', [ApiPrestamoController::class, 'consultarEstudianteLibre']);
+            Route::post('prestamo/libre', [ApiPrestamoController::class, 'prestamoLibre']);
             Route::get('prestamos/listar', [ApiPrestamoController::class, 'listar']);
             Route::get('{id}/preview-sancion', [ApiPrestamoController::class, 'previewSancion']);
             Route::post('{id}/devolver', [ApiPrestamoController::class, 'devolver']);
@@ -301,8 +304,24 @@ Route::middleware('registrar.visita')->group(function () {
     Route::get('/catalogo', [PaginaController::class, 'catalogo'])->name('catalogo');
     Route::get('/otras-bibliotecas', [PaginaController::class, 'otrasBibliotecas'])->name('otras.bibliotecas');
     Route::get('/evento', [PaginaController::class, 'eventos'])->name('evento');
+    Route::get('/evento/{actividad}/calendario.ics', [PaginaController::class, 'eventoCalendario'])->name('evento.calendario');
     Route::get('/bibliotecas-cientificas', [PaginaController::class, 'bibliotecasCientificas'])->name('bibliotecas.cientificas');
 });
+Route::middleware('auth')
+    ->get('/mi-panel', [PaginaController::class, 'panelLector'])
+    ->name('lector.panel');
+Route::middleware('auth')
+    ->get('/mi-panel/reporte', [PaginaController::class, 'reporteLector'])
+    ->name('lector.reporte');
+Route::middleware('auth')
+    ->post('/mi-panel/constancia', [PaginaController::class, 'emitirConstancia'])
+    ->name('lector.constancia.emitir');
+Route::middleware('auth')
+    ->get('/mi-panel/constancia/{codigo}', [PaginaController::class, 'verConstancia'])
+    ->name('lector.constancia');
+Route::middleware('throttle:30,1')
+    ->get('/constancias/verificar/{codigo?}', [PaginaController::class, 'verificarConstancia'])
+    ->name('constancias.verificar');
 Route::middleware('auth')
     ->get('/prestamos', [PaginaController::class, 'misPrestamos'])
     ->name('prestamos');

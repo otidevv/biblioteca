@@ -326,6 +326,37 @@
     color: #1d4ed8;
 }
 
+.loan-lector-badge--duplicado {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* Aviso de carnet duplicado al prestar */
+.pd-carnet-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #fcd34d;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.pd-carnet-alert > i {
+    flex-shrink: 0;
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.pd-result-badge--duplicado {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+}
+
 .loan-status-stack {
     display: flex;
     flex-direction: column;
@@ -378,6 +409,10 @@
 
 .loan-pill--info {
     background: #bfdbfe;
+}
+
+.loan-pill--libre {
+    background: #ddd6fe;
 }
 
 .loan-countdown {
@@ -1125,6 +1160,18 @@
 .admin-dark .loan-lector-badge--code {
     background: rgba(37, 99, 235, 0.2);
     color: #93c5fd;
+}
+
+.admin-dark .loan-lector-badge--duplicado,
+.admin-dark .pd-result-badge--duplicado {
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #fcd34d !important;
+}
+
+.admin-dark .pd-carnet-alert {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.12);
+    color: #fcd34d;
 }
 
 /* ── Scroll hint (oculto en desktop, visible en móvil) ── */

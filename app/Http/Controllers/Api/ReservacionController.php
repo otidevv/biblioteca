@@ -24,7 +24,7 @@ class ReservacionController extends Controller
         $user = auth()->user();
         [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
-        $query = Reservacion::with(['ejemplar.libro.autores', 'lector'])
+        $query = Reservacion::with(['ejemplar.libro.autores', 'lector.persona'])
             ->where('estado', 0)
             ->whereRaw("TIMESTAMP(fecha_limite, '20:00:00') > ?", [now()->format('Y-m-d H:i:s')])
             ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
@@ -92,10 +92,14 @@ class ReservacionController extends Controller
                 $palette = ['#7c3aed','#dc2626','#2563eb','#16a34a','#0891b2','#d97706'];
                 $color   = $palette[ord($inicial) % count($palette)];
 
+                $duplicado = $row->lector?->persona?->tieneCarnetDuplicado()
+                    ? '<span class="badge text-bg-warning ms-1" title="El carnet original fue reportado como perdido"><i class="bi bi-exclamation-triangle-fill me-1"></i>Carnet duplicado</span>'
+                    : '';
+
                 return '<div class="rsv-reader-cell">
                     <div class="rsv-reader-avatar" style="background:' . $color . '18;color:' . $color . '">'
                         . $inicial . '</div>
-                    <span class="rsv-reader-name" title="' . e($nombre) . '">' . e($nombre) . '</span>
+                    <span class="rsv-reader-name" title="' . e($nombre) . '">' . e($nombre) . '</span>' . $duplicado . '
                 </div>';
             })
             ->addColumn('estado', function ($row) {
@@ -132,10 +136,14 @@ class ReservacionController extends Controller
                 $codEjemplar = e($row->ejemplar->codigo_dewey
                     ? $row->ejemplar->codigo_dewey.$row->ejemplar->tipo.$row->ejemplar->codigo_interno
                     : ($row->ejemplar->codigo_ant ?? ''));
+                $carnet      = e((string) $row->lector?->persona?->tipo_carnet);
+                $carnetFecha = e((string) $row->lector?->persona?->fecha_carnet_duplicado?->format('d/m/Y'));
 
                 return '<div class="d-flex gap-1">
                         <button class="btn btn-sm btn-success entregarReserva"
                             data-id="'.$row->id.'"
+                            data-carnet="'.$carnet.'"
+                            data-carnet-fecha="'.$carnetFecha.'"
                             data-libro="'.$titulo.'"
                             data-lector="'.$lector.'"
                             data-tipo="'.$tipo.'"

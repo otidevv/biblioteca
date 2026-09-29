@@ -1,294 +1,273 @@
 @extends('layouts.biblioteca')
 
+@section('title', 'Biblioteca UNAMAD | Eventos y actividades')
+@section('meta_description', 'Agenda de talleres, concursos y actividades de la Biblioteca UNAMAD.')
+
 @section('css')
-<link href="{{ asset('css/pagina/eventos.css') }}" rel="stylesheet">
+<link href="{{ asset('css/pagina/panel_lector.css') }}?v={{ filemtime(public_path('css/pagina/panel_lector.css')) }}" rel="stylesheet">
+<link href="{{ asset('css/pagina/mi_espacio.css') }}?v={{ filemtime(public_path('css/pagina/mi_espacio.css')) }}" rel="stylesheet">
+<link href="{{ asset('css/pagina/eventos.css') }}?v={{ filemtime(public_path('css/pagina/eventos.css')) }}" rel="stylesheet">
+@endsection
+
+@section('js')
+<script src="{{ asset('js/pagina/eventos.js') }}?v={{ filemtime(public_path('js/pagina/eventos.js')) }}"></script>
 @endsection
 
 @section('content')
 @php
-    $eventosActivos = $eventosDestacados->count();
-    $categoriasActivas = $categorias->count();
-    $proximoEvento = $agenda->sortBy('fecha_inicio')->first();
-    $eventosDestacadosActivos = $eventosDestacados->where('destacado', true)->count();
-    $modalidadesActivas = $agenda->pluck('modalidad')->filter()->map(fn($item) => trim((string) $item))->filter()->unique()->count();
-    $categoriaLider = $categorias->sortByDesc('actividades_count')->first();
+    // Solo este bloque php de apertura/cierre: mas abajo se usa php en linea y Blade confundiria ambos.
+    $enCurso = $vigentes->filter(fn ($a) => $a->estadoAgenda() === 'en_curso');
+    $esteMes = $vigentes->filter(fn ($a) => $a->fecha_inicio?->isSameMonth(now()));
+    $porMes = $vigentes->groupBy(fn ($a) => $a->fecha_inicio?->format('Y-m') ?? 'sin-fecha');
+    $conteoCategoria = $vigentes->countBy('actividad_categoria_id');
+    $modalidades = $vigentes->pluck('modalidad')->filter()->map(fn ($m) => trim($m))->unique()->sort()->values();
+    $mesTitulo = fn ($a) => \Illuminate\Support\Str::ucfirst($a->fecha_inicio->locale('es')->translatedFormat('F Y'));
+    $resumenDe = fn ($a) => $a->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $a->contenido), 170);
+    $todas = $vigentes->concat($pasados);
 @endphp
 
-<svg class="events-icon-sprite" aria-hidden="true" focusable="false">
-    <symbol id="events-icon-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.35 3.65L17 8l-3.65 1.35L12 13l-1.35-3.65L7 8l3.65-1.35L12 3z"></path><path d="M19 13l.78 2.22L22 16l-2.22.78L19 19l-.78-2.22L16 16l2.22-.78L19 13z"></path><path d="M5 14l.94 2.56L8.5 17.5l-2.56.94L5 21l-.94-2.56L1.5 17.5l2.56-.94L5 14z"></path></symbol>
-    <symbol id="events-icon-book-open" viewBox="0 0 24 24"><path d="M12 7c-2.7-1.8-5.7-2.34-9-1.62V18c3.3-.72 6.3-.18 9 1.62"></path><path d="M12 7c2.7-1.8 5.7-2.34 9-1.62V18c-3.3-.72-6.3-.18-9 1.62"></path><path d="M12 7v12.62"></path></symbol>
-    <symbol id="events-icon-calendar-days" viewBox="0 0 24 24"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></symbol>
-    <symbol id="events-icon-folders" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v1"></path><path d="M4 9h16a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4"></path><path d="M4 9a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2"></path></symbol>
-    <symbol id="events-icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></symbol>
-    <symbol id="events-icon-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"></path><path d="M7 15l3-3 3 2 5-6"></path><path d="M18 8h0"></path></symbol>
-    <symbol id="events-icon-megaphone" viewBox="0 0 24 24"><path d="M3 11v2a2 2 0 0 0 2 2h2l3 5h2l-1.4-5H13l6 3V6l-6 3H5a2 2 0 0 0-2 2z"></path></symbol>
-    <symbol id="events-icon-monitor-play" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M10 8l5 3-5 3V8z"></path></symbol>
-    <symbol id="events-icon-trending" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 7-7"></path><path d="M14 8h6v6"></path></symbol>
-    <symbol id="events-icon-star" viewBox="0 0 24 24"><path d="M12 3.5l2.8 5.68 6.27.91-4.53 4.42 1.07 6.24L12 17.77l-5.61 2.98 1.07-6.24-4.53-4.42 6.27-.91L12 3.5z"></path></symbol>
-    <symbol id="events-icon-calendar-event" viewBox="0 0 24 24"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M12 13l1 2 2.2.32-1.6 1.56.38 2.2L12 18l-1.98 1.08.38-2.2-1.6-1.56 2.2-.32 1-2z"></path></symbol>
-    <symbol id="events-icon-tag" viewBox="0 0 24 24"><path d="M20 10l-8.59 8.59a2 2 0 0 1-2.82 0L2 12V4h8z"></path><path d="M7 7h.01"></path></symbol>
-    <symbol id="events-icon-presentation" viewBox="0 0 24 24"><path d="M2 3h20"></path><path d="M6 3v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"></path><path d="M12 16v5"></path><path d="M8 21h8"></path><path d="M10 8l4 2-4 2V8z"></path></symbol>
-    <symbol id="events-icon-map-pin" viewBox="0 0 24 24"><path d="M12 21s-6-4.35-6-10a6 6 0 1 1 12 0c0 5.65-6 10-6 10z"></path><circle cx="12" cy="11" r="2.5"></circle></symbol>
-    <symbol id="events-icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></symbol>
-    <symbol id="events-icon-calendar-check" viewBox="0 0 24 24"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M9 15l2 2 4-4"></path></symbol>
-    <symbol id="events-icon-inbox" viewBox="0 0 24 24"><path d="M4 5h16l2 8v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4z"></path><path d="M3 13h5l2 3h4l2-3h5"></path></symbol>
-    <symbol id="events-icon-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 12l9 5 9-5"></path><path d="M3 16l9 5 9-5"></path></symbol>
-    <symbol id="events-icon-bookmark" viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v14l-7-4-7 4V6a2 2 0 0 1 2-2z"></path></symbol>
-    <symbol id="events-icon-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 1 0-7.07-7.07L11 4"></path><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L13 19"></path></symbol>
-</svg>
+<div class="lp ev">
+    {{-- ─────────── Portada ─────────── --}}
+    <section class="ev-hero">
+        <div class="ev-hero__intro">
+            <span class="lp-kicker"><i class="bi bi-stars"></i> Agenda de la biblioteca</span>
+            <h1 class="lp-title">Eventos y actividades</h1>
+            <p class="lp-lead">Talleres, concursos y encuentros abiertos a la comunidad universitaria. Guarda los que te interesen en tu calendario.</p>
 
-<div class="events-shell">
-    <section class="events-hero">
-        <span class="events-eyebrow"><svg class="events-glyph"><use href="#events-icon-sparkles"></use></svg> Agenda Cultural</span>
-        <h1 class="events-title">Eventos y Actividades</h1>
-        <p class="events-subtitle">Participa en talleres, encuentros, sesiones de formacion y actividades especiales organizadas por la biblioteca para la comunidad universitaria</p>
-
-        <div class="events-hero-grid">
-            <div class="events-callout">
-                <h2 class="events-callout-title"><span class="events-title-icon events-title-icon--book"><svg class="events-glyph"><use href="#events-icon-book-open"></use></svg></span><span>Tu espacio de aprendizaje y participacion</span></h2>
-                <p>Aqui encontraras todas las actividades que organiza la biblioteca. Filtra por categoria, modalidad o fecha para descubrir los eventos que mas te interesen.</p>
-            </div>
-            <div class="events-summary-stack">
-                <div class="events-summary-card events-summary-primary">
-                    <span class="events-summary-label"><svg class="events-glyph"><use href="#events-icon-calendar-days"></use></svg> Proximo evento</span>
-                    <strong>{{ $proximoEvento ? $proximoEvento->fecha_inicio->format('d M') : 'Por definir' }}</strong>
-                </div>
-                <div class="events-summary-card">
-                    <span class="events-summary-label"><svg class="events-glyph"><use href="#events-icon-calendar-event"></use></svg> Eventos disponibles</span>
-                    <strong>{{ $eventosActivos }}</strong>
-                </div>
-                <div class="events-summary-card">
-                    <span class="events-summary-label"><svg class="events-glyph"><use href="#events-icon-folders"></use></svg> Categorias</span>
-                    <strong>{{ $categoriasActivas }}</strong>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="events-section events-filters-section">
-        <div class="events-filters-container">
-            <h3 class="events-section-title"><span class="events-title-icon events-title-icon--search"><svg class="events-glyph"><use href="#events-icon-search"></use></svg></span><span>Buscar y filtrar eventos</span></h3>
-            <div class="events-filters-grid">
-                <div class="events-filter-group">
-                    <label for="filter-category">Categoria</label>
-                    <select id="filter-category" class="events-filter-select">
-                        <option value="">Todas las categorias</option>
-                        @foreach($categorias as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                @if($modalidadesActivas > 0)
-                <div class="events-filter-group">
-                    <label for="filter-modality">Modalidad</label>
-                    <select id="filter-modality" class="events-filter-select">
-                        <option value="">Todas las modalidades</option>
-                        @php
-                            $modalidades = $agenda->pluck('modalidad')->filter()->map(fn($item) => trim((string) $item))->filter()->unique()->sort();
-                        @endphp
-                        @foreach($modalidades as $mod)
-                            <option value="{{ $mod }}">{{ $mod }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                @endif
-                <div class="events-filter-group">
-                    <label for="filter-search">Buscar</label>
-                    <input type="text" id="filter-search" class="events-filter-input" placeholder="Busqueda rapida...">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="events-section events-insights-section">
-        <div class="events-section-header">
-            <div>
-                <h3 class="events-section-title"><span class="events-title-icon events-title-icon--insight"><svg class="events-glyph"><use href="#events-icon-chart"></use></svg></span><span>Informacion de la agenda</span></h3>
-                <p>Un vistazo rapido a lo que esta sucediendo en la biblioteca</p>
-            </div>
+            <dl class="ev-stats">
+                <div><dt>Próximas</dt><dd>{{ $vigentes->count() }}</dd></div>
+                <div><dt>Este mes</dt><dd>{{ $esteMes->count() }}</dd></div>
+                <div><dt>En curso hoy</dt><dd>{{ $enCurso->count() }}</dd></div>
+            </dl>
         </div>
 
-        <div class="events-insight-grid">
-            <article class="events-insight-card events-insight-featured">
-                <span class="events-insight-icon"><svg class="events-glyph"><use href="#events-icon-megaphone"></use></svg></span>
-                <strong>{{ $eventosDestacadosActivos }}</strong>
-                <p>
-                    @if($eventosDestacadosActivos === 1)
-                        Actividad destacada de especial interes
+        @if($destacado)
+            <article class="ev-feature" id="evento-destacado">
+                <div class="ev-feature__media">
+                    @if($destacado->imagen_url)
+                        <img src="{{ $destacado->imagen_url }}" alt="">
                     @else
-                        {{ $eventosDestacadosActivos }} actividades destacadas para no perder
+                        <span class="ev-art" aria-hidden="true"><i class="bi bi-calendar2-heart"></i></span>
                     @endif
-                </p>
+                    <span class="ev-date">
+                        <strong>{{ $destacado->fecha_inicio?->format('d') }}</strong>
+                        <span>{{ $destacado->mesCorto() }}</span>
+                    </span>
+                </div>
+                <div class="ev-feature__body">
+                    <div class="ev-chips">
+                        @if($destacado->estadoAgenda() === 'en_curso')
+                            <span class="ev-chip ev-chip--live"><i class="bi bi-broadcast"></i>En curso</span>
+                        @endif
+                        @if($destacado->destacado)
+                            <span class="ev-chip ev-chip--star"><i class="bi bi-star-fill"></i>Destacado</span>
+                        @endif
+                        <span class="ev-chip">{{ \Illuminate\Support\Str::ucfirst(mb_strtolower($destacado->categoria?->nombre ?? 'Actividad')) }}</span>
+                    </div>
+                    <h2 class="ev-feature__title">{{ $destacado->titulo }}</h2>
+                    <p class="ev-feature__text">{{ $resumenDe($destacado) }}</p>
+                    <ul class="ev-meta">
+                        <li><i class="bi bi-calendar3"></i>{{ $destacado->rangoFechas() }}</li>
+                        @if($destacado->horario())<li><i class="bi bi-clock"></i>{{ $destacado->horario() }}</li>@endif
+                        @if($destacado->lugar)<li><i class="bi bi-geo-alt"></i>{{ $destacado->lugar }}</li>@endif
+                        @if($destacado->modalidad)<li><i class="bi bi-display"></i>{{ $destacado->modalidad }}</li>@endif
+                    </ul>
+                    <div class="ev-actions">
+                        <button type="button" class="lp-btn lp-btn--primary" data-ev-detalle="{{ $destacado->id }}"><i class="bi bi-info-circle"></i> Ver detalles</button>
+                        <a href="{{ route('evento.calendario', $destacado) }}" class="lp-btn lp-btn--ghost"><i class="bi bi-calendar-plus"></i> Agregar a mi calendario</a>
+                    </div>
+                </div>
             </article>
+        @else
+            <div class="ev-feature ev-feature--empty">
+                <span class="ev-art" aria-hidden="true"><i class="bi bi-calendar2-week"></i></span>
+                <div>
+                    <h2 class="ev-feature__title">Pronto publicaremos nuevas actividades</h2>
+                    <p class="ev-feature__text">Mientras tanto, explora el catálogo o revisa las actividades anteriores.</p>
+                    <a href="{{ route('catalogo') }}" class="lp-btn lp-btn--primary"><i class="bi bi-search"></i> Explorar el catálogo</a>
+                </div>
+            </div>
+        @endif
+    </section>
 
-            <article class="events-insight-card">
-                <span class="events-insight-icon"><svg class="events-glyph"><use href="#events-icon-monitor-play"></use></svg></span>
-                <strong>{{ $modalidadesActivas }}</strong>
-                <p>Forma{{ $modalidadesActivas === 1 ? '' : 's' }} de participacion: presencial, virtual o hibrida</p>
-            </article>
+    {{-- ─────────── Agenda ─────────── --}}
+    <section class="lp-panel" data-ev-agenda>
+        <header class="lp-panel__head">
+            <div>
+                <h2>Próximas actividades</h2>
+                <p>{{ $vigentes->count() ? 'Ordenadas por fecha. Toca una para ver el detalle.' : 'No hay actividades programadas por ahora.' }}</p>
+            </div>
+        </header>
 
-            <article class="events-insight-card">
-                <span class="events-insight-icon"><svg class="events-glyph"><use href="#events-icon-trending"></use></svg></span>
-                <strong>{{ $categoriaLider?->nombre ?? '-' }}</strong>
-                <p>
-                    @if($categoriaLider)
-                        Categoria con mas actividades actualmente ({{ $categoriaLider->actividades_count }})
-                    @else
-                        Categoria en tendencia
+        @if($vigentes->isNotEmpty())
+            <div class="me-toolbar ev-toolbar">
+                <div class="me-filters" role="group" aria-label="Filtrar por categoría">
+                    <button type="button" class="me-filter is-active" data-ev-categoria="" aria-pressed="true">Todas <span>{{ $vigentes->count() }}</span></button>
+                    @foreach($categorias as $categoria)
+                        @if($conteoCategoria->get($categoria->id))
+                            <button type="button" class="me-filter" data-ev-categoria="{{ $categoria->id }}" aria-pressed="false">
+                                {{ \Illuminate\Support\Str::ucfirst(mb_strtolower($categoria->nombre)) }} <span>{{ $conteoCategoria->get($categoria->id) }}</span>
+                            </button>
+                        @endif
+                    @endforeach
+                </div>
+                <div class="ev-toolbar__end">
+                    @if($modalidades->count() > 1)
+                        <label class="ev-select">
+                            <span class="visually-hidden">Modalidad</span>
+                            <select data-ev-modalidad>
+                                <option value="">Todas las modalidades</option>
+                                @foreach($modalidades as $modalidad)
+                                    <option value="{{ mb_strtolower($modalidad) }}">{{ $modalidad }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                     @endif
-                </p>
-            </article>
-        </div>
-    </section>
-
-    <section class="events-section events-featured-section">
-        <div class="events-section-header">
-            <div>
-                <h3 class="events-section-title"><span class="events-title-icon events-title-icon--star"><svg class="events-glyph"><use href="#events-icon-star"></use></svg></span><span>Eventos destacados</span></h3>
-                <p>Las actividades mas importantes que no deberias perder</p>
+                    <label class="me-search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <span class="visually-hidden">Buscar actividades</span>
+                        <input type="search" placeholder="Buscar por título o lugar" data-ev-buscar>
+                    </label>
+                </div>
             </div>
-        </div>
 
-        @if($eventosDestacados->isEmpty())
-            <div class="events-empty">
-                <span class="events-empty-icon"><svg class="events-glyph"><use href="#events-icon-calendar-check"></use></svg></span>
-                <p>No hay eventos destacados en este momento</p>
-                <small>Vuelve pronto para conocer nuevas actividades</small>
+            @foreach($porMes as $clave => $items)
+                <div class="ev-month" data-ev-grupo>
+                    <h3 class="me-group__title">{{ $clave === 'sin-fecha' ? 'Sin fecha' : $mesTitulo($items->first()) }} <span>{{ $items->count() }}</span></h3>
+                    <div class="ev-grid">
+                        @foreach($items as $actividad)
+                            @php($agenda = $actividad->estadoAgenda())
+                            <article class="ev-card" id="evento-{{ $actividad->id }}"
+                                     data-ev-cat="{{ $actividad->actividad_categoria_id }}"
+                                     data-ev-mod="{{ mb_strtolower(trim((string) $actividad->modalidad)) }}"
+                                     data-ev-texto="{{ mb_strtolower($actividad->titulo . ' ' . $actividad->lugar . ' ' . $actividad->resumen . ' ' . ($actividad->categoria?->nombre)) }}">
+                                <button type="button" class="ev-card__media" data-ev-detalle="{{ $actividad->id }}" aria-label="Ver detalles de {{ $actividad->titulo }}">
+                                    @if($actividad->imagen_url)
+                                        <img src="{{ $actividad->imagen_url }}" alt="" loading="lazy">
+                                    @else
+                                        <span class="ev-art" aria-hidden="true"><i class="bi bi-calendar2-event"></i></span>
+                                    @endif
+                                    <span class="ev-date">
+                                        <strong>{{ $actividad->fecha_inicio?->format('d') }}</strong>
+                                        <span>{{ $actividad->mesCorto() }}</span>
+                                    </span>
+                                </button>
+                                <div class="ev-card__body">
+                                    <div class="ev-chips">
+                                        @if($agenda === 'en_curso')
+                                            <span class="ev-chip ev-chip--live"><i class="bi bi-broadcast"></i>En curso</span>
+                                        @endif
+                                        @if($actividad->destacado)
+                                            <span class="ev-chip ev-chip--star"><i class="bi bi-star-fill"></i>Destacado</span>
+                                        @endif
+                                        <span class="ev-chip">{{ \Illuminate\Support\Str::ucfirst(mb_strtolower($actividad->categoria?->nombre ?? 'Actividad')) }}</span>
+                                    </div>
+                                    <h4 class="ev-card__title">{{ $actividad->titulo }}</h4>
+                                    <p class="ev-card__text">{{ $resumenDe($actividad) }}</p>
+                                    <ul class="ev-meta">
+                                        <li><i class="bi bi-calendar3"></i>{{ $actividad->rangoFechas() }}</li>
+                                        @if($actividad->horario())<li><i class="bi bi-clock"></i>{{ $actividad->horario() }}</li>@endif
+                                        @if($actividad->lugar)<li><i class="bi bi-geo-alt"></i>{{ $actividad->lugar }}</li>@endif
+                                        @if($actividad->modalidad)<li><i class="bi bi-display"></i>{{ $actividad->modalidad }}</li>@endif
+                                    </ul>
+                                    <div class="ev-actions">
+                                        <button type="button" class="lp-link ev-link" data-ev-detalle="{{ $actividad->id }}">Ver detalles <i class="bi bi-arrow-right"></i></button>
+                                        <a href="{{ route('evento.calendario', $actividad) }}" class="ev-icon-btn" title="Agregar a mi calendario" aria-label="Agregar {{ $actividad->titulo }} a mi calendario"><i class="bi bi-calendar-plus"></i></a>
+                                    </div>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+
+            <div class="lp-empty lp-empty--compact me-noresults" data-ev-sin-resultados hidden>
+                <i class="bi bi-funnel"></i>
+                <p>No hay actividades con ese filtro o búsqueda.</p>
             </div>
         @else
-            <div class="events-grid">
-                @foreach($eventosDestacados as $evento)
-                    <article class="events-card events-card-featured" data-category="{{ $evento->categoria->id ?? '' }}" data-modality="{{ $evento->modalidad ?? '' }}">
-                        <div class="events-card-header">
-                            <span class="events-card-icon"><svg class="events-glyph"><use href="#events-icon-calendar-event"></use></svg></span>
-                            @if($evento->destacado)
-                                <span class="events-card-badge"><svg class="events-glyph"><use href="#events-icon-star"></use></svg></span>
-                            @endif
-                        </div>
-
-                        <div class="events-card-body">
-                            <span class="events-card-category"><svg class="events-glyph"><use href="#events-icon-tag"></use></svg>{{ $evento->categoria->nombre ?? 'Evento' }}</span>
-
-                            <div class="events-card-date-block">
-                                <strong>{{ $evento->fecha_inicio?->format('d M') ?? '--' }}</strong>
-                                <span>{{ $evento->fecha_inicio?->format('Y') ?? '' }}</span>
-                            </div>
-
-                            <h4 class="events-card-title">{{ $evento->titulo }}</h4>
-                            <p class="events-card-description">{{ $evento->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $evento->contenido), 160) }}</p>
-
-                            <div class="events-card-tags">
-                                @if($evento->modalidad)
-                                    <span class="events-tag"><svg class="events-glyph"><use href="#events-icon-presentation"></use></svg>{{ $evento->modalidad }}</span>
-                                @endif
-                                @if($evento->lugar)
-                                    <span class="events-tag"><svg class="events-glyph"><use href="#events-icon-map-pin"></use></svg>{{ $evento->lugar }}</span>
-                                @endif
-                            </div>
-
-                            <div class="events-card-meta">
-                                @if($evento->hora_inicio)
-                                    <span><svg class="events-glyph"><use href="#events-icon-clock"></use></svg>{{ \Carbon\Carbon::parse($evento->hora_inicio)->format('H:i') }}@if($evento->hora_fin) - {{ \Carbon\Carbon::parse($evento->hora_fin)->format('H:i') }}@endif</span>
-                                @endif
-                                @if($evento->fecha_fin && !$evento->fecha_fin->isSameDay($evento->fecha_inicio))
-                                    <span><svg class="events-glyph"><use href="#events-icon-calendar-check"></use></svg>Hasta {{ $evento->fecha_fin->format('d/m/Y') }}</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="events-card-footer">
-                            <button class="events-btn-primary">Ver detalles</button>
-                        </div>
-                    </article>
-                @endforeach
+            <div class="lp-empty">
+                <i class="bi bi-calendar2-week"></i>
+                <p>Cuando la biblioteca publique talleres o concursos aparecerán aquí.</p>
             </div>
         @endif
     </section>
 
-    <section class="events-section events-categories-section">
-        <div class="events-section-header">
-            <div>
-                <h3 class="events-section-title"><span class="events-title-icon events-title-icon--folders"><svg class="events-glyph"><use href="#events-icon-folders"></use></svg></span><span>Categorias de actividades</span></h3>
-                <p>Explora los diferentes tipos de eventos que organiza la biblioteca</p>
-            </div>
-        </div>
-
-        @if($categorias->isEmpty())
-            <div class="events-empty">
-                <span class="events-empty-icon"><svg class="events-glyph"><use href="#events-icon-inbox"></use></svg></span>
-                <p>No hay categorias registradas</p>
-            </div>
-        @else
-            <div class="events-category-grid">
-                @foreach($categorias as $categoria)
-                    <article class="events-category-card" data-category-id="{{ $categoria->id }}">
-                        <div class="events-category-header">
-                            <small class="events-category-code">{{ $categoria->abreviatura }}</small>
-                            <span class="events-category-count"><svg class="events-glyph"><use href="#events-icon-layers"></use></svg>{{ $categoria->actividades_count }}</span>
-                        </div>
-                        <h4 class="events-category-name">{{ $categoria->nombre }}</h4>
-                        <p class="events-category-description">{{ $categoria->descripcion ?: 'Categoria disponible para actividades y eventos de la biblioteca.' }}</p>
-                        <button class="events-btn-secondary" data-category="{{ $categoria->id }}">Ver actividades</button>
-                    </article>
+    {{-- ─────────── Anteriores ─────────── --}}
+    @if($pasados->isNotEmpty())
+        <section class="lp-panel">
+            <header class="lp-panel__head">
+                <div>
+                    <h2>Actividades anteriores</h2>
+                    <p>Lo que se realizó recientemente en la biblioteca.</p>
+                </div>
+            </header>
+            <div class="ev-past">
+                @foreach($pasados as $actividad)
+                    <button type="button" class="ev-past__item" id="evento-{{ $actividad->id }}" data-ev-detalle="{{ $actividad->id }}">
+                        <span class="ev-date ev-date--small">
+                            <strong>{{ $actividad->fecha_inicio?->format('d') }}</strong>
+                            <span>{{ $actividad->mesCorto() }}</span>
+                        </span>
+                        <span class="ev-past__body">
+                            <strong>{{ $actividad->titulo }}</strong>
+                            <small>{{ \Illuminate\Support\Str::ucfirst(mb_strtolower($actividad->categoria?->nombre ?? 'Actividad')) }} · {{ $actividad->rangoFechas() }}</small>
+                        </span>
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
                 @endforeach
             </div>
-        @endif
-    </section>
-
-    <section class="events-section events-timeline-section">
-        <div class="events-section-header">
-            <div>
-                <h3 class="events-section-title"><span class="events-title-icon events-title-icon--timeline"><svg class="events-glyph"><use href="#events-icon-calendar-days"></use></svg></span><span>Proximos eventos (Cronograma)</span></h3>
-                <p>Todas las actividades ordenadas por fecha para planificar tu participacion</p>
-            </div>
-        </div>
-
-        @if($agenda->isEmpty())
-            <div class="events-empty">
-                <span class="events-empty-icon"><svg class="events-glyph"><use href="#events-icon-calendar-event"></use></svg></span>
-                <p>No hay eventos programados en este momento</p>
-                <small>La agenda se actualizara con nuevas actividades proximamente</small>
-            </div>
-        @else
-            <div class="events-agenda">
-                @foreach($agenda as $item)
-                    <article class="events-agenda-item" data-category="{{ $item->categoria->id ?? '' }}" data-modality="{{ $item->modalidad ?? '' }}">
-                        <div class="events-agenda-date">
-                            <div class="events-agenda-day">{{ $item->fecha_inicio?->format('d') ?? '--' }}</div>
-                            <div class="events-agenda-month">{{ $item->fecha_inicio?->format('M') ?? '--' }}</div>
-                        </div>
-
-                        <div class="events-agenda-content">
-                            <div class="events-agenda-badges">
-                                <span class="events-badge-category"><svg class="events-glyph"><use href="#events-icon-bookmark"></use></svg>{{ $item->categoria->nombre ?? 'Actividad' }}</span>
-                                @if($item->modalidad)
-                                    <span class="events-badge-modality"><svg class="events-glyph"><use href="#events-icon-monitor-play"></use></svg>{{ $item->modalidad }}</span>
-                                @endif
-                            </div>
-
-                            <h5 class="events-agenda-title">{{ $item->titulo }}</h5>
-                            <p class="events-agenda-description">{{ $item->resumen ?: \Illuminate\Support\Str::limit(strip_tags((string) $item->contenido), 140) }}</p>
-
-                            <div class="events-agenda-details">
-                                @if($item->hora_inicio)
-                                    <span class="events-detail-item"><svg class="events-glyph"><use href="#events-icon-clock"></use></svg>{{ \Carbon\Carbon::parse($item->hora_inicio)->format('H:i') }}@if($item->hora_fin) - {{ \Carbon\Carbon::parse($item->hora_fin)->format('H:i') }}@endif</span>
-                                @endif
-                                @if($item->lugar)
-                                    <span class="events-detail-item"><svg class="events-glyph"><use href="#events-icon-map-pin"></use></svg>{{ $item->lugar }}</span>
-                                @endif
-                                @if($item->referencia)
-                                    <span class="events-detail-item"><svg class="events-glyph"><use href="#events-icon-link"></use></svg><a href="{{ $item->referencia }}" target="_blank">Mas informacion</a></span>
-                                @endif
-                            </div>
-                        </div>
-                    </article>
-                @endforeach
-            </div>
-        @endif
-    </section>
+        </section>
+    @endif
 </div>
+
+{{-- Detalle de cada actividad: el JS lo copia al modal. El contenido se escapa en el servidor. --}}
+@foreach($todas as $actividad)
+    <template id="ev-detalle-{{ $actividad->id }}">
+        @if($actividad->imagen_url)
+            <img src="{{ $actividad->imagen_url }}" alt="" class="ev-modal__image">
+        @endif
+        <div class="ev-modal__content">
+            <div class="ev-chips">
+                @if($actividad->estadoAgenda() === 'en_curso')<span class="ev-chip ev-chip--live"><i class="bi bi-broadcast"></i>En curso</span>@endif
+                @if($actividad->estadoAgenda() === 'finalizada')<span class="ev-chip">Finalizada</span>@endif
+                <span class="ev-chip">{{ \Illuminate\Support\Str::ucfirst(mb_strtolower($actividad->categoria?->nombre ?? 'Actividad')) }}</span>
+            </div>
+            <h2 class="ev-modal__title">{{ $actividad->titulo }}</h2>
+            <ul class="ev-meta ev-meta--block">
+                <li><i class="bi bi-calendar3"></i>{{ $actividad->rangoFechas() }}</li>
+                @if($actividad->horario())<li><i class="bi bi-clock"></i>{{ $actividad->horario() }}</li>@endif
+                @if($actividad->lugar)<li><i class="bi bi-geo-alt"></i>{{ $actividad->lugar }}</li>@endif
+                @if($actividad->modalidad)<li><i class="bi bi-display"></i>{{ $actividad->modalidad }}</li>@endif
+                @if($actividad->referencia)
+                    <li><i class="bi bi-link-45deg"></i>
+                        @if($actividad->referencia_url)
+                            <a href="{{ $actividad->referencia_url }}" target="_blank" rel="noopener noreferrer">Más información</a>
+                        @else
+                            {{ $actividad->referencia }}
+                        @endif
+                    </li>
+                @endif
+            </ul>
+            @if($actividad->resumen)<p class="ev-modal__lead">{{ $actividad->resumen }}</p>@endif
+            @if($actividad->contenido)<div class="ev-modal__text">{!! nl2br(e($actividad->contenido)) !!}</div>@endif
+            @if($actividad->estadoAgenda() !== 'finalizada')
+                <div class="ev-actions">
+                    <a href="{{ route('evento.calendario', $actividad) }}" class="lp-btn lp-btn--primary"><i class="bi bi-calendar-plus"></i> Agregar a mi calendario</a>
+                </div>
+            @endif
+        </div>
+    </template>
+@endforeach
 @endsection
 
-@section('js')
-<script src="{{ asset('js/pagina/eventos.js') }}"></script>
+@section('modal')
+<div class="modal fade" id="evModal" tabindex="-1" aria-label="Detalle de la actividad" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content ev-modal">
+            <button type="button" class="btn-close ev-modal__close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <div class="modal-body p-0" data-ev-modal-cuerpo></div>
+        </div>
+    </div>
+</div>
 @endsection

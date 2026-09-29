@@ -66,6 +66,7 @@
                         <th>Documento</th>
                         <th>Usuario</th>
                         <th>Tipo</th>
+                        <th>Carnet</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -267,6 +268,31 @@
                             <div class="col-md-4">
                                 <label class="form-label">Direccion</label>
                                 <input type="text" id="direccion" name="direccion" class="form-control mayuscula">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reader-modal__section">
+                        <div class="reader-modal__section-head">
+                            <span class="reader-modal__section-icon"><i class="bi bi-person-vcard"></i></span>
+                            <div>
+                                <div class="reader-modal__section-title">Carnet de biblioteca</div>
+                                <p class="reader-modal__section-copy">Si el lector perdio su carnet original y se le entrego un duplicado, registralo aqui: al prestar se avisara que el carnet original ya no es valido.</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4 form-group">
+                                <label class="form-label">Tipo de carnet</label>
+                                <select id="tipo_carnet" name="tipo_carnet" class="form-select">
+                                    <option value="ORIGINAL">Original</option>
+                                    <option value="DUPLICADO">Duplicado</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 form-group d-none" id="grupoFechaDuplicado">
+                                <label class="form-label">Fecha de entrega del duplicado</label>
+                                <input type="date" id="fecha_carnet_duplicado" name="fecha_carnet_duplicado" class="form-control" max="{{ now()->toDateString() }}" disabled>
                             </div>
                         </div>
                     </div>

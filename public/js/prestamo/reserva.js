@@ -168,6 +168,12 @@ $(document).ready(function () {
         let tipoClass = tipo === 'A CASA' ? 'rsv-tipo-pill--casa' : 'rsv-tipo-pill--sala';
         $('#rsv-ctx-tipo').html(tipoIcon + tipo).attr('class', 'rsv-tipo-pill ' + tipoClass);
 
+        // Carnet duplicado: el original se perdio, se avisa antes de entregar.
+        const carnet      = $(this).attr('data-carnet') || '';
+        const carnetFecha = $(this).attr('data-carnet-fecha') || '';
+        $('#rsv-carnet-titulo').text('Carnet DUPLICADO' + (carnetFecha ? ' desde el ' + carnetFecha : '') + '.');
+        $('#rsv-carnet-alerta').toggleClass('d-none', carnet !== 'DUPLICADO');
+
         // En sala vence hoy al cierre: no se piden dias.
         const enSala = tipo !== 'A CASA';
         $('#rsv-dias-row').toggleClass('d-none', enSala);

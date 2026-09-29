@@ -1,9 +1,9 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Gestion de actividades')
+@section('page-title', 'Gestión de actividades')
 
 @section('css')
-    <link href="{{ asset('css/administracion/actividades.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/administracion/actividades.css') }}?v={{ filemtime(public_path('css/administracion/actividades.css')) }}" rel="stylesheet" />
 @endsection
 
 @section('js')
@@ -14,21 +14,53 @@
 @section('content')
 <div class="admin-section">
     <div class="admin-breadcrumb">
-        <span>Administracion</span>
+        <span>Administración</span>
         <span>/</span>
         <span class="admin-breadcrumb__current">Actividades</span>
     </div>
+
+    {{-- Resumen: se actualiza con cada recarga de la tabla --}}
+    <section class="admin-dashboard__stats" aria-label="Resumen de actividades">
+        <article class="admin-stat activities-stat--upcoming">
+            <div class="admin-stat__icon"><i class="bi bi-calendar-plus"></i></div>
+            <div class="admin-stat__label">Próximas</div>
+            <div class="admin-stat__value" data-resumen="proximas">—</div>
+            <div class="admin-stat__hint">Publicadas y aún no empiezan.</div>
+        </article>
+        <article class="admin-stat activities-stat--live">
+            <div class="admin-stat__icon"><i class="bi bi-broadcast"></i></div>
+            <div class="admin-stat__label">En curso</div>
+            <div class="admin-stat__value" data-resumen="en_curso">—</div>
+            <div class="admin-stat__hint">Se están realizando hoy.</div>
+        </article>
+        <article class="admin-stat activities-stat--past">
+            <div class="admin-stat__icon"><i class="bi bi-calendar-check"></i></div>
+            <div class="admin-stat__label">Finalizadas</div>
+            <div class="admin-stat__value" data-resumen="finalizadas">—</div>
+            <div class="admin-stat__hint">Aparecen como anteriores en la agenda.</div>
+        </article>
+        <article class="admin-stat activities-stat--off">
+            <div class="admin-stat__icon"><i class="bi bi-eye-slash"></i></div>
+            <div class="admin-stat__label">Inactivas</div>
+            <div class="admin-stat__value" data-resumen="inactivas">—</div>
+            <div class="admin-stat__hint">No se publican ni notifican.</div>
+        </article>
+    </section>
 
     <section class="admin-panel">
         <div class="admin-panel__header">
             <div>
                 <h2 class="admin-panel__title">Agenda de actividades</h2>
-                <p class="admin-panel__copy">Publica talleres, encuentros y avisos de biblioteca. Las actividades activas generan notificacion automaticamente para la comunidad.</p>
+                <p class="admin-panel__copy">Publica talleres, encuentros y avisos de biblioteca. Las actividades activas aparecen en la agenda pública y generan una notificación para toda la comunidad.</p>
             </div>
             <div class="admin-actions">
+                <a href="{{ route('evento') }}" target="_blank" rel="noopener" class="admin-btn admin-btn--ghost">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    Ver agenda pública
+                </a>
                 <button id="btnNuevaCategoriaActividad" class="admin-btn admin-btn--ghost">
                     <i class="bi bi-tags"></i>
-                    Gestionar categorias
+                    Gestionar categorías
                 </button>
                 <button id="btnNuevaActividad" class="admin-btn admin-btn--primary">
                     <i class="bi bi-plus-circle"></i>
@@ -42,9 +74,10 @@
                 <thead>
                     <tr>
                         <th>Imagen</th>
-                        <th>Titulo</th>
-                        <th>Categoria</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
                         <th>Fecha</th>
+                        <th>Agenda</th>
                         <th>Modalidad</th>
                         <th>Destacado</th>
                         <th>Estado</th>
@@ -58,12 +91,12 @@
     <section class="admin-panel activities-categories-panel">
         <div class="admin-panel__header">
             <div>
-                <h2 class="admin-panel__title">Categorias de actividad</h2>
+                <h2 class="admin-panel__title">Categorías de actividad</h2>
                 <p class="admin-panel__copy">Define los grupos que se usaran al publicar talleres, eventos y avisos dentro del sistema.</p>
             </div>
             <div class="activities-categories-panel__hint">
                 <i class="bi bi-info-circle"></i>
-                <span>La creacion y edicion se realizan desde <strong>Gestionar categorias</strong>.</span>
+                <span>La creación y edición se realizan desde <strong>Gestionar categorías</strong>.</span>
             </div>
         </div>
 
@@ -73,7 +106,7 @@
                     <tr>
                         <th>Abreviatura</th>
                         <th>Nombre</th>
-                        <th>Descripcion</th>
+                        <th>Descripción</th>
                         <th>Actividades</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
@@ -95,7 +128,7 @@
                 <div>
                     <span class="activities-modal__eyebrow">
                         <i class="bi bi-calendar-event-fill"></i>
-                        Programacion cultural
+                        Programación cultural
                     </span>
                     <h5 class="modal-title fw-semibold mb-1">Registro de actividad</h5>
                     <p class="activities-modal__copy mb-0">Configura información, fechas y visibilidad de una actividad. Si queda activa, también se notificará a los usuarios.</p>
@@ -108,7 +141,7 @@
                         <i class="bi bi-megaphone-fill"></i>
                     </div>
                     <div>
-                        <strong>Publicacion con notificacion</strong>
+                        <strong>Publicación con notificación</strong>
                         <p class="mb-0">Este módulo alimenta la página de eventos y el centro de notificaciones. Solo las actividades activas se publican y notifican.</p>
                     </div>
                 </div>
@@ -117,11 +150,11 @@
                     <h6 class="activities-modal__section-title">Contenido principal</h6>
                     <div class="row g-3">
                         <div class="col-md-8 form-group form-required">
-                            <label class="form-label">Titulo</label>
-                            <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Taller de alfabetización informacional">
+                            <label class="form-label">Título</label>
+                            <input type="text" id="titulo" name="titulo" class="form-control" maxlength="150" placeholder="Taller de alfabetización informacional">
                         </div>
                         <div class="col-md-4 form-group form-required">
-                            <label class="form-label">Categoria</label>
+                            <label class="form-label">Categoría</label>
                             <select id="actividad_categoria_id" name="actividad_categoria_id" class="form-select">
                                 <option value="">Seleccione</option>
                                 @foreach($categorias as $categoria)
@@ -130,18 +163,21 @@
                             </select>
                         </div>
                         <div class="col-md-12 form-group">
-                            <label class="form-label">Resumen</label>
-                            <textarea id="resumen" name="resumen" rows="2" class="form-control" placeholder="Descripcion corta para cards y campana de notificaciones."></textarea>
+                            <label class="form-label d-flex justify-content-between">
+                                <span>Resumen</span>
+                                <small class="text-muted" data-contador="resumen">0 / 500</small>
+                            </label>
+                            <textarea id="resumen" name="resumen" rows="2" maxlength="500" class="form-control" placeholder="Descripción corta: se muestra en la tarjeta de la agenda y en la notificación."></textarea>
                         </div>
                         <div class="col-md-12 form-group">
                             <label class="form-label">Contenido</label>
-                            <textarea id="contenido" name="contenido" rows="5" class="form-control" placeholder="Detalle ampliado de la actividad."></textarea>
+                            <textarea id="contenido" name="contenido" rows="5" class="form-control" placeholder="Detalle ampliado: se muestra al abrir la actividad en la agenda. Los saltos de línea se respetan."></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="admin-modal-section activities-modal__section">
-                    <h6 class="activities-modal__section-title">Programacion y contexto</h6>
+                    <h6 class="activities-modal__section-title">Programación y contexto</h6>
                     <div class="row g-3">
                         <div class="col-md-3 form-group form-required">
                             <label class="form-label">Fecha inicio</label>
@@ -174,13 +210,14 @@
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="form-label">Referencia</label>
-                            <input type="text" id="referencia" name="referencia" class="form-control" placeholder="Ponente, enlace o referencia adicional">
+                            <input type="text" id="referencia" name="referencia" class="form-control" maxlength="255" placeholder="Ponente o https://enlace-de-inscripcion">
+                            <small class="form-text">Si empieza con http(s) se muestra como enlace "Más información".</small>
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="form-label">Destacada</label>
                             <select id="destacado" name="destacado" class="form-select">
                                 <option value="0">No</option>
-                                <option value="1">Si</option>
+                                <option value="1">Sí</option>
                             </select>
                         </div>
                         <div class="col-md-4 form-group form-required">
@@ -193,6 +230,19 @@
                         <div class="col-md-4 form-group">
                             <label class="form-label">Imagen</label>
                             <input type="file" id="imagen" name="imagen" class="form-control" accept="image/*">
+                            <small class="form-text">JPG o PNG de hasta 3 MB, de preferencia horizontal (16:9).</small>
+                        </div>
+                        <div class="col-12 d-none" id="imagenPreviewGrupo">
+                            <div class="activities-preview">
+                                <img id="imagenPreview" src="" alt="Vista previa de la imagen">
+                                <div>
+                                    <strong id="imagenPreviewTitulo">Imagen actual</strong>
+                                    <label class="form-check mt-1 mb-0" id="quitarImagenGrupo">
+                                        <input type="checkbox" class="form-check-input" id="quitar_imagen" name="quitar_imagen" value="1">
+                                        <span class="form-check-label">Quitar la imagen</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -214,10 +264,10 @@
                 <div>
                     <span class="activities-modal__eyebrow">
                         <i class="bi bi-tags-fill"></i>
-                        Clasificacion editorial
+                        Clasificación editorial
                     </span>
-                    <h5 class="modal-title fw-semibold mb-1">Categoria de actividad</h5>
-                    <p class="activities-modal__copy mb-0">Crea categorias para organizar mejor las actividades publicadas y facilitar la busqueda en eventos y notificaciones.</p>
+                    <h5 class="modal-title fw-semibold mb-1">Categoría de actividad</h5>
+                    <p class="activities-modal__copy mb-0">Crea categorías para organizar las actividades publicadas y facilitar la búsqueda en la agenda.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -227,13 +277,13 @@
                         <i class="bi bi-collection-fill"></i>
                     </div>
                     <div>
-                        <strong>Taxonomia de actividades</strong>
+                        <strong>Taxonomía de actividades</strong>
                         <p class="mb-0">Usa categorías claras y breves para que el personal identifique rápido el tipo de publicación y los usuarios encuentren mejor cada actividad.</p>
                     </div>
                 </div>
 
                 <div class="admin-modal-section activities-modal__section">
-                    <h6 class="activities-modal__section-title">Datos de la categoria</h6>
+                    <h6 class="activities-modal__section-title">Datos de la categoría</h6>
                     <div class="row g-3">
                         <div class="col-md-4 form-group form-required">
                             <label class="form-label">Abreviatura</label>
@@ -244,8 +294,8 @@
                             <input type="text" id="nombre" name="nombre" class="form-control" maxlength="100" placeholder="Talleres y capacitaciones">
                         </div>
                         <div class="col-md-8 form-group">
-                            <label class="form-label">Descripcion</label>
-                            <textarea id="descripcion" name="descripcion" rows="3" class="form-control" placeholder="Describe el tipo de actividades que agrupara esta categoria."></textarea>
+                            <label class="form-label">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" rows="3" class="form-control" placeholder="Describe el tipo de actividades que agrupará esta categoría."></textarea>
                         </div>
                         <div class="col-md-4 form-group form-required">
                             <label class="form-label">Estado</label>
@@ -259,7 +309,7 @@
             </div>
             <div class="modal-footer activities-modal__footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-success px-4">Guardar categoria</button>
+                <button type="submit" class="btn btn-success px-4">Guardar categoría</button>
             </div>
         </form>
     </div>

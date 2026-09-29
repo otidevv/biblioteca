@@ -224,6 +224,8 @@ class PrestamoController extends Controller
                 return [
                     'id' => $lector->id,
                     'text' => $texto,
+                    'carnet' => $lector->persona?->tipo_carnet,
+                    'carnet_fecha' => $lector->persona?->fecha_carnet_duplicado?->format('d/m/Y'),
                 ];
             });
 

@@ -7,7 +7,9 @@ use App\Models\Biblioteca;
 use App\Models\Ejemplar;
 use App\Models\Prestamo;
 use App\Models\Sancion;
+use App\Models\User;
 use App\Models\Usuario_rol_biblioteca;
+use App\Services\LectorLibreService;
 use App\Services\SancionAutomaticaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -125,6 +127,10 @@ class PrestamoController extends Controller
                 if ($codigo) {
                     $badges .= '<span class="loan-lector-badge loan-lector-badge--code">Cód. ' . e($codigo) . '</span>';
                 }
+                if ($persona && $persona->tieneCarnetDuplicado()) {
+                    $desde = $persona->fecha_carnet_duplicado?->format('d/m/Y');
+                    $badges .= '<span class="loan-lector-badge loan-lector-badge--duplicado" title="Carnet duplicado' . ($desde ? ' desde ' . $desde : '') . '"><i class="bi bi-exclamation-triangle-fill me-1"></i>Carnet duplicado</span>';
+                }
 
                 return '<div class="loan-table__reader" title="' . e($nombre) . '">' . e($nombre) . '</div>' .
                     ($badges
@@ -165,7 +171,11 @@ class PrestamoController extends Controller
                     ? '<span class="loan-pill loan-pill--info loan-pill--sm">A CASA</span>'
                     : '<span class="loan-pill loan-pill--info loan-pill--sm">EN SALA</span>';
 
-                return '<div class="loan-status-stack">' . $estadoHtml . $lugarHtml . '</div>';
+                $libreHtml = $row->es_libre
+                    ? '<span class="loan-pill loan-pill--libre loan-pill--sm" title="Préstamo libre por DNI">LIBRE</span>'
+                    : '';
+
+                return '<div class="loan-status-stack">' . $estadoHtml . $lugarHtml . $libreHtml . '</div>';
             })
             ->addColumn('prestamo_lugar', function ($row) {
                 return (int) ($row->prestamo_lugar ?? $row->prestamo ?? 0) === 1
@@ -413,15 +423,105 @@ class PrestamoController extends Controller
         // En sala: vence hoy al cierre, por eso no se registra despues de esa hora.
         $enSala = (int) $request->prestamo_lugar === Prestamo::EN_SALA;
 
-        if ($enSala && now()->gte(Prestamo::cierreDeHoy())) {
-            return response()->json([
-                'error' => 'Los préstamos en sala solo se registran hasta las ' . Prestamo::cierreDeHoy()->format('H:i') . '.',
-            ], 422);
+        if ($enSala && ($cerrado = $this->salaCerrada())) {
+            return $cerrado;
+        }
+
+        // Solo los lectores registrados llevan libros a casa (los de prestamo libre, no).
+        if (! $enSala && ! User::whereKey($request->lector_id)->whereHas('roles', fn ($q) => $q->where('roles.id', 5))->exists()) {
+            return response()->json(['error' => 'Solo los lectores registrados pueden llevar libros a casa.'], 422);
         }
 
         $dias = $enSala ? 0 : (int) $request->dias;
 
-        $resultado = DB::transaction(function () use ($request, $dias) {
+        $resultado = $this->registrarPrestamo(
+            $request,
+            fn () => (int) $request->lector_id,
+            (int) $request->prestamo_lugar,
+            $dias
+        );
+
+        return response()->json($resultado['payload'], $resultado['status']);
+    }
+
+    public function consultarEstudianteLibre(Request $request, LectorLibreService $servicio)
+    {
+        $request->validate(['dni' => ['required', 'string', 'regex:/^[0-9]{8}$/']], [
+            'dni.regex' => 'El DNI debe tener 8 dígitos.',
+        ]);
+
+        $consulta = $servicio->consultar($request->dni);
+
+        if (! $consulta['ok']) {
+            return response()->json(['error' => $consulta['message']], $consulta['status']);
+        }
+
+        $info = $consulta['info'];
+
+        return response()->json([
+            'dni' => $request->dni,
+            'nombre' => trim($info['apellido_paterno'] . ' ' . $info['apellido_materno']) . ', ' . $info['nombres'],
+            'codigo' => $info['codigo'],
+            'carrera' => $info['carrera'],
+            'email' => $info['email'],
+            'registrado' => $consulta['registrado'],
+            'es_lector' => $consulta['es_lector'],
+            'carnet' => $consulta['carnet'] ?? null,
+            'carnet_fecha' => $consulta['carnet_fecha'] ?? null,
+        ]);
+    }
+
+    // Prestamo libre: estudiante identificado por DNI, solo en sala.
+    public function prestamoLibre(Request $request, LectorLibreService $servicio)
+    {
+        $request->validate([
+            'dni'           => ['required', 'string', 'regex:/^[0-9]{8}$/'],
+            'ejemplar_id'   => 'required|exists:ejemplares,id',
+            'observaciones' => 'nullable|string',
+        ], [
+            'dni.regex' => 'El DNI debe tener 8 dígitos.',
+        ]);
+
+        if ($cerrado = $this->salaCerrada()) {
+            return $cerrado;
+        }
+
+        // La API se consulta antes de abrir la transaccion.
+        $consulta = $servicio->consultar($request->dni);
+
+        if (! $consulta['ok']) {
+            return response()->json(['error' => $consulta['message']], $consulta['status']);
+        }
+
+        $resultado = $this->registrarPrestamo(
+            $request,
+            fn () => $servicio->usuarioParaPrestamo($request->dni, $consulta['info'])->id,
+            Prestamo::EN_SALA,
+            0,
+            true
+        );
+
+        return response()->json($resultado['payload'], $resultado['status']);
+    }
+
+    private function salaCerrada()
+    {
+        if (now()->lt(Prestamo::cierreDeHoy())) {
+            return null;
+        }
+
+        return response()->json([
+            'error' => 'Los préstamos en sala solo se registran hasta las ' . Prestamo::cierreDeHoy()->format('H:i') . '.',
+        ], 422);
+    }
+
+    /**
+     * Valida el ejemplar y la sancion del lector y registra el prestamo.
+     * El lector se resuelve despues de validar el ejemplar, para no crear registros si el prestamo no procede.
+     */
+    private function registrarPrestamo(Request $request, callable $resolverLector, int $lugar, int $dias, bool $libre = false): array
+    {
+        return DB::transaction(function () use ($request, $resolverLector, $lugar, $dias, $libre) {
             $user = auth()->user();
             [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
@@ -435,7 +535,9 @@ class PrestamoController extends Controller
                 return ['status' => 403, 'payload' => ['error' => 'No tienes acceso a este ejemplar']];
             }
 
-            $tieneSancion = Sancion::where('user_id', $request->lector_id)
+            $lectorId = $resolverLector();
+
+            $tieneSancion = Sancion::where('user_id', $lectorId)
                 ->vigenteEnBiblioteca($ejemplar->biblioteca_id)
                 ->exists();
 
@@ -444,13 +546,14 @@ class PrestamoController extends Controller
             }
 
             $prestamo = new Prestamo;
-            $prestamo->lector_id      = $request->lector_id;
-            $prestamo->prestamo_lugar = $request->prestamo_lugar;
+            $prestamo->lector_id      = $lectorId;
+            $prestamo->prestamo_lugar = $lugar;
+            $prestamo->es_libre       = $libre;
             $prestamo->duracion       = $dias;
             $prestamo->fecha_prestamo = now();
             $prestamo->fecha_limite   = now()->addDays($dias);
             $prestamo->observaciones_prestamo = $request->observaciones;
-            $prestamo->ejemplar_id    = $request->ejemplar_id;
+            $prestamo->ejemplar_id    = $ejemplar->id;
             $prestamo->estado         = 1;
             $prestamo->estado_prestamo = 0;
             $prestamo->user_id        = $user->id;
@@ -461,8 +564,6 @@ class PrestamoController extends Controller
 
             return ['status' => 200, 'payload' => ['success' => 'Préstamo registrado correctamente']];
         });
-
-        return response()->json($resultado['payload'], $resultado['status']);
     }
 
     private function resolverBibliotecasUsuario(int $userId): array

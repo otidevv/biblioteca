@@ -1,86 +1,124 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Marcar que los eventos están listos
-    document.body.dataset.eventsReady = 'true';
+// Agenda publica: filtros, detalle en modal y enlace directo (#evento-{id}).
+document.addEventListener('DOMContentLoaded', function () {
+    iniciarFiltrosAgenda();
+    iniciarDetalleEventos();
+});
 
-    // === Filtrado de Eventos ===
-    const filterCategory = document.getElementById('filter-category');
-    const filterModality = document.getElementById('filter-modality');
-    const filterSearch = document.getElementById('filter-search');
+function normalizarTexto(texto) {
+    return (texto || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+}
 
-    const eventCards = document.querySelectorAll('.events-card, .events-agenda-item');
-
-    function applyFilters() {
-        const filterCatValue = filterCategory ? filterCategory.value.toLowerCase() : '';
-        const filterModValue = filterModality ? filterModality.value.toLowerCase() : '';
-        const filterSearchValue = filterSearch ? filterSearch.value.toLowerCase() : '';
-
-        eventCards.forEach(card => {
-            let shouldShow = true;
-
-            // Filtro por categoría
-            if (filterCatValue) {
-                const cardCategory = card.dataset.category || '';
-                shouldShow = shouldShow && cardCategory === filterCatValue;
-            }
-
-            // Filtro por modalidad
-            if (filterModValue) {
-                const cardModality = card.dataset.modality ? card.dataset.modality.toLowerCase() : '';
-                shouldShow = shouldShow && cardModality === filterModValue;
-            }
-
-            // Filtro por búsqueda
-            if (filterSearchValue) {
-                const cardText = card.textContent.toLowerCase();
-                shouldShow = shouldShow && cardText.includes(filterSearchValue);
-            }
-
-            // Aplicar estilos
-            card.style.display = shouldShow ? '' : 'none';
-            card.style.opacity = shouldShow ? '1' : '0';
-            card.style.pointerEvents = shouldShow ? 'auto' : 'none';
-        });
+function iniciarFiltrosAgenda() {
+    const agenda = document.querySelector('[data-ev-agenda]');
+    if (!agenda) {
+        return;
     }
 
-    // Event listeners para los filtros
-    if (filterCategory) filterCategory.addEventListener('change', applyFilters);
-    if (filterModality) filterModality.addEventListener('change', applyFilters);
-    if (filterSearch) filterSearch.addEventListener('input', applyFilters);
+    const botones = agenda.querySelectorAll('[data-ev-categoria]');
+    const modalidad = agenda.querySelector('[data-ev-modalidad]');
+    const buscador = agenda.querySelector('[data-ev-buscar]');
+    const sinResultados = agenda.querySelector('[data-ev-sin-resultados]');
+    let categoria = '';
 
-    // === Botones "Ver detalles" ===
-    const detailButtons = document.querySelectorAll('.events-btn-primary');
-    detailButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            // Aquí puedes agregar lógica para mostrar más detalles del evento
-            // Por ejemplo, scroll a eventos, modal, etc.
-            console.log('Ver detalles del evento');
-        });
-    });
+    function aplicar() {
+        const mod = modalidad ? modalidad.value : '';
+        const busqueda = normalizarTexto(buscador ? buscador.value : '');
+        let visibles = 0;
 
-    // === Botones "Ver actividades" en categorías ===
-    const categoryButtons = document.querySelectorAll('.events-btn-secondary');
-    categoryButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const categoryId = btn.dataset.category;
-            if (categoryId && filterCategory) {
-                filterCategory.value = categoryId;
-                filterCategory.dispatchEvent(new Event('change'));
-                // Scroll a la sección de eventos
-                const eventsSection = document.querySelector('.events-featured-section');
-                if (eventsSection) {
-                    eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        agenda.querySelectorAll('[data-ev-grupo]').forEach(function (grupo) {
+            let enGrupo = 0;
+
+            grupo.querySelectorAll('.ev-card').forEach(function (tarjeta) {
+                const mostrar = (categoria === '' || tarjeta.dataset.evCat === categoria)
+                    && (mod === '' || tarjeta.dataset.evMod === mod)
+                    && (busqueda === '' || normalizarTexto(tarjeta.dataset.evTexto).includes(busqueda));
+
+                tarjeta.hidden = !mostrar;
+                if (mostrar) {
+                    enGrupo++;
                 }
-            }
+            });
+
+            grupo.hidden = enGrupo === 0;
+            visibles += enGrupo;
+        });
+
+        if (sinResultados) {
+            sinResultados.hidden = visibles > 0;
+        }
+    }
+
+    botones.forEach(function (boton) {
+        boton.addEventListener('click', function () {
+            categoria = boton.dataset.evCategoria;
+            botones.forEach(function (b) {
+                const activo = b === boton;
+                b.classList.toggle('is-active', activo);
+                b.setAttribute('aria-pressed', activo ? 'true' : 'false');
+            });
+            aplicar();
         });
     });
 
-    // === Efectos visuales al hacer hover ===
-    const cards = document.querySelectorAll('.events-card, .events-category-card, .events-agenda-item');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-        });
+    if (modalidad) {
+        modalidad.addEventListener('change', aplicar);
+    }
+
+    if (buscador) {
+        buscador.addEventListener('input', aplicar);
+    }
+}
+
+function iniciarDetalleEventos() {
+    const modalEl = document.getElementById('evModal');
+    if (!modalEl || typeof bootstrap === 'undefined') {
+        return;
+    }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const cuerpo = modalEl.querySelector('[data-ev-modal-cuerpo]');
+
+    function abrir(id) {
+        const plantilla = document.getElementById('ev-detalle-' + id);
+        if (!plantilla) {
+            return false;
+        }
+
+        cuerpo.replaceChildren(plantilla.content.cloneNode(true));
+        const titulo = cuerpo.querySelector('.ev-modal__title');
+        modalEl.setAttribute('aria-label', titulo ? titulo.textContent : 'Detalle de la actividad');
+        modal.show();
+        cambiarHash('#evento-' + id);
+
+        return true;
+    }
+
+    document.addEventListener('click', function (e) {
+        const disparador = e.target.closest('[data-ev-detalle]');
+        if (disparador) {
+            e.preventDefault();
+            abrir(disparador.dataset.evDetalle);
+        }
     });
-});
+
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        if (location.hash.indexOf('#evento-') === 0) {
+            cambiarHash(location.pathname + location.search);
+        }
+    });
+
+    // Enlace directo desde una notificacion: /evento#evento-12
+    const coincidencia = location.hash.match(/^#evento-(\d+)$/);
+    if (coincidencia) {
+        abrir(coincidencia[1]);
+    }
+}
+
+// replaceState puede fallar en contextos restringidos; el detalle igual se abre.
+function cambiarHash(url) {
+    try {
+        history.replaceState(null, '', url);
+    } catch (e) {
+        /* sin cambio de URL */
+    }
+}

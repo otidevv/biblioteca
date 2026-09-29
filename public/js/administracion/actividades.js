@@ -26,6 +26,7 @@ $(document).ready(function () {
                     return inicio === fin ? inicio : `${inicio} al ${fin}`;
                 }
             },
+            { data: 'agenda', name: 'agenda', orderable: false, searchable: false },
             { data: 'modalidad', name: 'modalidad', defaultContent: '-' },
             { data: 'destacado_badge', name: 'destacado', orderable: false, searchable: false },
             { data: 'estado_badge', name: 'estado', orderable: false, searchable: false },
@@ -40,6 +41,14 @@ $(document).ready(function () {
         drawCallback: function () {
             decorateTableActionButtons('#tabla-actividades');
         }
+    });
+
+    // Indicadores del encabezado: vienen en la misma respuesta de la tabla.
+    $('#tabla-actividades').on('xhr.dt', function (e, settings, json) {
+        if (!json || !json.resumen) return;
+        Object.entries(json.resumen).forEach(function ([clave, valor]) {
+            $('[data-resumen="' + clave + '"]').text(valor);
+        });
     });
 
     tablaCategoriasActividad = $('#tabla-categorias-actividad').DataTable({
@@ -101,6 +110,8 @@ $(document).ready(function () {
         $('#modalidad').val(data.modalidad ?? '');
         $('#destacado').val(Number(data.destacado) === 1 ? '1' : '0');
         $('#estado').val(Number(data.estado) === 1 ? '1' : '0');
+        mostrarPreviewImagen(data.imagen_url ? decodificarHtml(data.imagen_url) : null, 'Imagen actual', true);
+        actualizarContadorResumen();
 
         $('#modalActividad').modal('show');
     });
@@ -117,6 +128,22 @@ $(document).ready(function () {
         $('#categoria_estado').val(Number(data.estado) === 1 ? '1' : '0');
         $('#modalCategoriaActividad').modal('show');
     });
+
+    $('#imagen').on('change', function () {
+        const archivo = this.files && this.files[0];
+        if (archivo) {
+            mostrarPreviewImagen(URL.createObjectURL(archivo), 'Nueva imagen', false);
+            $('#quitar_imagen').prop('checked', false);
+        } else {
+            mostrarPreviewImagen(null);
+        }
+    });
+
+    $('#quitar_imagen').on('change', function () {
+        $('#imagenPreview').toggleClass('is-removed', this.checked);
+    });
+
+    $('#resumen').on('input', actualizarContadorResumen);
 
     $('#formActividad').on('submit', function (e) {
         e.preventDefault();
@@ -211,6 +238,35 @@ function resetActividadForm() {
     $('#estado').val('1');
     $('.invalid-feedback').remove();
     $('.is-invalid').removeClass('is-invalid');
+    mostrarPreviewImagen(null);
+    actualizarContadorResumen();
+}
+
+// Vista previa: imagen actual (con opcion de quitarla) o la recien elegida.
+function mostrarPreviewImagen(url, titulo, permitirQuitar) {
+    const $grupo = $('#imagenPreviewGrupo');
+    $('#quitar_imagen').prop('checked', false);
+    $('#imagenPreview').removeClass('is-removed');
+
+    if (!url) {
+        $grupo.addClass('d-none');
+        $('#imagenPreview').attr('src', '');
+        return;
+    }
+
+    $('#imagenPreview').attr('src', url);
+    $('#imagenPreviewTitulo').text(titulo || 'Imagen');
+    $('#quitarImagenGrupo').toggleClass('d-none', !permitirQuitar);
+    $grupo.removeClass('d-none');
+}
+
+function actualizarContadorResumen() {
+    $('[data-contador="resumen"]').text(($('#resumen').val() || '').length + ' / 500');
+}
+
+// DataTables envia los textos escapados; se decodifican para usarlos como texto.
+function decodificarHtml(valor) {
+    return new DOMParser().parseFromString(String(valor || ''), 'text/html').documentElement.textContent;
 }
 
 function resetCategoriaActividadForm() {
@@ -236,7 +292,7 @@ function recargarOpcionesCategorias() {
             opciones
                 .filter(categoria => Number(categoria.estado) === 1)
                 .forEach(categoria => {
-                    $select.append(`<option value="${categoria.id}">${categoria.nombre}</option>`);
+                    $select.append($('<option>').val(categoria.id).text(decodificarHtml(categoria.nombre)));
                 });
 
             if (valorActual) {

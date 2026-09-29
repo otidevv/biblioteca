@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Actividad;
+use App\Models\AvisoBiblioteca;
 use App\Models\Notificacion;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -10,17 +12,6 @@ use Illuminate\Support\Str;
 
 class CentroNotificacionesService
 {
-    protected const ROLES_LECTOR = [
-        'LECTOR',
-    ];
-
-    protected const ROLES_PERSONAL = [
-        'PROGRAMADOR',
-        'ADMINISTRADOR',
-        'ENCARGADO',
-        'ATENCION A ESTUDIANTES',
-    ];
-
     public function crearPorAudiencia(array $data, string $audiencia = 'admins'): Notificacion
     {
         return Notificacion::create([
@@ -66,25 +57,33 @@ class CentroNotificacionesService
             return $notificacion;
         }
 
-        return Notificacion::updateOrCreate(
-            [
-                'entidad_tipo' => 'actividad',
-                'entidad_id' => $actividad->id,
-            ],
-            [
-                'titulo' => $actividad->titulo,
-                'contenido' => $actividad->resumen ?: Str::limit(strip_tags((string) $actividad->contenido), 160),
-                'tipo' => 'actividad',
-                'canal' => 'interno',
-                'audiencia' => 'global',
-                'user_id_origen' => $actividad->user_id,
-                'accion_url' => route('evento'),
-                'es_programada' => optional($actividad->fecha_inicio)?->isFuture() ?? false,
-                'fecha_publicacion' => now(),
-                'fecha_expiracion' => optional($actividad->fecha_fin)?->endOfDay(),
-                'estado' => 1,
-            ]
-        );
+        $notificacion = Notificacion::firstOrNew([
+            'entidad_tipo' => 'actividad',
+            'entidad_id' => $actividad->id,
+        ]);
+
+        $notificacion->fill([
+            'titulo' => $actividad->titulo,
+            'contenido' => $actividad->resumen ?: Str::limit(strip_tags((string) $actividad->contenido), 160),
+            'tipo' => 'actividad',
+            'canal' => 'interno',
+            'audiencia' => 'global',
+            'user_id_origen' => $actividad->user_id,
+            // Abre directamente el evento en la agenda publica.
+            'accion_url' => route('evento', [], false) . '#evento-' . $actividad->id,
+            'es_programada' => $actividad->fecha_inicio?->isFuture() ?? false,
+            'fecha_expiracion' => ($actividad->fecha_fin ?? $actividad->fecha_inicio)?->copy()->endOfDay(),
+            'estado' => 1,
+        ]);
+
+        // Editar la actividad no la vuelve a publicar como nueva.
+        if (! $notificacion->exists || ! $notificacion->fecha_publicacion) {
+            $notificacion->fecha_publicacion = now();
+        }
+
+        $notificacion->save();
+
+        return $notificacion;
     }
 
     public function obtenerParaUsuario(?User $user, int $limit = 6): Collection
@@ -131,44 +130,103 @@ class CentroNotificacionesService
                 'titulo' => $notificacion->titulo,
                 'contenido' => $notificacion->contenido,
                 'meta' => optional($notificacion->fecha_publicacion ?? $notificacion->created_at)?->diffForHumans(),
-                'url' => $notificacion->accion_url ?: '#',
+                'url' => $this->urlSegura($notificacion->accion_url),
                 'destacado' => $notificacion->tipo === 'critico',
                 'leido' => (bool) optional($notificacion->destinatarios->first())->leido,
                 'audiencia' => $notificacion->audiencia,
+                'entidad' => $notificacion->entidad_tipo ? $notificacion->entidad_tipo . ':' . $notificacion->entidad_id : null,
             ]);
+    }
+
+    /**
+     * Campana del sitio publico: primero los avisos del usuario; luego actividades vigentes
+     * (sin repetir las que ya llegaron como notificacion) y avisos generales.
+     * Los visitantes sin sesion solo ven actividades y avisos generales.
+     */
+    public function paraCampanaBiblioteca(?User $user, int $limite = 6): Collection
+    {
+        $alertas = $user ? $this->obtenerParaUsuario($user, $limite)->values() : collect();
+
+        if ($alertas->count() < $limite) {
+            $notificadas = $alertas->pluck('entidad')->filter()->all();
+
+            $actividades = Actividad::with('categoria')
+                ->vigentes()
+                ->orderByDesc('destacado')
+                ->orderBy('fecha_inicio')
+                ->limit($limite)
+                ->get()
+                ->reject(fn (Actividad $a) => in_array('actividad:' . $a->id, $notificadas, true))
+                ->map(fn (Actividad $a) => (object) [
+                    'tipo' => 'actividad',
+                    'icono' => 'bi-calendar-event',
+                    'titulo' => $a->titulo,
+                    'contenido' => $a->resumen ?: Str::limit(strip_tags((string) $a->contenido), 110),
+                    'meta' => $a->rangoFechas(),
+                    'url' => route('evento', [], false) . '#evento-' . $a->id,
+                    'destacado' => (bool) $a->destacado,
+                    'leido' => false,
+                    'audiencia' => 'global',
+                    'entidad' => 'actividad:' . $a->id,
+                ]);
+
+            $alertas = $alertas->concat($actividades->take($limite - $alertas->count()));
+        }
+
+        if ($alertas->count() < $limite) {
+            $avisos = AvisoBiblioteca::query()
+                ->where('estado', 1)
+                ->where(fn ($q) => $q->whereNull('inicio_publicacion')->orWhere('inicio_publicacion', '<=', now()))
+                ->where(fn ($q) => $q->whereNull('fin_publicacion')->orWhere('fin_publicacion', '>=', now()))
+                ->orderByDesc('es_destacado')
+                ->latest()
+                ->limit($limite)
+                ->get()
+                ->map(fn (AvisoBiblioteca $aviso) => (object) [
+                    'tipo' => $aviso->tipo,
+                    'icono' => $aviso->tipo === 'noticia' ? 'bi-megaphone-fill' : 'bi-bell-fill',
+                    'titulo' => $aviso->titulo,
+                    'contenido' => Str::limit((string) $aviso->contenido, 110),
+                    'meta' => optional($aviso->created_at)->format('d/m/Y'),
+                    'url' => $aviso->accion_url ? $this->urlSegura($aviso->accion_url) : route('evento', [], false),
+                    'destacado' => (bool) $aviso->es_destacado,
+                    'leido' => false,
+                    'audiencia' => 'global',
+                    'entidad' => null,
+                ]);
+
+            $alertas = $alertas->concat($avisos->take($limite - $alertas->count()));
+        }
+
+        return $alertas->take($limite)->values();
     }
 
     protected function perteneceAudiencia(User $user, string $audiencia): bool
     {
         return match ($audiencia) {
-            'lectores' => $this->tieneAlgunRol($user, self::ROLES_LECTOR) || strtolower(trim((string) $user->tipo_usuario)) === 'lector',
-            'admins' => $this->tieneAlgunRol($user, self::ROLES_PERSONAL) || $this->esTipoUsuarioInterno($user),
+            'lectores' => $this->esLector($user) || strtolower(trim((string) $user->tipo_usuario)) === 'lector',
+            // Cualquier rol activo que no sea LECTOR (incluye "Atencion a estudiantes - especializadas").
+            'admins' => $user->esPersonal(),
             'global' => true,
             default => false,
         };
     }
 
-    protected function tieneAlgunRol(User $user, array $rolesEsperados): bool
+    // Rol LECTOR activo: estado NULL cuenta como activo (igual que en PermisoPorRuta).
+    protected function esLector(User $user): bool
     {
-        return $this->rolesActivosUsuario($user)->intersect($rolesEsperados)->isNotEmpty();
+        return $user->usuarioRolBibliotecas()
+            ->where('rol_id', User::ROL_LECTOR)
+            ->where(fn ($q) => $q->whereNull('estado')->orWhere('estado', '!=', 0))
+            ->exists();
     }
 
-    protected function rolesActivosUsuario(User $user): Collection
+    // La campana solo enlaza rutas internas o http(s); cualquier otro esquema (javascript:, data:...) se descarta.
+    protected function urlSegura(?string $url): string
     {
-        return $user->roles()
-            ->wherePivot('estado', 1)
-            ->pluck('nombre')
-            ->map(fn ($nombre) => Str::upper(trim((string) $nombre)))
-            ->filter()
-            ->unique()
-            ->values();
-    }
+        $url = trim((string) $url);
 
-    protected function esTipoUsuarioInterno(User $user): bool
-    {
-        $tipo = Str::upper(trim((string) $user->tipo_usuario));
-
-        return $tipo !== '' && $tipo !== 'LECTOR';
+        return preg_match('#^(/(?!/)[^\s]*|https?://[^\s]+)$#i', $url) ? $url : '#';
     }
 
     protected function resolverIcono(string $tipo): string

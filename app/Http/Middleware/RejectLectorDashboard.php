@@ -12,12 +12,13 @@ class RejectLectorDashboard
     {
         $user = $request->user();
 
-        if ($user && $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists()) {
+        // El panel es solo para el personal; lectores (o usuarios sin rol activo) van a su panel de lector.
+        if ($user && ! $user->esPersonal()) {
             if ($request->expectsJson()) {
                 abort(403, 'No autorizado');
             }
 
-            return redirect()->route('home');
+            return redirect()->route('lector.panel');
         }
 
         return $next($request);

@@ -12,61 +12,16 @@ use App\Models\Libro;
 use App\Models\Tipo_registro;
 use App\Models\Idioma;
 use App\Models\Dewey;
-use App\Models\Prestamo;
-use App\Models\Visita;
-use App\Models\Ejemplar;
 use App\Models\ActividadCategoria;
+use App\Services\DashboardAdminService;
 use App\Services\ReporteInventarioFisicoService;
 use Illuminate\Support\Facades\Auth;
 class AdministracionController extends Controller
 {
-    public function inicio()
+    // Panel de operacion: indicadores de las bibliotecas que el usuario puede ver.
+    public function inicio(Request $request, DashboardAdminService $dashboard)
     {
-        $totalLibros      = Libro::count();
-        $totalUsuarios    = User::count();
-        $prestamosActivos = Prestamo::whereIn('estado', [1, 'prestado'])->count();
-        $totalBibliotecas = Biblioteca::count();
-        $librosRecientes  = Libro::with(['autores', 'editorial'])->latest()->limit(5)->get();
-
-        $visitasHoy    = Visita::whereDate('fecha', today())->count();
-        $visitasSemana = Visita::whereBetween('fecha', [now()->startOfWeek(), now()->endOfWeek()])->count();
-        $visitasMes    = Visita::whereYear('fecha', now()->year)->whereMonth('fecha', now()->month)->count();
-        $visitasTotal  = Visita::count();
-
-        $visitasPorDia = Visita::selectRaw('fecha, COUNT(*) as total')
-            ->where('fecha', '>=', now()->subDays(29)->toDateString())
-            ->groupBy('fecha')
-            ->orderBy('fecha')
-            ->pluck('total', 'fecha');
-
-        $bibliotecaAsignada     = null;
-        $librosEnMiBiblioteca   = null;
-        $bibliotecaId = Auth::user()
-            ->usuarioRolBibliotecas()
-            ->whereNotNull('biblioteca_id')
-            ->value('biblioteca_id');
-
-        if ($bibliotecaId) {
-            $bibliotecaAsignada   = Biblioteca::find($bibliotecaId);
-            $librosEnMiBiblioteca = Ejemplar::where('biblioteca_id', $bibliotecaId)
-                ->distinct('libro_id')
-                ->count('libro_id');
-        }
-
-        return view('administracion.index', compact(
-            'totalLibros',
-            'totalUsuarios',
-            'prestamosActivos',
-            'totalBibliotecas',
-            'librosRecientes',
-            'visitasHoy',
-            'visitasSemana',
-            'visitasMes',
-            'visitasTotal',
-            'visitasPorDia',
-            'bibliotecaAsignada',
-            'librosEnMiBiblioteca'
-        ));
+        return view('administracion.index', $dashboard->resumen(Auth::user(), $request->query('biblioteca')));
     }
     public function index(string $modulo, $id=null)
     {

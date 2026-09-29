@@ -28,6 +28,31 @@ $(document).ready(function () {
                 }
             },
             {
+                data: 'persona.tipo_carnet',
+                name: 'persona.tipo_carnet',
+                defaultContent: '',
+                render: function (data, type, row) {
+                    if (type !== 'display') {
+                        return data || '';
+                    }
+
+                    if (data === 'DUPLICADO') {
+                        const fecha = row.persona?.fecha_carnet_duplicado
+                            ? row.persona.fecha_carnet_duplicado.split('-').reverse().join('/')
+                            : '';
+
+                        return '<span class="reader-carnet reader-carnet--duplicado"><i class="bi bi-exclamation-triangle-fill"></i> Duplicado</span>' +
+                            (fecha ? '<small class="reader-carnet__fecha">desde ' + fecha + '</small>' : '');
+                    }
+
+                    if (data === 'ORIGINAL') {
+                        return '<span class="reader-carnet reader-carnet--original"><i class="bi bi-person-vcard"></i> Original</span>';
+                    }
+
+                    return '<span class="reader-carnet reader-carnet--none">Sin registrar</span>';
+                }
+            },
+            {
                 data: 'acciones',
                 name: 'acciones',
                 className: 'admin-actions-cell',
@@ -68,6 +93,9 @@ $(document).ready(function () {
         $('#email_personal').val(data.persona?.email_personal || data.email || '');
         $('#direccion').val(data.persona?.direccion || '');
         $('#email').val(data.email || '');
+        $('#tipo_carnet').val(data.persona?.tipo_carnet || 'ORIGINAL');
+        $('#fecha_carnet_duplicado').val(data.persona?.fecha_carnet_duplicado || '');
+        toggleCarnetDuplicado();
 
         dniConsultado = data.persona?.dni || null;
         bloquearCamposPersona(true);
@@ -185,6 +213,10 @@ $(document).ready(function () {
         toggleCamposEstudiante();
     });
 
+    $('#tipo_carnet').on('change', function () {
+        toggleCarnetDuplicado();
+    });
+
     $modal.on('shown.bs.modal', function () {
         toggleCamposEstudiante();
     });
@@ -265,6 +297,19 @@ function toggleCamposEstudiante() {
     $('#estado_academico').val('0');
 }
 
+// Duplicado: el original se perdio. Se pide la fecha en que se entrego el duplicado.
+function toggleCarnetDuplicado() {
+    const duplicado = $('#tipo_carnet').val() === 'DUPLICADO';
+    const $fecha = $('#fecha_carnet_duplicado');
+
+    $('#grupoFechaDuplicado').toggleClass('d-none', !duplicado).toggleClass('form-required', duplicado);
+    $fecha.prop('disabled', !duplicado);
+
+    if (duplicado && !$fecha.val()) {
+        $fecha.val(new Date().toLocaleDateString('en-CA'));
+    }
+}
+
 function resetFormularioLector() {
     const form = $('#formLector')[0];
 
@@ -272,6 +317,9 @@ function resetFormularioLector() {
         form.reset();
     }
 
+    $('#tipo_carnet').val('ORIGINAL');
+    $('#fecha_carnet_duplicado').val('');
+    toggleCarnetDuplicado();
     $('#id').val('');
     $('#persona_id').val('');
     $('#email').val('');

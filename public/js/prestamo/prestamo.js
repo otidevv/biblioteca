@@ -203,15 +203,46 @@ $(document).ready(function () {
     let pdLectorId = null;
     let pdEjemplarId = null;
     let modalPD = null;
+    // 'lector': lector registrado | 'libre': estudiante por DNI, solo en sala
+    let pdModo = 'lector';
+    let pdLibreDni = null;
+    // Carnet del lector elegido en cada modo: { tipo: 'ORIGINAL'|'DUPLICADO'|null, fecha: 'dd/mm/aaaa'|null }
+    let pdCarnetLector = null;
+    let pdCarnetLibre = null;
+
+    // Si el carnet es duplicado, el original se perdio: se avisa para no aceptarlo.
+    function pdMostrarCarnet($el, carnet) {
+        if (! carnet || carnet.tipo !== 'DUPLICADO') {
+            $el.empty().addClass('d-none');
+            return;
+        }
+
+        $el.html(
+            '<i class="bi bi-exclamation-triangle-fill"></i>' +
+            '<div><strong>Carnet DUPLICADO' + (carnet.fecha ? ' desde el ' + esc(carnet.fecha) : '') + '.</strong> ' +
+            'El carnet original fue reportado como perdido: acepta solo el duplicado y confirma la identidad con el DNI.</div>'
+        ).removeClass('d-none');
+    }
 
     function pdReset() {
         pdStep = 1;
         pdLectorId = null;
         pdEjemplarId = null;
+        pdLibreDni = null;
+        pdCarnetLector = null;
+        pdCarnetLibre = null;
+        pdMostrarCarnet($('#pd-lector-carnet'), null);
+        pdMostrarCarnet($('#pd-libre-carnet'), null);
+        pdMostrarCarnet($('#pd-ctx-carnet'), null);
 
         $('#pd-lector-q').val('');
         $('#pd-lector-results').empty();
         $('#pd-lector-sel').addClass('d-none');
+        $('#pd-libre-dni').val('');
+        $('#pd-libre-msg').empty();
+        $('#pd-libre-sel').addClass('d-none');
+        $('#pd-modo-lector').prop('checked', true);
+        pdCambiarModo('lector');
         $('#pd-libro-q').val('');
         $('#pd-libro-results').empty();
         $('#pd-ejemplar-sel').addClass('d-none');
@@ -222,6 +253,19 @@ $(document).ready(function () {
         pdActualizarFechaLimite();
 
         pdShowStep(1);
+    }
+
+    function pdCambiarModo(modo) {
+        pdModo = modo;
+        $('#pd-panel-lector').toggleClass('d-none', modo !== 'lector');
+        $('#pd-panel-libre').toggleClass('d-none', modo !== 'libre');
+
+        // El prestamo libre es solo en sala.
+        const libre = modo === 'libre';
+        if (libre) $('#pd-tipo').val('0');
+        $('#pd-tipo').prop('disabled', libre);
+        $('#pd-libre-ayuda').toggleClass('d-none', ! libre);
+        pdActualizarFechaLimite();
     }
 
     // En sala vence hoy al cierre; a casa, tras los dias indicados.
@@ -278,16 +322,23 @@ $(document).ready(function () {
         const nombre  = partes[0] || lector.text;
         const detalle = partes.slice(1).join(' · ');
 
+        const duplicado = lector.carnet === 'DUPLICADO';
+
         return $('<div>')
             .addClass('pd-result-item pd-lector-item')
             .attr('data-id', lector.id)
             .attr('data-text', lector.text)
+            .attr('data-carnet', lector.carnet || '')
+            .attr('data-carnet-fecha', lector.carnet_fecha || '')
             .html(
                 '<div class="pd-result-avatar"><i class="bi bi-person-fill"></i></div>' +
                 '<div class="pd-result-main">' +
                     '<strong class="pd-result-name">' + esc(nombre) + '</strong>' +
                     (detalle ? '<span class="pd-result-sub">' + esc(detalle) + '</span>' : '') +
                 '</div>' +
+                (duplicado
+                    ? '<span class="pd-result-badge pd-result-badge--duplicado"><i class="bi bi-exclamation-triangle-fill"></i>Carnet duplicado</span>'
+                    : '') +
                 '<i class="bi bi-chevron-right pd-result-chevron"></i>'
             );
     }
@@ -407,12 +458,80 @@ $(document).ready(function () {
             $('#pd-lector-sel-info').text(partes.slice(1).join(' · '));
             $('#pd-lector-sel').removeClass('d-none');
             $('#pd-lector-results').empty();
+
+            pdCarnetLector = { tipo: $(this).attr('data-carnet') || null, fecha: $(this).attr('data-carnet-fecha') || null };
+            pdMostrarCarnet($('#pd-lector-carnet'), pdCarnetLector);
         });
 
         $('#pd-lector-cambiar').on('click', function () {
             pdLectorId = null;
+            pdCarnetLector = null;
+            pdMostrarCarnet($('#pd-lector-carnet'), null);
             $('#pd-lector-sel').addClass('d-none');
             $('#pd-lector-q').val('').focus();
+        });
+
+        // ── Préstamo libre: consultar estudiante por DNI ──
+        $('input[name="pd-modo"]').on('change', function () {
+            pdCambiarModo($(this).val());
+        });
+
+        $('#pd-libre-dni').on('input', function () {
+            $(this).val($(this).val().replace(/\D/g, '').slice(0, 8));
+        });
+
+        function consultarLibre() {
+            const dni = $('#pd-libre-dni').val().trim();
+            if (! /^\d{8}$/.test(dni)) { alerta('El DNI debe tener 8 dígitos.', false); return; }
+
+            pdLibreDni = null;
+            pdCarnetLibre = null;
+            pdMostrarCarnet($('#pd-libre-carnet'), null);
+            $('#pd-libre-sel').addClass('d-none');
+            $('#pd-libre-msg').html(
+                '<div class="text-muted small py-3 text-center"><i class="bi bi-hourglass-split me-1"></i>Consultando en el sistema académico...</div>'
+            );
+            const btn = $('#pd-libre-buscar').prop('disabled', true);
+
+            fetch('/api/prestamos/libre/estudiante?dni=' + encodeURIComponent(dni), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (! ok) {
+                        $('#pd-libre-msg').html($('<div class="text-danger small p-2">').text(data.error || data.message || 'No se pudo consultar el DNI.'));
+                        return;
+                    }
+
+                    pdLibreDni = data.dni;
+                    const estado = data.es_lector
+                        ? 'Lector registrado'
+                        : (data.registrado ? 'Ya registrado en el sistema' : 'Datos del sistema académico');
+
+                    $('#pd-libre-nombre').text(data.nombre);
+                    $('#pd-libre-info').text(
+                        ['DNI ' + data.dni, data.codigo ? 'Cód. ' + data.codigo : '', data.carrera].filter(Boolean).join(' · ')
+                    );
+                    $('#pd-libre-estado').text(estado);
+                    $('#pd-libre-msg').empty();
+                    $('#pd-libre-sel').removeClass('d-none');
+
+                    pdCarnetLibre = { tipo: data.carnet || null, fecha: data.carnet_fecha || null };
+                    pdMostrarCarnet($('#pd-libre-carnet'), pdCarnetLibre);
+                })
+                .catch(() => $('#pd-libre-msg').html('<div class="text-danger small p-2">Error al consultar el DNI.</div>'))
+                .finally(() => btn.prop('disabled', false));
+        }
+
+        $('#pd-libre-buscar').on('click', consultarLibre);
+        $('#pd-libre-dni').on('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); consultarLibre(); } });
+
+        $('#pd-libre-cambiar').on('click', function () {
+            pdLibreDni = null;
+            pdCarnetLibre = null;
+            pdMostrarCarnet($('#pd-libre-carnet'), null);
+            $('#pd-libre-sel').addClass('d-none');
+            $('#pd-libre-dni').val('').focus();
         });
 
         // ── Buscar ejemplar ──
@@ -482,8 +601,14 @@ $(document).ready(function () {
         // ── Navegación ──
         $('#pd-btn-next').on('click', function () {
             if (pdStep === 1) {
-                if (! pdLectorId) { alerta('Debes seleccionar un lector antes de continuar.', false); return; }
-                $('#pd-ctx-lector').text($('#pd-lector-sel-nombre').text());
+                if (pdModo === 'libre') {
+                    if (! pdLibreDni) { alerta('Consulta el DNI del estudiante antes de continuar.', false); return; }
+                    $('#pd-ctx-lector').text($('#pd-libre-nombre').text() + ' · Préstamo libre');
+                } else {
+                    if (! pdLectorId) { alerta('Debes seleccionar un lector antes de continuar.', false); return; }
+                    $('#pd-ctx-lector').text($('#pd-lector-sel-nombre').text());
+                }
+                pdMostrarCarnet($('#pd-ctx-carnet'), pdModo === 'libre' ? pdCarnetLibre : pdCarnetLector);
                 pdShowStep(2);
             } else if (pdStep === 2) {
                 if (! pdEjemplarId) { alerta('Debes seleccionar un ejemplar antes de continuar.', false); return; }
@@ -505,19 +630,30 @@ $(document).ready(function () {
 
             const btn = $(this).prop('disabled', true);
 
-            fetch('/api/prestamos/prestamo/directo', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            const libre = pdModo === 'libre';
+            const url = libre ? '/api/prestamos/prestamo/libre' : '/api/prestamos/prestamo/directo';
+            const payload = libre
+                ? {
+                    dni:            pdLibreDni,
+                    ejemplar_id:    pdEjemplarId,
+                    observaciones:  $('#pd-obs').val()
+                }
+                : {
                     lector_id:      pdLectorId,
                     ejemplar_id:    pdEjemplarId,
                     prestamo_lugar: parseInt($('#pd-tipo').val()),
                     dias:           enSala ? null : dias,
                     observaciones:  $('#pd-obs').val()
-                })
+                };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
             })
                 .then(r => r.json())
                 .then(data => {
@@ -526,7 +662,7 @@ $(document).ready(function () {
                         modalPD.hide();
                         tabla.ajax.reload(null, false);
                     } else {
-                        alerta(data.error || 'Ocurrió un error', false);
+                        alerta(data.error || data.message || 'Ocurrió un error', false);
                     }
                 })
                 .catch(() => alerta('Error en la petición', false))

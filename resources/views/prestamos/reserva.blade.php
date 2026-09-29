@@ -170,6 +170,16 @@
             </div>
           </div>
 
+          <div id="rsv-carnet-alerta" class="alert alert-warning d-none mt-3 mb-0 small" role="alert">
+            <div class="d-flex gap-2 align-items-start">
+              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+              <div>
+                <strong id="rsv-carnet-titulo">Carnet DUPLICADO.</strong>
+                El carnet original fue reportado como perdido: acepta solo el duplicado y confirma la identidad con el DNI.
+              </div>
+            </div>
+          </div>
+
           {{-- Formulario en 2 columnas --}}
           <div class="rsv-modal-form-section">
             <div class="rsv-modal-form-grid">

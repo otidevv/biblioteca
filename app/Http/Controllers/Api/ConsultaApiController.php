@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\EstudianteApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -133,64 +134,27 @@ class ConsultaApiController extends Controller
 
     public function consultarEstudiante($dni)
     {
-        $token = config('services.unamad_integrations.student_token');
-        $verifySsl = config('services.unamad_integrations.verify_ssl', true);
-        $baseUrl = rtrim((string) config('services.unamad_integrations.student_url', 'https://daa-documentos.unamad.edu.pe:8081/api/data/student'), '/');
-        $url = $baseUrl . '/' . rawurlencode((string) $dni);
+        $resultado = app(EstudianteApiService::class)->buscarPorDni((string) $dni);
 
-        if (!$token) {
-            return response()->json([
-                'message' => 'La integracion institucional de estudiantes no esta configurada.',
-            ], 503);
+        if (! $resultado['ok']) {
+            return response()->json(
+                array_filter(['message' => $resultado['message'], 'codigo_http' => $resultado['codigo_http'] ?? null]),
+                $resultado['status']
+            );
         }
 
-        try {
-            $response = Http::timeout(30)
-                ->withOptions(['verify' => $verifySsl])
-                ->withToken($token)
-                ->acceptJson()
-                ->get($url);
+        $info = $resultado['info'];
 
-            if (!$response->successful()) {
-                return response()->json([
-                    'message' => 'Error al consultar el estudiante.',
-                    'codigo_http' => $response->status(),
-                ], 500);
-            }
-
-            $datos = $response->json();
-
-            if (empty($datos) || !isset($datos['status']) || $datos['status'] !== 'success') {
-                return response()->json([
-                    'message' => 'No se encontraron datos del estudiante.',
-                ], 404);
-            }
-
-            if (empty($datos['data']) || !isset($datos['data'][0]['info'])) {
-                return response()->json([
-                    'message' => 'No se encontraron datos del estudiante.',
-                ], 404);
-            }
-
-            $info = $datos['data'][0]['info'];
-
-            $respuesta = [
-                'codigo' => $info['username'] ?? '',
-                'nombre' => $info['name'] ?? '',
-                'apaterno' => $info['paternalSurname'] ?? '',
-                'amaterno' => $info['maternalSurname'] ?? '',
-                'correo' => $info['email'] ?? '',
-                'correo_institucional' => $info['email'] ?? '',
-            ];
-
-            return response()->json([
-                'message' => 'Datos encontrados',
-                'respuesta' => $respuesta,
-            ], 200);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => 'Error de conexion con el servicio externo.',
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Datos encontrados',
+            'respuesta' => [
+                'codigo' => $info['codigo'],
+                'nombre' => $info['nombres'],
+                'apaterno' => $info['apellido_paterno'],
+                'amaterno' => $info['apellido_materno'],
+                'correo' => $info['email'],
+                'correo_institucional' => $info['email'],
+            ],
+        ], 200);
     }
 }

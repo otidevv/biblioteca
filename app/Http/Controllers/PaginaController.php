@@ -12,7 +12,12 @@ use App\Models\Editorial;
 use App\Models\Biblioteca;
 use App\Models\Ejemplar;
 use App\Models\Reservacion;
+use App\Models\ConstanciaLector;
 use App\Models\Prestamo;
+use App\Models\Sancion;
+use App\Services\EstadisticasLectorService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 use App\Models\Actividad;
 use App\Models\ActividadCategoria;
 use App\Models\Tipo_registro;
@@ -390,62 +395,268 @@ class PaginaController extends Controller
 
         return view('pagina.libro', compact('libro','libros','bibliotecas','miComentario','bibliotecaFiltro'));
     }
-    public function misReservas()
-    {        
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
+    // Panel del lector: pagina principal del estudiante al iniciar sesion.
+    public function panelLector(EstadisticasLectorService $servicio)
+    {
+        $user = auth()->user()->load('persona.carrera');
+        $estadisticas = $servicio->calcular($user);
 
-        $reservas = Reservacion::with(['ejemplar.libro', 'ejemplar.biblioteca'])
-            ->where('lector_id', auth()->id())
-            ->latest()
+        $prestamosActivos = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca'])
+            ->where('lector_id', $user->id)
+            ->where('estado', 1)
+            ->get()
+            ->sortBy(fn ($p) => $p->fecha_limite_real)
+            ->values();
+
+        $fueraDePlazo = $prestamosActivos->filter(fn ($p) => $p->fecha_limite_real && now()->gte($p->fecha_limite_real));
+
+        $reservasPendientes = Reservacion::with(['ejemplar.libro', 'ejemplar.biblioteca'])
+            ->where('lector_id', $user->id)
+            ->where('estado', 0)
+            ->get()
+            ->filter(fn ($r) => now()->lt($r->fecha_limite_real))
+            ->sortBy(fn ($r) => $r->fecha_limite_real)
+            ->values();
+
+        $sanciones = Sancion::with('biblioteca')
+            ->where('user_id', $user->id)
+            ->where('estado', 1)
+            ->whereDate('fecha_fin', '>=', today())
+            ->orderBy('fecha_fin')
             ->get();
 
-        return view('pagina.mis_reservas', compact('reservas'));
+        $recientes = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca'])
+            ->where('lector_id', $user->id)
+            ->where('estado', 2)
+            ->latest('fecha_devolucion')
+            ->limit(5)
+            ->get();
+
+        $totalPrestamos = Prestamo::where('lector_id', $user->id)->count();
+
+        return view('pagina.panel_lector', compact(
+            'user',
+            'prestamosActivos',
+            'fueraDePlazo',
+            'reservasPendientes',
+            'sanciones',
+            'recientes',
+            'totalPrestamos',
+            'estadisticas'
+        ));
     }
 
-    public function misPrestamos()
+    // Constancia de lector frecuente: se emite desde el panel si el nivel lo permite.
+    public function emitirConstancia(EstadisticasLectorService $servicio)
+    {
+        $constancia = $servicio->emitirConstancia(auth()->user());
+
+        if (! $constancia) {
+            return redirect()
+                ->route('lector.panel')
+                ->with('panel_error', 'Aún no alcanzas el nivel de lector frecuente para emitir la constancia.');
+        }
+
+        return redirect()->route('lector.constancia', $constancia->codigo);
+    }
+
+    public function verConstancia(string $codigo)
+    {
+        $constancia = ConstanciaLector::where('codigo', $codigo)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        return Pdf::loadView('pagina.constancia_lector_pdf', [
+            'constancia' => $constancia,
+            'urlVerificacion' => route('constancias.verificar', $constancia->codigo),
+            'logo' => $this->logoBase64(),
+        ])
+            ->setPaper('a4')
+            ->stream('constancia-lector-' . $constancia->codigo . '.pdf');
+    }
+
+    // Reporte de lectura del panel en PDF (cualquier nivel; no reemplaza a la constancia).
+    public function reporteLector(EstadisticasLectorService $servicio)
+    {
+        $user = auth()->user()->load('persona.carrera');
+
+        $historial = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca'])
+            ->where('lector_id', $user->id)
+            ->latest('fecha_prestamo')
+            ->limit(10)
+            ->get();
+
+        $identificador = $user->persona?->codigo_institucional ?: $user->id;
+
+        return Pdf::loadView('pagina.reporte_lector_pdf', [
+            'user' => $user,
+            'estadisticas' => $servicio->calcular($user),
+            'historial' => $historial,
+            'logo' => $this->logoBase64(),
+        ])
+            ->setPaper('a4')
+            ->stream('reporte-lectura-' . $identificador . '-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    // Los PDF no cargan recursos remotos: el logo va embebido.
+    private function logoBase64(): string
+    {
+        return 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('img/logo_unamad.png')));
+    }
+
+    // Verificacion publica: cualquiera con el codigo puede comprobar la constancia.
+    public function verificarConstancia(Request $request, ?string $codigo = null)
+    {
+        if (! $codigo && $request->filled('codigo')) {
+            return redirect()->route('constancias.verificar', Str::upper(trim((string) $request->codigo)));
+        }
+
+        $codigo = $codigo !== null ? Str::upper(trim($codigo)) : null;
+        $constancia = $codigo && preg_match('/^CL-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $codigo)
+            ? ConstanciaLector::where('codigo', $codigo)->first()
+            : null;
+
+        return view('pagina.verificar_constancia', compact('codigo', 'constancia'));
+    }
+
+    public function misReservas()
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
 
-        $prestamos = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca'])
-            ->where('lector_id', auth()->id())
-            ->latest('fecha_prestamo')
+        $user = auth()->user()->load('persona');
+
+        $reservas = Reservacion::with(['ejemplar.libro.autores', 'ejemplar.biblioteca'])
+            ->where('lector_id', $user->id)
+            ->latest('fecha_reservacion')
+            ->latest('id')
             ->get();
 
-        return view('pagina.mis_prestamos', compact('prestamos'));
+        // Una reserva entregada no guarda su prestamo: es el del mismo ejemplar desde la fecha de la reserva.
+        $prestamos = Prestamo::where('lector_id', $user->id)->orderBy('fecha_prestamo')->get();
+        $prestamoDeReserva = $reservas->where('estado', 1)->mapWithKeys(fn ($r) => [
+            $r->id => $prestamos->first(fn ($p) => (int) $p->ejemplar_id === (int) $r->ejemplar_id
+                && $p->fecha_prestamo
+                && $p->fecha_prestamo->gte($r->fecha_reservacion->copy()->startOfDay())),
+        ]);
+
+        $sancionPorReserva = Sancion::where('user_id', $user->id)
+            ->whereNotNull('reservacion_id')
+            ->get()
+            ->keyBy('reservacion_id');
+
+        return view('pagina.mis_reservas', compact('user', 'reservas', 'prestamoDeReserva', 'sancionPorReserva'));
+    }
+
+    public function misPrestamos(EstadisticasLectorService $servicio)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user = auth()->user()->load('persona');
+
+        $prestamos = Prestamo::with(['ejemplar.libro.autores', 'ejemplar.biblioteca'])
+            ->where('lector_id', $user->id)
+            ->latest('fecha_prestamo')
+            ->latest('id')
+            ->get();
+
+        $sancionesPorPrestamo = Sancion::where('user_id', $user->id)
+            ->whereNotNull('prestamo_id')
+            ->get()
+            ->groupBy('prestamo_id');
+
+        $estadisticas = $servicio->calcular($user);
+
+        return view('pagina.mis_prestamos', compact('user', 'prestamos', 'sancionesPorPrestamo', 'estadisticas'));
     }
 
     public function eventos()
     {
-        $eventosQuery = Actividad::with('categoria')
-            ->where('estado', 1);
+        // En curso y proximas, de la mas cercana a la mas lejana.
+        $vigentes = Actividad::with('categoria')
+            ->vigentes()
+            ->orderBy('fecha_inicio')
+            ->orderBy('hora_inicio')
+            ->get();
 
-        if (Schema::hasColumn('actividades', 'destacado')) {
-            $eventosQuery->orderByDesc('destacado');
+        // Portada: la destacada mas cercana; si no hay, la proxima.
+        $destacado = $vigentes->firstWhere('destacado', true) ?? $vigentes->first();
+
+        $pasados = Actividad::with('categoria')
+            ->finalizadas()
+            ->orderByDesc('fecha_inicio')
+            ->limit(6)
+            ->get();
+
+        $categorias = ActividadCategoria::where('estado', 1)->orderBy('nombre')->get();
+
+        return view('pagina.eventos', compact('vigentes', 'destacado', 'pasados', 'categorias'));
+    }
+
+    // "Agregar a mi calendario": archivo .ics del evento (Google, Outlook, celular).
+    public function eventoCalendario(Actividad $actividad)
+    {
+        abort_unless((int) $actividad->estado === 1, 404);
+
+        $zona = config('app.timezone');
+        $fin = $actividad->fecha_fin ?? $actividad->fecha_inicio;
+        $utc = fn ($fecha, $hora) => \Illuminate\Support\Carbon::parse($fecha->format('Y-m-d') . ' ' . $hora->format('H:i'), $zona)
+            ->utc()->format('Ymd\THis\Z');
+
+        if ($actividad->hora_inicio) {
+            $inicioIcs = 'DTSTART:' . $utc($actividad->fecha_inicio, $actividad->hora_inicio);
+            $finIcs = 'DTEND:' . $utc($fin, $actividad->hora_fin ?? $actividad->hora_inicio->copy()->addHour());
+        } else {
+            // Evento de dia completo: DTEND es exclusivo.
+            $inicioIcs = 'DTSTART;VALUE=DATE:' . $actividad->fecha_inicio->format('Ymd');
+            $finIcs = 'DTEND;VALUE=DATE:' . $fin->copy()->addDay()->format('Ymd');
         }
 
-        $eventosDestacados = $eventosQuery
-            ->orderBy('fecha_inicio')
-            ->limit(6)
-            ->get();
+        $texto = fn (?string $valor) => str_replace(["\\", ';', ',', "\r\n", "\n"], ['\\\\', '\;', '\,', '\n', '\n'], trim((string) $valor));
+        $descripcion = trim(($actividad->resumen ? $actividad->resumen . "\n\n" : '') . strip_tags((string) $actividad->contenido));
 
-        $categorias = ActividadCategoria::withCount(['actividades' => function ($query) {
-                $query->where('estado', 1);
-            }])
-            ->where('estado', 1)
-            ->orderBy('nombre')
-            ->get();
+        $lineas = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Biblioteca UNAMAD//Agenda//ES',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            'BEGIN:VEVENT',
+            'UID:actividad-' . $actividad->id . '@' . request()->getHost(),
+            'DTSTAMP:' . now()->utc()->format('Ymd\THis\Z'),
+            $inicioIcs,
+            $finIcs,
+            'SUMMARY:' . $texto($actividad->titulo),
+            'DESCRIPTION:' . $texto($descripcion),
+            'LOCATION:' . $texto($actividad->lugar ?: 'Biblioteca UNAMAD'),
+            'URL:' . route('evento') . '#evento-' . $actividad->id,
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ];
 
-        $agenda = Actividad::with('categoria')
-            ->where('estado', 1)
-            ->orderBy('fecha_inicio')
-            ->limit(6)
-            ->get();
+        // RFC 5545: lineas de maximo 75 octetos, continuadas con un espacio.
+        $ics = collect($lineas)->map(function ($linea) {
+            $partes = [];
+            while (strlen($linea) > 75) {
+                $corte = 75;
+                while ($corte > 0 && (ord($linea[$corte]) & 0xC0) === 0x80) {
+                    $corte--;   // no partir un caracter UTF-8
+                }
+                $partes[] = substr($linea, 0, $corte);
+                $linea = ' ' . substr($linea, $corte);
+            }
+            $partes[] = $linea;
 
-        return view('pagina.eventos', compact('eventosDestacados', 'agenda', 'categorias'));
+            return implode("\r\n", $partes);
+        })->implode("\r\n") . "\r\n";
+
+        return response($ics, 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="evento-' . $actividad->id . '.ics"',
+        ]);
     }
 
     public function otrasBibliotecas()

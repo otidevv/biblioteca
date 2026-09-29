@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Persona;
 use App\Models\Usuario_rol_biblioteca;
 use App\Services\LectorImportService;
+use App\Services\LectorLibreService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -92,6 +93,27 @@ class UsuarioController extends Controller
         }
 
         return null;
+    }
+
+    // Carnet de biblioteca: si el original se perdio, se registra el duplicado y su fecha de entrega.
+    private function reglasCarnet(): array
+    {
+        return [
+            'tipo_carnet' => 'nullable|in:' . Persona::CARNET_ORIGINAL . ',' . Persona::CARNET_DUPLICADO,
+            'fecha_carnet_duplicado' => 'exclude_unless:tipo_carnet,' . Persona::CARNET_DUPLICADO . '|required|date|before_or_equal:today',
+        ];
+    }
+
+    private function datosCarnet(Request $request, ?Persona $actual = null): array
+    {
+        $tipo = $request->input('tipo_carnet') ?: ($actual?->tipo_carnet ?? Persona::CARNET_ORIGINAL);
+
+        return [
+            'tipo_carnet' => $tipo,
+            'fecha_carnet_duplicado' => $tipo === Persona::CARNET_DUPLICADO
+                ? ($request->input('fecha_carnet_duplicado') ?: $actual?->fecha_carnet_duplicado)
+                : null,
+        ];
     }
 
     private function construirNombreUsuario(Request $request): string
@@ -395,23 +417,30 @@ class UsuarioController extends Controller
     }
     public function nuevoLector(Request $request)
     {
+        // Un estudiante que ya recibio un prestamo libre se completa como lector en vez de duplicarlo.
+        $personaLibre = Persona::with('user')
+            ->where('dni', (string) $request->dni)
+            ->whereHas('user', fn ($q) => $q->where('tipo_usuario', LectorLibreService::TIPO_USUARIO)->whereDoesntHave('roles'))
+            ->first();
+        $userLibre = $personaLibre?->user;
+
         $request->validate([
             // PERSONA
-            'dni'               => 'required|string|max:15|unique:personas,dni',
+            'dni'               => ['required', 'string', 'max:15', Rule::unique('personas', 'dni')->ignore($personaLibre?->id)],
             'tipo_persona'      => 'required|in:ESTUDIANTE,DOCENTE,ADMINISTRATIVO,EXTERNO',
             'nombres'           => 'required|string|max:150',
             'apellido_paterno'  => 'required|string|max:150',
             'apellido_materno'  => 'nullable|string|max:150',
             'sexo'              => 'nullable|in:M,F,O',
             'telefono'          => 'required|string|max:20',
-            'email_personal'    => 'required|email|unique:users,email',
+            'email_personal'    => ['required', 'email', Rule::unique('users', 'email')->ignore($userLibre?->id)],
             'direccion'         => 'nullable|string|max:255',
             'codigo_institucional' => [
                 'exclude_unless:tipo_persona,ESTUDIANTE',
                 'required',
                 'string',
                 'max:255',
-                'unique:personas,codigo_institucional',
+                Rule::unique('personas', 'codigo_institucional')->ignore($personaLibre?->id),
             ],
             'carrera_id'        => [
                 'exclude_unless:tipo_persona,ESTUDIANTE',
@@ -428,7 +457,7 @@ class UsuarioController extends Controller
 
             // USUARIO
             'password'          => 'required|confirmed|min:8',
-        ]);
+        ] + $this->reglasCarnet());
         //return $request;    
         DB::beginTransaction();
 
@@ -437,7 +466,7 @@ class UsuarioController extends Controller
             /** =========================
              *  PERSONA
              *  ========================= */
-            $persona = Persona::create([
+            $datosPersona = [
                 'dni'               => $request->dni,
                 'tipo_persona'      => $request->tipo_persona,
                 'nombres'           => $request->nombres,
@@ -450,12 +479,16 @@ class UsuarioController extends Controller
                 'codigo_institucional' => $request->codigo_institucional,
                 'carrera_id'        => $request->filled('carrera_id') && $request->carrera_id != 0 ? $request->carrera_id : null,
                 'estado_academico'  => $request->filled('estado_academico') && $request->estado_academico != 0 ? $request->estado_academico : null,
-            ]);
+            ] + $this->datosCarnet($request);
+
+            $persona = $personaLibre
+                ? tap($personaLibre)->update($datosPersona)
+                : Persona::create($datosPersona);
 
             /** =========================
              *  USUARIO
              *  ========================= */
-            $user = User::create([
+            $datosUsuario = [
                 'name'       => $this->construirNombreUsuario($request),
                 'email'      => $request->email_personal,
                 'password'   => Hash::make($request->password),
@@ -463,14 +496,18 @@ class UsuarioController extends Controller
                 'origen'     => 'local',
                 'tipo_usuario'     => 'Lector',
                 'persona_id'=> $persona->id,
-            ]);
+            ];
+
+            $user = $userLibre
+                ? tap($userLibre)->update($datosUsuario)
+                : User::create($datosUsuario);
 
             /** =========================
              *  ROLES
              *  ========================= */
 
             // 👉 OPCIÓN A: tabla pivote rol_usuarios
-            $user->roles()->sync([5]); // Asignar rol "Lector" (ID=3)
+            $user->roles()->sync([5 => ['estado' => 1]]); // Asignar rol "Lector" activo
 
             DB::commit();
 
@@ -558,12 +595,12 @@ class UsuarioController extends Controller
                 'string',
                 'max:255',
             ],
-        ]);
+        ] + $this->reglasCarnet());
 
         DB::beginTransaction();
 
         try {
-            $persona->update([
+            $persona->update($this->datosCarnet($request, $persona) + [
                 'dni' => $request->dni,
                 'tipo_persona' => $request->tipo_persona,
                 'nombres' => $request->nombres,

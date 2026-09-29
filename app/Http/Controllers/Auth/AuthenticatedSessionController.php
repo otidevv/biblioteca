@@ -40,16 +40,9 @@ class AuthenticatedSessionController extends Controller
             return redirect()->to($redirect);
         }
 
-        $roles = $user->usuarioRolBibliotecas()
-            ->where('estado', 1)
-            ->pluck('rol_id')
-            ->toArray();
-
-        if (in_array(5, $roles)) {
-            return redirect()->route('home');
-        }
-
-        return redirect()->route('dashboard');
+        return $user->esPersonal()
+            ? redirect()->route('dashboard')
+            : redirect()->route('lector.panel');
     }
 
     /**

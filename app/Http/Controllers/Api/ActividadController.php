@@ -7,6 +7,7 @@ use App\Models\Actividad;
 use App\Models\ActividadCategoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -16,7 +17,26 @@ class ActividadController extends Controller
     {
         $query = Actividad::with('categoria')->latest('fecha_inicio')->latest('id');
 
+        $resumen = [
+            'proximas' => Actividad::where('estado', 1)->whereDate('fecha_inicio', '>', today())->count(),
+            'en_curso' => Actividad::where('estado', 1)->whereDate('fecha_inicio', '<=', today())
+                ->whereRaw('COALESCE(fecha_fin, fecha_inicio) >= ?', [today()->toDateString()])->count(),
+            'finalizadas' => Actividad::finalizadas()->count(),
+            'inactivas' => Actividad::where('estado', 0)->count(),
+        ];
+
         return DataTables::eloquent($query)
+            ->with('resumen', $resumen)
+            ->addColumn('agenda', function ($row) {
+                [$clase, $texto] = match ($row->estadoAgenda()) {
+                    'en_curso' => ['is-live', 'En curso'],
+                    'finalizada' => ['is-past', 'Finalizada'],
+                    default => ['is-upcoming', 'Próxima'],
+                };
+
+                return '<span class="activities-agenda ' . $clase . '">' . $texto . '</span>';
+            })
+            ->addColumn('imagen_url', fn ($row) => $row->imagen_url)
             ->addColumn('categoria_nombre', fn ($row) => $row->categoria?->nombre ?: 'Sin categoria')
             ->addColumn('destacado_badge', function ($row) {
                 return '<span class="badge ' . ($row->destacado ? 'bg-warning' : 'bg-secondary') . '">' .
@@ -29,19 +49,20 @@ class ActividadController extends Controller
                     '</span>';
             })
             ->addColumn('imagen_preview', function ($row) {
-                if (!$row->imagen) {
+                if (!$row->imagen_url) {
                     return '<span class="activities-table__image-empty">Sin imagen</span>';
                 }
 
-                $ruta = ltrim((string) $row->imagen, '/');
-                $src = str_starts_with($ruta, 'http')
-                    ? $ruta
-                    : (str_starts_with($ruta, 'storage/') ? '/' . $ruta : '/storage/' . $ruta);
-
-                return '<img src="' . e($src) . '" alt="Imagen actividad" class="activities-table__image">';
+                return '<img src="' . e($row->imagen_url) . '" alt="Imagen actividad" class="activities-table__image">';
             })
-            ->addColumn('acciones', fn ($row) => '<button type="button" class="btn btn-sm btn-primary editarActividad">Editar</button>')
-            ->rawColumns(['destacado_badge', 'estado_badge', 'imagen_preview', 'acciones'])
+            ->addColumn('acciones', function ($row) {
+                $ver = (int) $row->estado === 1
+                    ? '<a href="' . e(route('evento', [], false) . '#evento-' . $row->id) . '" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" title="Ver en la agenda pública">Ver</a> '
+                    : '';
+
+                return $ver . '<button type="button" class="btn btn-sm btn-primary editarActividad">Editar</button>';
+            })
+            ->rawColumns(['agenda', 'destacado_badge', 'estado_badge', 'imagen_preview', 'acciones'])
             ->make(true);
     }
 
@@ -82,11 +103,11 @@ class ActividadController extends Controller
             ], 201);
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Error en actividades.', ['accion' => __FUNCTION__, 'error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar la actividad.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -109,6 +130,9 @@ class ActividadController extends Controller
                 }
 
                 $data['imagen'] = $request->file('imagen')->store('actividades', 'public');
+            } elseif ($request->boolean('quitar_imagen') && $actividad->imagen) {
+                Storage::disk('public')->delete($actividad->imagen);
+                $data['imagen'] = null;
             }
 
             $actividad->update($data);
@@ -122,11 +146,11 @@ class ActividadController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Error en actividades.', ['accion' => __FUNCTION__, 'error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la actividad.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -150,11 +174,11 @@ class ActividadController extends Controller
             ], 201);
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Error en actividades.', ['accion' => __FUNCTION__, 'error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar la categoria.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -181,11 +205,11 @@ class ActividadController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Error en actividades.', ['accion' => __FUNCTION__, 'error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la categoria.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -206,7 +230,8 @@ class ActividadController extends Controller
             'modalidad' => 'nullable|string|max:100',
             'destacado' => 'nullable|boolean',
             'estado' => 'required|boolean',
-            'imagen' => ($editing ? 'nullable' : 'nullable') . '|image|max:3072',
+            'imagen' => 'nullable|image|max:3072',
+            'quitar_imagen' => 'nullable|boolean',
         ]);
 
         $data['fecha_fin'] = $data['fecha_fin'] ?? $data['fecha_inicio'];

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\CentroNotificacionesService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
@@ -17,21 +18,50 @@ class NotificacionController extends Controller
 {
     public function listar(Request $request)
     {
-        $query = Notificacion::with(['origen', 'destinatarios'])->latest('id');
+        $query = Notificacion::with(['origen', 'destinatarios.user:id,name,email'])->latest('id');
+        $ahora = now();
+
+        $resumen = [
+            'publicadas' => Notificacion::where('estado', 1)
+                ->where(fn ($q) => $q->whereNull('fecha_publicacion')->orWhere('fecha_publicacion', '<=', $ahora))
+                ->where(fn ($q) => $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', $ahora))
+                ->count(),
+            'programadas' => Notificacion::where('estado', 1)->where('fecha_publicacion', '>', $ahora)->count(),
+            'expiradas' => Notificacion::where('estado', 1)->where('fecha_expiracion', '<', $ahora)->count(),
+            'inactivas' => Notificacion::where('estado', 0)->count(),
+        ];
 
         return DataTables::eloquent($query)
+            ->with('resumen', $resumen)
             ->addColumn('tipo_badge', function ($row) {
                 $labels = [
                     'aviso' => 'Aviso',
                     'actividad' => 'Actividad',
                     'recordatorio' => 'Recordatorio',
-                    'critico' => 'Critico',
+                    'critico' => 'Crítico',
                     'personal' => 'Personal',
                     'disponibilidad_libro' => 'Disponibilidad',
                 ];
 
-                return '<span class="badge bg-info">' . ($labels[$row->tipo] ?? ucfirst($row->tipo)) . '</span>';
+                return '<span class="notifications-type notifications-type--' . e($row->tipo) . '">' . e($labels[$row->tipo] ?? ucfirst($row->tipo)) . '</span>';
             })
+            ->addColumn('vigencia', function ($row) use ($ahora) {
+                [$clase, $texto] = match (true) {
+                    (int) $row->estado !== 1 => ['is-off', 'Inactiva'],
+                    $row->fecha_publicacion && $row->fecha_publicacion->gt($ahora) => ['is-scheduled', 'Programada'],
+                    $row->fecha_expiracion && $row->fecha_expiracion->lt($ahora) => ['is-expired', 'Expirada'],
+                    default => ['is-live', 'Publicada'],
+                };
+
+                return '<span class="notifications-state ' . $clase . '">' . $texto . '</span>';
+            })
+            // El formulario usa hora local; el JSON del modelo viene en UTC.
+            ->addColumn('fecha_publicacion_input', fn ($row) => $row->fecha_publicacion?->format('Y-m-d\TH:i'))
+            ->addColumn('fecha_expiracion_input', fn ($row) => $row->fecha_expiracion?->format('Y-m-d\TH:i'))
+            ->addColumn('destinatarios_opciones', fn ($row) => $row->destinatarios->map(fn ($d) => [
+                'id' => $d->user_id,
+                'text' => $d->user ? $d->user->name . ' - ' . $d->user->email : 'Usuario #' . $d->user_id,
+            ])->values())
             ->addColumn('audiencia_badge', function ($row) {
                 $labels = [
                     'admins' => 'Personal interno',
@@ -58,18 +88,18 @@ class NotificacionController extends Controller
                     return 'Segmento: ' . ($segmentos[$row->audiencia] ?? ucfirst($row->audiencia));
                 }
 
-                return $row->destinatarios()->count() . ' usuario(s)';
+                $total = $row->destinatarios->count();
+                $leidas = $row->destinatarios->where('leido', true)->count();
+
+                return $total . ' usuario' . ($total === 1 ? '' : 's') . ' · ' . $leidas . ' leída' . ($leidas === 1 ? '' : 's');
             })
-            ->addColumn('fecha_publicacion_texto', function ($row) {
-                return optional($row->fecha_publicacion)->timezone(config('app.timezone'))->format('d-m-Y H:i') ?? '-';
-            })
-            ->addColumn('fecha_expiracion_texto', function ($row) {
-                return optional($row->fecha_expiracion)->timezone(config('app.timezone'))->format('d-m-Y H:i') ?? '-';
-            })
+            // optional(null)->timezone() devolvia null y ->format() rompia el listado sin fecha de expiracion.
+            ->addColumn('fecha_publicacion_texto', fn ($row) => $row->fecha_publicacion?->format('d/m/Y H:i') ?? '-')
+            ->addColumn('fecha_expiracion_texto', fn ($row) => $row->fecha_expiracion?->format('d/m/Y H:i') ?? 'Sin expiración')
             ->addColumn('acciones', function ($row) {
                 return '<button class="btn btn-sm btn-primary editarNotificacion">Editar</button>';
             })
-            ->rawColumns(['tipo_badge', 'audiencia_badge', 'estado_badge', 'acciones'])
+            ->rawColumns(['tipo_badge', 'audiencia_badge', 'estado_badge', 'vigencia', 'acciones'])
             ->make(true);
     }
 
@@ -94,10 +124,11 @@ class NotificacionController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
+            Log::error('Error al registrar la notificacion.', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar la notificacion.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -114,17 +145,19 @@ class NotificacionController extends Controller
         try {
             $notificacion = Notificacion::findOrFail($request->id);
             $payload = $this->normalizarPayload($data, $request);
+            unset($payload['user_id_origen']);   // se conserva quien la creo
             $notificacion->update($payload);
 
-            if (($payload['audiencia'] ?? $notificacion->audiencia) === 'personal') {
-                $userIds = collect($data['user_ids'] ?? [])->map(fn ($id) => (int) $id)->filter()->unique()->values()->all();
-                $notificacion->destinatarios()->delete();
+            // Sincroniza sin perder quien ya la leyo.
+            $userIds = ($payload['audiencia'] ?? $notificacion->audiencia) === 'personal'
+                ? collect($data['user_ids'] ?? [])->map(fn ($id) => (int) $id)->filter()->unique()->values()
+                : collect();
 
-                foreach ($userIds as $userId) {
-                    $notificacion->destinatarios()->create(['user_id' => $userId]);
-                }
-            } else {
-                $notificacion->destinatarios()->delete();
+            $notificacion->destinatarios()->whereNotIn('user_id', $userIds->all())->delete();
+            $existentes = $notificacion->destinatarios()->pluck('user_id')->all();
+
+            foreach ($userIds->diff($existentes) as $userId) {
+                $notificacion->destinatarios()->create(['user_id' => $userId]);
             }
 
             DB::commit();
@@ -137,25 +170,60 @@ class NotificacionController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
+            Log::error('Error al actualizar la notificacion.', ['id' => $request->id, 'error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la notificacion.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function recursosFormulario()
+    // Busqueda de destinatarios para select2 (antes se cargaban solo los primeros 200 usuarios).
+    public function buscarUsuarios(Request $request)
     {
+        $busqueda = trim((string) $request->input('q', ''));
+
         $usuarios = User::query()
-            ->select('id', 'name', 'email', 'tipo_usuario')
-            ->with(['roles' => function ($query) {
-                $query->wherePivot('estado', 1)->select('roles.id', 'nombre');
-            }])
+            ->select('id', 'name', 'email', 'tipo_usuario', 'persona_id')
+            ->with(['usuarioRolBibliotecas:id,user_id,rol_id,estado', 'persona:id,dni'])
+            ->when($busqueda !== '', function ($query) use ($busqueda) {
+                $query->where(function ($sub) use ($busqueda) {
+                    $sub->where('name', 'like', '%' . $busqueda . '%')
+                        ->orWhere('email', 'like', '%' . $busqueda . '%')
+                        ->orWhereHas('persona', fn ($p) => $p->where('dni', 'like', '%' . $busqueda . '%'));
+                });
+            })
             ->orderBy('name')
-            ->limit(200)
+            ->limit(30)
             ->get();
 
+        $grupos = ['Personal interno' => [], 'Lectores' => [], 'Otros usuarios' => []];
+
+        foreach ($usuarios as $usuario) {
+            $activos = $usuario->usuarioRolBibliotecas->filter(fn ($r) => $r->estado === null || (int) $r->estado !== 0);
+            $grupo = match (true) {
+                $activos->contains(fn ($r) => (int) $r->rol_id !== User::ROL_LECTOR) => 'Personal interno',
+                $activos->contains(fn ($r) => (int) $r->rol_id === User::ROL_LECTOR) => 'Lectores',
+                default => 'Otros usuarios',
+            };
+
+            $grupos[$grupo][] = [
+                'id' => $usuario->id,
+                'text' => $usuario->name . ' - ' . $usuario->email . ($usuario->persona?->dni ? ' · DNI ' . $usuario->persona->dni : ''),
+            ];
+        }
+
+        return response()->json([
+            'results' => collect($grupos)
+                ->filter()
+                ->map(fn ($children, $text) => ['text' => $text, 'children' => $children])
+                ->values(),
+        ]);
+    }
+
+    public function recursosFormulario()
+    {
         $actividades = collect();
         if (Schema::hasTable('actividades')) {
             $actividades = Actividad::query()
@@ -167,7 +235,6 @@ class NotificacionController extends Controller
 
         return response()->json([
             'success' => true,
-            'usuarios' => $usuarios,
             'actividades' => $actividades,
         ]);
     }
@@ -179,7 +246,8 @@ class NotificacionController extends Controller
             'contenido' => 'required|string',
             'tipo' => 'required|string|max:100',
             'audiencia' => 'required|in:admins,lectores,personal,global',
-            'accion_url' => 'nullable|string|max:255',
+            // Ruta interna (/evento) o enlace http(s); nunca javascript: u otros esquemas.
+            'accion_url' => ['nullable', 'string', 'max:255', 'regex:#^(/(?!/)[^\s]*|https?://[^\s]+)$#i'],
             'fecha_publicacion' => 'nullable|date',
             'fecha_expiracion' => 'nullable|date|after_or_equal:fecha_publicacion',
             'estado' => 'required|boolean',
@@ -188,7 +256,9 @@ class NotificacionController extends Controller
             'user_ids.*' => 'integer|exists:users,id',
         ];
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, [
+            'accion_url.regex' => 'El enlace debe ser una ruta interna (por ejemplo /evento) o una dirección http(s).',
+        ]);
 
         if (($data['audiencia'] ?? null) === 'personal' && empty($data['user_ids'])) {
             throw ValidationException::withMessages([

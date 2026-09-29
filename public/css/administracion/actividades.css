@@ -154,3 +154,78 @@ body.dark-mode .activities-category-modal .activities-modal__intro {
         width: 100%;
     }
 }
+
+/* ─────────── Indicadores ─────────── */
+.admin-section > .admin-dashboard__stats {
+    margin-bottom: 0.25rem;
+}
+
+.activities-stat--upcoming .admin-stat__icon { background: rgba(37, 99, 235, 0.1);  color: #1d4ed8; }
+.activities-stat--live .admin-stat__icon     { background: rgba(16, 185, 129, 0.12); color: #0f766e; }
+.activities-stat--past .admin-stat__icon     { background: rgba(100, 116, 139, 0.12); color: #475569; }
+.activities-stat--off .admin-stat__icon      { background: rgba(234, 88, 12, 0.1);  color: #c2410c; }
+
+/* ─────────── Estado en la agenda (tabla) ─────────── */
+.activities-agenda {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.activities-agenda::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.activities-agenda.is-upcoming { background: rgba(37, 99, 235, 0.1);   color: #1d4ed8; }
+.activities-agenda.is-live     { background: rgba(16, 185, 129, 0.12); color: #0f766e; }
+.activities-agenda.is-past     { background: rgba(100, 116, 139, 0.12); color: #475569; }
+
+.admin-shell.admin-dark .activities-agenda.is-upcoming { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
+.admin-shell.admin-dark .activities-agenda.is-live     { background: rgba(45, 212, 191, 0.14); color: #5eead4; }
+.admin-shell.admin-dark .activities-agenda.is-past     { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+
+/* ─────────── Vista previa de la imagen ─────────── */
+.activities-preview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border: 1px dashed rgba(148, 163, 184, 0.5);
+    border-radius: 16px;
+}
+
+.activities-preview img {
+    width: 176px;
+    height: 99px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #f1f5f9;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.activities-preview img.is-removed {
+    opacity: 0.35;
+    filter: grayscale(1);
+}
+
+@media (max-width: 575.98px) {
+    .activities-preview {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .activities-preview img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+    }
+}

@@ -637,9 +637,7 @@ html, body {
 <body>
 @php
     $user = Auth::user();
-    $esLector = $user
-        ? $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists()
-        : false;
+    $esLector = $user ? ! $user->esPersonal() : false;
 
     // Tarjetas del carrusel: los libros recientes con portada que trae el
     // controlador. Si no hay ninguno, la sección no se muestra.
@@ -680,6 +678,9 @@ html, body {
             <a href="{{ route('bibliotecas.cientificas') }}">B. Científicas</a>
             <a href="{{ route('otras.bibliotecas') }}">Otras bibliotecas</a>
             @auth
+            @if($esLector)
+            <a href="{{ route('lector.panel') }}">Mi panel</a>
+            @endif
             <a href="{{ route('mis.reservas') }}">Mis reservas</a>
             <a href="{{ route('prestamos') }}">Mis préstamos</a>
             @endauth

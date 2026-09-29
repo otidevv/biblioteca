@@ -277,6 +277,9 @@ body {
 }
 
 /* Icon colors per section */
+.library-nav-link.nav-panel .library-nav-icon {
+    background: linear-gradient(135deg, #d8b15c, #9a7424);
+}
 .library-nav-link.nav-home .library-nav-icon {
     background: linear-gradient(135deg, #3da876, #1a6647);
 }
@@ -345,6 +348,10 @@ body {
 }
 
 /* Brighten icon on hover/active */
+.library-nav-link.nav-panel:hover .library-nav-icon,
+.library-nav-link.nav-panel.is-active .library-nav-icon {
+    background: linear-gradient(135deg, #f0cf7f, #b88a2c);
+}
 .library-nav-link.nav-home:hover .library-nav-icon,
 .library-nav-link.nav-home.is-active .library-nav-icon {
     background: linear-gradient(135deg, #5dcf95, #1d8f5f);
@@ -673,6 +680,89 @@ body {
 
 .library-alert-menu-header strong {
     color: #173d2f;
+}
+
+.library-user-card {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(24, 77, 59, 0.05);
+    border: 1px solid rgba(24, 77, 59, 0.08);
+}
+
+.library-user-card:hover,
+.library-user-card:focus-visible {
+    background: rgba(24, 77, 59, 0.09);
+}
+
+.library-user-card-avatar {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #205842, #123529);
+    color: #f7e7bb;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.library-user-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.library-user-card-copy {
+    display: grid;
+    min-width: 0;
+}
+
+/* Nombres largos pasan a una segunda linea; el correo se recorta. */
+.library-user-card-copy strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    color: #173d2f;
+    font-size: 0.92rem;
+    line-height: 1.3;
+}
+
+.library-user-card-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #62756d;
+    font-size: 0.8rem;
+}
+
+.library-user-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.2rem;
+    color: #1d654c;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.library-user-card-link i {
+    font-size: 0.7rem;
+    transition: transform 0.15s ease;
+}
+
+.library-user-card:hover .library-user-card-link i {
+    transform: translateX(2px);
 }
 
 .library-alert-list {
@@ -1254,6 +1344,28 @@ body.library-dark .library-alert-item {
     border-color: rgba(255, 255, 255, 0.06);
 }
 
+body.library-dark .library-user-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.library-dark .library-user-card:hover,
+body.library-dark .library-user-card:focus-visible {
+    background: rgba(255, 255, 255, 0.09);
+}
+
+body.library-dark .library-user-card-copy strong {
+    color: #f8fafc;
+}
+
+body.library-dark .library-user-card-copy small {
+    color: #a8bbb1;
+}
+
+body.library-dark .library-user-card-link {
+    color: #8fd3b4;
+}
+
 body.library-dark .library-alert-item:hover,
 body.library-dark .home-library-card:hover,
 body.library-dark .home-book-card:hover,
@@ -1492,6 +1604,8 @@ body.library-dark .overlay.active {
 })();
 </script>
 @php($user = Auth::user())
+{{-- Lector: usuario sin rol de personal. Su pagina principal es "Mi panel". --}}
+@php($esLector = $user && ! $user->esPersonal())
 <?php
     $topbarMeta = [
         'kicker' => 'UNAMAD',
@@ -1600,6 +1714,15 @@ body.library-dark .overlay.active {
                 {{-- Sección: General --}}
                 <div class="library-nav-section">
                     <div class="library-nav-section-label">Menú principal</div>
+                    @if($esLector)
+                    <a href="{{ route('lector.panel') }}" class="library-nav-link nav-panel {{ request()->routeIs('lector.panel') ? 'is-active' : '' }}">
+                        <span class="library-nav-icon"><i class="bi bi-speedometer2"></i></span>
+                        <span class="library-nav-text">
+                            <strong>Mi panel</strong>
+                            <small>Préstamos, reservas y avisos</small>
+                        </span>
+                    </a>
+                    @endif
                     <a href="{{ route('home') }}" class="library-nav-link nav-home {{ request()->routeIs('home') ? 'is-active' : '' }}">
                         <span class="library-nav-icon"><i class="bi bi-house-heart-fill"></i></span>
                         <span class="library-nav-text">
@@ -1765,7 +1888,6 @@ body.library-dark .overlay.active {
                 </div>
 
                 @auth
-                @php($esLector = $user->usuarioRolBibliotecas()->where('estado', 1)->where('rol_id', 5)->exists())
                 <div class="dropdown">
                     <button class="btn library-user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         @if(optional($user->persona)->foto)
@@ -1776,21 +1898,32 @@ body.library-dark .overlay.active {
                         {{ $user->name }}
                     </button>
                     <div class="dropdown-menu dropdown-menu-end library-alert-menu">
-                        <div class="library-alert-menu-header">
-                            <div>
-                                <strong>{{ $user->name }}</strong>
-                                <small class="text-muted">{{ $user->email }}</small>
-                            </div>
-                        </div>
-                        <a href="{{ route('perfil.edit', ['layout' => 'library']) }}" class="library-alert-item">
-                            <span class="library-alert-icon">
-                                <i class="bi bi-person-gear"></i>
+                        {{-- La tarjeta del usuario es el acceso a su perfil. --}}
+                        <a href="{{ route('perfil.edit', ['layout' => 'library']) }}" class="library-user-card" aria-label="Ver mi perfil">
+                            <span class="library-user-card-avatar">
+                                @if(optional($user->persona)->foto)
+                                    <img src="{{ asset('storage/' . $user->persona->foto) }}" alt="">
+                                @else
+                                    {{ mb_strtoupper(mb_substr($user->name ?? 'U', 0, 1)) }}
+                                @endif
                             </span>
-                            <span class="library-alert-copy">
-                                <strong>Mi perfil</strong>
-                                <p>Ver y actualizar mis datos personales.</p>
+                            <span class="library-user-card-copy">
+                                <strong>{{ $user->name }}</strong>
+                                <small>{{ $user->email }}</small>
+                                <span class="library-user-card-link">Ver mi perfil <i class="bi bi-chevron-right"></i></span>
                             </span>
                         </a>
+                        @if($esLector)
+                            <a href="{{ route('lector.panel') }}" class="library-alert-item">
+                                <span class="library-alert-icon">
+                                    <i class="bi bi-speedometer2"></i>
+                                </span>
+                                <span class="library-alert-copy">
+                                    <strong>Mi panel</strong>
+                                    <p>Mis préstamos, reservas y avisos.</p>
+                                </span>
+                            </a>
+                        @endif
                         @unless($esLector)
                             <a href="{{ route('dashboard') }}" class="library-alert-item">
                                 <span class="library-alert-icon">
