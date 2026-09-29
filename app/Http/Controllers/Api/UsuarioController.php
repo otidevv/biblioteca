@@ -390,11 +390,30 @@ class UsuarioController extends Controller
     // ===================LECTORES LECTORES============================
     public function listarLectores(Request $request)
     {
-        $query = User::with('roles','persona')
-            ->whereHas('roles', function($q) {
-                $q->where('rol_id', '5'); // ID del rol "Lector"
-            });
+        $lectores = fn () => User::whereHas('roles', function ($q) {
+            $q->where('rol_id', '5'); // ID del rol "Lector"
+        });
+
+        // Conteo por tipo de carnet para los filtros de la tabla (sin aplicar el filtro).
+        $total = $lectores()->count();
+        $original = $lectores()->whereHas('persona', fn ($p) => $p->where('tipo_carnet', Persona::CARNET_ORIGINAL))->count();
+        $duplicado = $lectores()->whereHas('persona', fn ($p) => $p->where('tipo_carnet', Persona::CARNET_DUPLICADO))->count();
+
+        $query = $lectores()->with('roles', 'persona');
+
+        match ($request->query('carnet')) {
+            Persona::CARNET_ORIGINAL, Persona::CARNET_DUPLICADO => $query->whereHas('persona', fn ($p) => $p->where('tipo_carnet', $request->query('carnet'))),
+            'SIN' => $query->where(fn ($q) => $q->whereDoesntHave('persona')->orWhereHas('persona', fn ($p) => $p->whereNull('tipo_carnet'))),
+            default => null,
+        };
+
         return DataTables::of($query)
+            ->with('carnets', [
+                'total' => $total,
+                'original' => $original,
+                'duplicado' => $duplicado,
+                'sin' => $total - $original - $duplicado,
+            ])
             ->addColumn('acciones', function($row) {
                 return '
                     <div class="dropdown admin-action-menu">

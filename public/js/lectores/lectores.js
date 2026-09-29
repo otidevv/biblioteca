@@ -1,5 +1,7 @@
 let tabla;
 let dniConsultado = null;
+// '' | 'ORIGINAL' | 'DUPLICADO' | 'SIN'
+let filtroCarnet = '';
 
 $(document).ready(function () {
     const $form = $('#formLector');
@@ -13,6 +15,9 @@ $(document).ready(function () {
         ajax: {
             url: '/api/usuarios/lectores/listar',
             type: 'GET',
+            data: function (d) {
+                d.carnet = filtroCarnet;
+            },
             xhrFields: { withCredentials: true },
             error: default_error_handler
         },
@@ -65,6 +70,27 @@ $(document).ready(function () {
         initComplete: function () {
             default_datatable_buttons.call(this);
         }
+    });
+
+    // Conteos por tipo de carnet que devuelve el listado.
+    tabla.on('xhr.dt', function (e, settings, json) {
+        const conteos = json && json.carnets;
+        if (! conteos) {
+            return;
+        }
+        Object.keys(conteos).forEach(function (clave) {
+            $('[data-carnet-count="' + clave + '"]').text(Number(conteos[clave]).toLocaleString('es-PE'));
+        });
+        $('.reader-carnet-chip--duplicado').toggleClass('has-items', Number(conteos.duplicado) > 0);
+    });
+
+    $('[data-carnet-filtro]').on('click', function () {
+        filtroCarnet = $(this).attr('data-carnet-filtro');
+        $('[data-carnet-filtro]').each(function () {
+            const activo = $(this).attr('data-carnet-filtro') === filtroCarnet;
+            $(this).toggleClass('is-active', activo).attr('aria-pressed', activo ? 'true' : 'false');
+        });
+        tabla.ajax.reload();
     });
 
     $('#btnNuevo').on('click', function () {

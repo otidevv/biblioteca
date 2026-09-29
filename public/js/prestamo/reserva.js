@@ -168,11 +168,20 @@ $(document).ready(function () {
         let tipoClass = tipo === 'A CASA' ? 'rsv-tipo-pill--casa' : 'rsv-tipo-pill--sala';
         $('#rsv-ctx-tipo').html(tipoIcon + tipo).attr('class', 'rsv-tipo-pill ' + tipoClass);
 
-        // Carnet duplicado: el original se perdio, se avisa antes de entregar.
+        // Carnet que debe presentar: si es duplicado, el original se perdio y no se acepta.
         const carnet      = $(this).attr('data-carnet') || '';
         const carnetFecha = $(this).attr('data-carnet-fecha') || '';
-        $('#rsv-carnet-titulo').text('Carnet DUPLICADO' + (carnetFecha ? ' desde el ' + carnetFecha : '') + '.');
-        $('#rsv-carnet-alerta').toggleClass('d-none', carnet !== 'DUPLICADO');
+        const avisoCarnet = carnet === 'DUPLICADO'
+            ? ['alert-warning', 'bi-exclamation-triangle-fill', 'Carnet DUPLICADO' + (carnetFecha ? ' desde el ' + carnetFecha : '') + '.',
+               'El carnet original fue reportado como perdido: acepta solo el duplicado y confirma la identidad con el DNI.']
+            : carnet === 'ORIGINAL'
+                ? ['alert-success', 'bi-person-vcard', 'Carnet ORIGINAL.', 'Pide el carnet y verifica que los datos coincidan con el lector.']
+                : ['alert-secondary', 'bi-question-circle', 'Carnet sin registrar.',
+                   'Confirma la identidad con el DNI y actualiza el tipo de carnet en Registro de lectores.'];
+        $('#rsv-carnet-alerta').attr('class', 'alert ' + avisoCarnet[0] + ' mt-3 mb-0 small');
+        $('#rsv-carnet-icono').attr('class', 'bi fs-5 ' + avisoCarnet[1]);
+        $('#rsv-carnet-titulo').text(avisoCarnet[2]);
+        $('#rsv-carnet-texto').text(avisoCarnet[3]);
 
         // En sala vence hoy al cierre: no se piden dias.
         const enSala = tipo !== 'A CASA';

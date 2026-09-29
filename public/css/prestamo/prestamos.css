@@ -331,7 +331,7 @@
     color: #b45309;
 }
 
-/* Aviso de carnet duplicado al prestar */
+/* Carnet que debe presentar el lector al prestar */
 .pd-carnet-alert {
     display: flex;
     align-items: flex-start;
@@ -339,9 +339,9 @@
     margin-top: 10px;
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid #fcd34d;
-    background: #fffbeb;
-    color: #92400e;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
     font-size: 13px;
     line-height: 1.45;
 }
@@ -352,9 +352,26 @@
     line-height: 1.2;
 }
 
+.pd-carnet-alert--original {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.pd-carnet-alert--duplicado {
+    border-color: #fcd34d;
+    background: #fffbeb;
+    color: #92400e;
+}
+
 .pd-result-badge--duplicado {
     background: #fef3c7 !important;
     color: #b45309 !important;
+}
+
+.pd-result-badge--none {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
 }
 
 .loan-status-stack {
@@ -1169,9 +1186,31 @@
 }
 
 .admin-dark .pd-carnet-alert {
+    border-color: rgba(148, 163, 184, 0.24);
+    background: rgba(148, 163, 184, 0.1);
+    color: #cbd5e1;
+}
+
+.admin-dark .pd-carnet-alert--original {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.1);
+    color: #86efac;
+}
+
+.admin-dark .pd-carnet-alert--duplicado {
     border-color: rgba(245, 158, 11, 0.4);
     background: rgba(245, 158, 11, 0.12);
     color: #fcd34d;
+}
+
+.admin-dark .pd-result-badge--original {
+    background: rgba(34, 197, 94, 0.16) !important;
+    color: #86efac !important;
+}
+
+.admin-dark .pd-result-badge--none {
+    background: rgba(148, 163, 184, 0.15) !important;
+    color: #94a3b8 !important;
 }
 
 /* ── Scroll hint (oculto en desktop, visible en móvil) ── */

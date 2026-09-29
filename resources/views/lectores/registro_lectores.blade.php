@@ -58,6 +58,24 @@
             </div>
         </div>
 
+        {{-- Filtro por tipo de carnet: el duplicado indica que el original se perdio. --}}
+        <div class="reader-carnet-filter" role="group" aria-label="Filtrar lectores por tipo de carnet">
+            <span class="reader-carnet-filter__label"><i class="bi bi-person-vcard"></i> Carnet</span>
+            <button type="button" class="reader-carnet-chip is-active" data-carnet-filtro="" aria-pressed="true">
+                Todos <span class="reader-carnet-chip__count" data-carnet-count="total">—</span>
+            </button>
+            <button type="button" class="reader-carnet-chip reader-carnet-chip--original" data-carnet-filtro="ORIGINAL" aria-pressed="false">
+                <i class="bi bi-person-vcard"></i> Original <span class="reader-carnet-chip__count" data-carnet-count="original">—</span>
+            </button>
+            <button type="button" class="reader-carnet-chip reader-carnet-chip--duplicado" data-carnet-filtro="DUPLICADO" aria-pressed="false">
+                <i class="bi bi-exclamation-triangle-fill"></i> Duplicado <span class="reader-carnet-chip__count" data-carnet-count="duplicado">—</span>
+            </button>
+            <button type="button" class="reader-carnet-chip reader-carnet-chip--none" data-carnet-filtro="SIN" aria-pressed="false">
+                Sin registrar <span class="reader-carnet-chip__count" data-carnet-count="sin">—</span>
+            </button>
+            <span class="reader-carnet-filter__hint">Con carnet duplicado, el original ya no es válido para prestar.</span>
+        </div>
+
         <div class="admin-table-shell reader-table-shell table-responsive">
             <table id="tabla-lectores" class="table table-hover table-bordered align-middle datatable w-100 reader-table">
                 <thead>

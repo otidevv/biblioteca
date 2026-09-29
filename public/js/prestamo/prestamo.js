@@ -206,22 +206,67 @@ $(document).ready(function () {
     // 'lector': lector registrado | 'libre': estudiante por DNI, solo en sala
     let pdModo = 'lector';
     let pdLibreDni = null;
-    // Carnet del lector elegido en cada modo: { tipo: 'ORIGINAL'|'DUPLICADO'|null, fecha: 'dd/mm/aaaa'|null }
+    // Carnet del lector elegido en cada modo:
+    // { tipo: 'ORIGINAL'|'DUPLICADO'|null, fecha: 'dd/mm/aaaa'|null, sinCarnet: bool } o null si no hay lector elegido.
     let pdCarnetLector = null;
     let pdCarnetLibre = null;
 
-    // Si el carnet es duplicado, el original se perdio: se avisa para no aceptarlo.
+    // Que carnet debe presentar el lector y que verificar en cada caso.
+    function pdCarnetInfo(carnet) {
+        if (carnet.tipo === 'DUPLICADO') {
+            return {
+                clase: 'duplicado',
+                icono: 'bi-exclamation-triangle-fill',
+                titulo: 'Carnet DUPLICADO' + (carnet.fecha ? ' desde el ' + carnet.fecha : ''),
+                texto: 'El carnet original fue reportado como perdido: acepta solo el duplicado y confirma la identidad con el DNI.'
+            };
+        }
+        if (carnet.tipo === 'ORIGINAL') {
+            return {
+                clase: 'original',
+                icono: 'bi-person-vcard',
+                titulo: 'Carnet ORIGINAL',
+                texto: 'Pide el carnet y verifica que los datos coincidan con el lector.'
+            };
+        }
+        if (carnet.sinCarnet) {
+            return {
+                clase: 'none',
+                icono: 'bi-person-badge',
+                titulo: 'Sin carnet de biblioteca',
+                texto: 'Préstamo libre: verifica la identidad del estudiante con su DNI.'
+            };
+        }
+        return {
+            clase: 'none',
+            icono: 'bi-question-circle',
+            titulo: 'Carnet sin registrar',
+            texto: 'No se registró el tipo de carnet de este lector: confirma su identidad con el DNI y actualízalo en Registro de lectores.'
+        };
+    }
+
     function pdMostrarCarnet($el, carnet) {
-        if (! carnet || carnet.tipo !== 'DUPLICADO') {
+        if (! carnet) {
             $el.empty().addClass('d-none');
             return;
         }
 
-        $el.html(
-            '<i class="bi bi-exclamation-triangle-fill"></i>' +
-            '<div><strong>Carnet DUPLICADO' + (carnet.fecha ? ' desde el ' + esc(carnet.fecha) : '') + '.</strong> ' +
-            'El carnet original fue reportado como perdido: acepta solo el duplicado y confirma la identidad con el DNI.</div>'
-        ).removeClass('d-none');
+        const info = pdCarnetInfo(carnet);
+        $el.attr('class', 'pd-carnet-alert pd-carnet-alert--' + info.clase)
+            .html(
+                '<i class="bi ' + info.icono + '"></i>' +
+                '<div><strong>' + esc(info.titulo) + '.</strong> ' + esc(info.texto) + '</div>'
+            );
+    }
+
+    function pdCarnetBadge(tipo) {
+        if (tipo === 'DUPLICADO') {
+            return '<span class="pd-result-badge pd-result-badge--duplicado"><i class="bi bi-exclamation-triangle-fill"></i>Carnet duplicado</span>';
+        }
+        if (tipo === 'ORIGINAL') {
+            return '<span class="pd-result-badge pd-result-badge--original"><i class="bi bi-person-vcard"></i>Carnet original</span>';
+        }
+        return '<span class="pd-result-badge pd-result-badge--none">Carnet sin registrar</span>';
     }
 
     function pdReset() {
@@ -322,8 +367,6 @@ $(document).ready(function () {
         const nombre  = partes[0] || lector.text;
         const detalle = partes.slice(1).join(' · ');
 
-        const duplicado = lector.carnet === 'DUPLICADO';
-
         return $('<div>')
             .addClass('pd-result-item pd-lector-item')
             .attr('data-id', lector.id)
@@ -336,9 +379,7 @@ $(document).ready(function () {
                     '<strong class="pd-result-name">' + esc(nombre) + '</strong>' +
                     (detalle ? '<span class="pd-result-sub">' + esc(detalle) + '</span>' : '') +
                 '</div>' +
-                (duplicado
-                    ? '<span class="pd-result-badge pd-result-badge--duplicado"><i class="bi bi-exclamation-triangle-fill"></i>Carnet duplicado</span>'
-                    : '') +
+                pdCarnetBadge(lector.carnet) +
                 '<i class="bi bi-chevron-right pd-result-chevron"></i>'
             );
     }
@@ -516,7 +557,8 @@ $(document).ready(function () {
                     $('#pd-libre-msg').empty();
                     $('#pd-libre-sel').removeClass('d-none');
 
-                    pdCarnetLibre = { tipo: data.carnet || null, fecha: data.carnet_fecha || null };
+                    // Quien no es lector no tiene carnet de biblioteca: se identifica con el DNI.
+                    pdCarnetLibre = { tipo: data.carnet || null, fecha: data.carnet_fecha || null, sinCarnet: ! data.es_lector };
                     pdMostrarCarnet($('#pd-libre-carnet'), pdCarnetLibre);
                 })
                 .catch(() => $('#pd-libre-msg').html('<div class="text-danger small p-2">Error al consultar el DNI.</div>'))

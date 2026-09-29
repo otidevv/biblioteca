@@ -170,12 +170,13 @@
             </div>
           </div>
 
-          <div id="rsv-carnet-alerta" class="alert alert-warning d-none mt-3 mb-0 small" role="alert">
+          {{-- Carnet que debe presentar el lector: original, duplicado o sin registrar --}}
+          <div id="rsv-carnet-alerta" class="alert d-none mt-3 mb-0 small" role="status">
             <div class="d-flex gap-2 align-items-start">
-              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+              <i id="rsv-carnet-icono" class="bi fs-5"></i>
               <div>
-                <strong id="rsv-carnet-titulo">Carnet DUPLICADO.</strong>
-                El carnet original fue reportado como perdido: acepta solo el duplicado y confirma la identidad con el DNI.
+                <strong id="rsv-carnet-titulo"></strong>
+                <span id="rsv-carnet-texto"></span>
               </div>
             </div>
           </div>
