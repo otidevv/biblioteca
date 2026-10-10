@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Biblioteca;
+use App\Models\Carrera;
 use App\Models\Prestamo;
 use App\Models\Sancion;
 use App\Models\TipoSancion;
@@ -31,7 +32,19 @@ class PrestamoController extends Controller
 
     protected function registro()
     {
-        return view('prestamos.prestamos');
+        // Para completar a mano la carrera en el prestamo libre.
+        $carreras = Carrera::orderBy('nombre')->get(['id', 'nombre']);
+
+        // Pestañas de la tabla: solo las bibliotecas que el usuario tiene asignadas.
+        [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario(Auth::id());
+
+        $bibliotecas = Biblioteca::query()
+            ->when(! $accesoGlobal, fn ($q) => $q->whereIn('id', $bibliotecasAsignadas->all()))
+            ->get(['id', 'nombre'])
+            ->sortBy('nombre_corto', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        return view('prestamos.prestamos', compact('carreras', 'bibliotecas', 'accesoGlobal'));
     }
 
     protected function multas()

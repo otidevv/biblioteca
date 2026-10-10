@@ -43,6 +43,24 @@ class Biblioteca extends Model
         return asset('storage/bibliotecas/' . ltrim($imagen, '/'));
     }
 
+    // Nombre sin el prefijo comun ("BIBLIOTECA DE ESCUELA DE ..."), para pestañas y etiquetas.
+    public function getNombreCortoAttribute(): string
+    {
+        $nombre = trim((string) $this->nombre);
+        $corto = preg_replace('/^BIBLIOTECA\s+(ESPECIALIZADA\s+DE\s+|DE\s+ESCUELA\s+DE\s+|DE\s+)?/iu', '', $nombre);
+
+        if ($corto === '') {
+            return $nombre;
+        }
+
+        // Tipo titulo, con los conectores en minuscula: "Ing de Sistemas", "Derecho y Ciencias Politicas".
+        return preg_replace_callback(
+            '/(?<=\s)(De|Del|La|Las|Los|Y|E)(?=\s)/u',
+            fn ($m) => Str::lower($m[1]),
+            Str::title(Str::lower($corto))
+        );
+    }
+
     public function ejemplares(){
         return $this->hasMany(Ejemplar::class);
     }

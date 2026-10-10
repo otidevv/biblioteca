@@ -28,37 +28,156 @@ class PrestamoController extends Controller
         $user = Auth::user();
         [$bibliotecasAsignadas, $accesoGlobal] = $this->resolverBibliotecasUsuario($user->id);
 
-        $query = Prestamo::with(['ejemplar.libro', 'ejemplar.biblioteca', 'lector.persona'])
+        $bibliotecaId = $request->integer('biblioteca_id') ?: null;
+        $estado = in_array($request->input('estado'), ['curso', 'vencidos', 'devueltos', 'todos'], true)
+            ? $request->input('estado')
+            : 'curso';
+
+        // Alcance: las bibliotecas asignadas al usuario y, si eligio una pestaña, solo esa.
+        $alcance = Prestamo::query()
             ->when(! $accesoGlobal, function ($q) use ($bibliotecasAsignadas) {
                 if ($bibliotecasAsignadas->isEmpty()) {
                     $q->whereRaw('1 = 0');
                     return;
                 }
 
-                $q->whereHas('ejemplar', function ($sub) use ($bibliotecasAsignadas) {
-                    $sub->whereIn('biblioteca_id', $bibliotecasAsignadas->all());
-                });
+                $q->whereHas('ejemplar', fn ($sub) => $sub->whereIn('biblioteca_id', $bibliotecasAsignadas->all()));
             })
-            ->orderByRaw("
-                CASE
-                    WHEN estado = 2 THEN 1
-                    WHEN estado = 3 THEN 1
-                    ELSE 0
-                END ASC
-            ")
-            ->orderBy('created_at', 'desc');
+            ->when($bibliotecaId, fn ($q) => $q->whereHas('ejemplar', fn ($sub) => $sub->where('biblioteca_id', $bibliotecaId)));
+
+        $query = (clone $alcance)->with(['ejemplar.libro', 'ejemplar.biblioteca', 'lector.persona']);
+
+        match ($estado) {
+            'curso' => $query->enCurso(),
+            'vencidos' => $query->vencidos(),
+            'devueltos' => $query->devueltos(),
+            'todos' => $query,
+        };
+
+        // El ultimo prestamo registrado primero.
+        $query->orderByDesc('prestamos.created_at')->orderByDesc('prestamos.id');
+
+        $ahora = now();
+        $vencidoSql = Prestamo::sqlFechaLimiteReal() . ' < ?';
+
+        // Contadores de las pestañas de estado (para la biblioteca elegida).
+        $porEstado = (clone $alcance)
+            ->selectRaw(
+                "SUM(prestamos.estado = 1) AS en_curso, SUM(prestamos.estado = 1 AND {$vencidoSql}) AS vencidos, "
+                . 'SUM(prestamos.estado IN (2, 3)) AS devueltos, COUNT(*) AS todos',
+                [$ahora]
+            )
+            ->toBase()
+            ->first();
+
+        // Contadores de las pestañas de biblioteca: prestamos en curso y vencidos de cada una.
+        $porBiblioteca = Prestamo::query()
+            ->join('ejemplares', 'ejemplares.id', '=', 'prestamos.ejemplar_id')
+            ->enCurso()
+            ->when(! $accesoGlobal, fn ($q) => $q->whereIn('ejemplares.biblioteca_id', $bibliotecasAsignadas->all()))
+            ->groupBy('ejemplares.biblioteca_id')
+            ->selectRaw("ejemplares.biblioteca_id, COUNT(*) AS en_curso, SUM({$vencidoSql}) AS vencidos", [$ahora])
+            ->toBase()
+            ->get()
+            ->mapWithKeys(fn ($fila) => [$fila->biblioteca_id => [
+                'en_curso' => (int) $fila->en_curso,
+                'vencidos' => (int) $fila->vencidos,
+            ]]);
+
+        $resumen = [
+            'estados' => [
+                'en_curso' => (int) $porEstado->en_curso,
+                'vencidos' => (int) $porEstado->vencidos,
+                'devueltos' => (int) $porEstado->devueltos,
+                'todos' => (int) $porEstado->todos,
+            ],
+            'bibliotecas' => $porBiblioteca,
+        ];
+
+        // 'late' fuera de plazo, 'soon' vence en menos de 24 h, 'ok' en plazo, 'done' devuelto.
+        $vigencia = function (Prestamo $row) use ($ahora): string {
+            if ((int) $row->estado !== 1) {
+                return 'done';
+            }
+
+            $segundos = $ahora->diffInSeconds($row->fecha_limite_real, false);
+
+            return $segundos <= 0 ? 'late' : ($segundos < 86400 ? 'soon' : 'ok');
+        };
 
         return DataTables::eloquent($query)
-            ->addColumn('fecha_prestamo', function ($row) {
-                $fechaPrestamo = optional($row->fecha_prestamo)->format('d/m/Y H:i');
-
-                return '<span class="loan-table__date">' . ($fechaPrestamo ?: '-') . '</span>';
-            })
+            ->setRowClass(fn ($row) => 'loan-row loan-row--' . $vigencia($row))
             ->addColumn('fecha_limite_raw', function ($row) {
                 return $row->fecha_limite_real->toDateTimeString();
             })
-            ->addColumn('fecha_limite', function ($row) {
-                return '<span class="loan-table__date">' . $row->fecha_limite_real->format('d/m/Y H:i') . '</span>';
+            ->addColumn('libro', function ($row) {
+                $ejemplar = $row->ejemplar;
+                $titulo = $ejemplar?->libro?->titulo ?? 'Libro no disponible';
+                // Codigo antiguo/interno propio del ejemplar (no el del libro)
+                $codigo = trim((string) ($ejemplar?->codigo_ant ?? ''));
+                // N° de inventario propio del ejemplar: distingue cada copia fisica
+                $inventario = ($ejemplar?->codigo_interno ?? '') !== '' ? 'Ej. N° ' . $ejemplar->codigo_interno : null;
+                $biblioteca = $ejemplar?->biblioteca;
+                $obsPrestamo = trim((string) $row->observaciones_prestamo);
+                $obsDevolucion = trim((string) $row->observaciones_devolucion);
+
+                return '<div class="loan-book">' .
+                    '<span class="loan-book__icon" aria-hidden="true"><i class="bi bi-book-half"></i></span>' .
+                    '<div class="loan-book__body">' .
+                        '<div class="loan-book__title" title="' . e($titulo) . '">' . e($titulo) . '</div>' .
+                        '<div class="loan-book__meta">' .
+                            '<span class="loan-book__code">' . e($codigo !== '' ? $codigo : 'Sin código') . '</span>' .
+                            ($inventario ? '<span>' . e($inventario) . '</span>' : '') .
+                            ($biblioteca
+                                ? '<span class="loan-book__lib" title="' . e($biblioteca->nombre) . '"><i class="bi bi-building"></i>' . e($biblioteca->nombre_corto) . '</span>'
+                                : '') .
+                        '</div>' .
+                        ($obsPrestamo !== ''
+                            ? '<div class="loan-book__obs" title="' . e($obsPrestamo) . '"><i class="bi bi-chat-left-text"></i>' . e($obsPrestamo) . '</div>'
+                            : '') .
+                        ($obsDevolucion !== ''
+                            ? '<div class="loan-book__obs" title="' . e($obsDevolucion) . '"><i class="bi bi-arrow-return-left"></i>' . e($obsDevolucion) . '</div>'
+                            : '') .
+                    '</div>' .
+                '</div>';
+            })
+            ->addColumn('lector', function ($row) {
+                $user    = $row->lector;
+                $persona = $user?->persona;
+
+                if ($persona && ($persona->apellido_paterno || $persona->nombres)) {
+                    $nombre = trim(trim($persona->apellido_paterno . ' ' . $persona->apellido_materno) . ', ' . $persona->nombres, ' ,');
+                    $iniciales = $this->iniciales($persona->nombres . ' ' . $persona->apellido_paterno);
+                } else {
+                    $nombre = $user->name ?? 'Lector no disponible';
+                    $iniciales = $this->iniciales($nombre);
+                }
+
+                $dni    = $persona->dni ?? '';
+                $codigo = $persona->codigo_institucional ?? '';
+
+                $etiquetas = '';
+                if ($dni) {
+                    $etiquetas .= '<span class="loan-reader__tag">DNI ' . e($dni) . '</span>';
+                }
+                if ($codigo) {
+                    $etiquetas .= '<span class="loan-reader__tag loan-reader__tag--code">Cód. ' . e($codigo) . '</span>';
+                }
+                if ($persona && $persona->tieneCarnetDuplicado()) {
+                    $desde = $persona->fecha_carnet_duplicado?->format('d/m/Y');
+                    $etiquetas .= '<span class="loan-reader__tag loan-reader__tag--warn" title="Carnet duplicado' . ($desde ? ' desde ' . $desde : '') . '"><i class="bi bi-exclamation-triangle-fill"></i>Carnet duplicado</span>';
+                }
+                if (! $etiquetas && $user && $user->email) {
+                    $etiquetas = '<span class="loan-reader__mail">' . e($user->email) . '</span>';
+                }
+
+                return '<div class="loan-reader">' .
+                    '<span class="loan-reader__avatar" aria-hidden="true">' . e($iniciales) . '</span>' .
+                    '<div class="loan-reader__body">' .
+                        '<div class="loan-reader__name" title="' . e($nombre) . '">' . e($nombre) . '</div>' .
+                        ($etiquetas ? '<div class="loan-reader__tags">' . $etiquetas . '</div>' : '') .
+                    '</div>' .
+                '</div>';
             })
             ->addColumn('fechas', function ($row) {
                 // Los prestamos anteriores a guardar la hora quedan en 00:00: solo se muestra la fecha.
@@ -67,127 +186,54 @@ class PrestamoController extends Controller
                     : null;
                 $fl = $row->fecha_limite_real->format('d/m/Y H:i');
 
-                return '<div class="loan-dates">' .
-                    '<span class="loan-dates__row"><i class="bi bi-calendar-event me-1"></i>' . ($fp ?: '-') . '</span>' .
-                    '<span class="loan-dates__row loan-dates__row--limit"><i class="bi bi-calendar-check me-1"></i>' . $fl . '</span>' .
-                    '</div>';
-            })
-            ->addColumn('libro', function ($row) {
-                $titulo = $row->ejemplar->libro->titulo ?? 'Libro no disponible';
-                $obsPrestamo = trim((string) $row->observaciones_prestamo);
-                $obsDevolucion = trim((string) $row->observaciones_devolucion);
-
-                return '<div class="loan-table__book" title="' . e($titulo) . '">' . e($titulo) . '</div>' .
-                    ($obsPrestamo !== ''
-                        ? '<small class="loan-table__obs" title="' . e($obsPrestamo) . '"><i class="bi bi-chat-left-text me-1"></i>' . e($obsPrestamo) . '</small>'
-                        : '') .
-                    ($obsDevolucion !== ''
-                        ? '<small class="loan-table__obs" title="' . e($obsDevolucion) . '"><i class="bi bi-arrow-return-left me-1"></i>' . e($obsDevolucion) . '</small>'
-                        : '');
-            })
-            ->addColumn('ejemplar', function ($row) {
-                $ejemplar      = $row->ejemplar;
-                // Codigo antiguo/interno propio del ejemplar (no el del libro)
-                $codigoEjemplar = trim((string) ($ejemplar->codigo_ant ?? ''));
-                $codigo        = $codigoEjemplar !== '' ? $codigoEjemplar : '-';
-                // N° de inventario propio del ejemplar: distingue cada copia fisica
-                $inventario    = ($ejemplar->codigo_interno !== null && $ejemplar->codigo_interno !== '')
-                    ? 'Ej. N° ' . $ejemplar->codigo_interno
-                    : null;
-                $biblioteca    = $ejemplar->biblioteca->nombre ?? '';
-
-                return '<span class="loan-table__code"><i class="bi bi-hash me-1"></i>' . e($codigo) . '</span>' .
-                    ($inventario
-                        ? '<small class="loan-table__bib"><i class="bi bi-collection me-1"></i>' . e($inventario) . '</small>'
-                        : '') .
-                    ($biblioteca
-                        ? '<small class="loan-table__bib"><i class="bi bi-building me-1"></i>' . e($biblioteca) . '</small>'
-                        : '');
-            })
-            ->addColumn('lector', function ($row) {
-                $user    = $row->lector;
-                $persona = optional($user)->persona;
-
-                if ($persona && ($persona->apellido_paterno || $persona->nombres)) {
-                    $nombre = trim(
-                        trim($persona->apellido_paterno . ' ' . $persona->apellido_materno) .
-                        ', ' . $persona->nombres
-                    );
-                } else {
-                    $nombre = $user->name ?? 'Lector no disponible';
-                }
-
-                $dni    = $persona->dni ?? '';
-                $codigo = $persona->codigo_institucional ?? '';
-
-                $badges = '';
-                if ($dni) {
-                    $badges .= '<span class="loan-lector-badge">DNI ' . e($dni) . '</span>';
-                }
-                if ($codigo) {
-                    $badges .= '<span class="loan-lector-badge loan-lector-badge--code">Cód. ' . e($codigo) . '</span>';
-                }
-                if ($persona && $persona->tieneCarnetDuplicado()) {
-                    $desde = $persona->fecha_carnet_duplicado?->format('d/m/Y');
-                    $badges .= '<span class="loan-lector-badge loan-lector-badge--duplicado" title="Carnet duplicado' . ($desde ? ' desde ' . $desde : '') . '"><i class="bi bi-exclamation-triangle-fill me-1"></i>Carnet duplicado</span>';
-                }
-
-                return '<div class="loan-table__reader" title="' . e($nombre) . '">' . e($nombre) . '</div>' .
-                    ($badges
-                        ? '<div class="loan-lector-badges">' . $badges . '</div>'
-                        : ($user && $user->email ? '<small class="loan-table__reader-sub">' . e($user->email) . '</small>' : ''));
-            })
-            ->addColumn('estado', function ($row) {
-                $now = Carbon::now();
-                $fechaLimite = $row->fecha_limite_real;
-                $diff = $now->diffInSeconds($fechaLimite, false);
-
-                if ($now->greaterThan($fechaLimite) && (int) $row->estado === 1) {
-                    return '<span class="loan-pill loan-pill--danger">FUERA DE PLAZO</span>';
-                }
-
-                if ((int) $row->estado === 1) {
-                    $clase = $diff < 86400 ? 'loan-countdown is-danger' : 'loan-countdown is-ok';
-
-                    return '<span class="countdown ' . $clase . '" data-seconds="' . $diff . '"></span>';
-                }
-
-                if ((int) $row->estado === 2) {
-                    return '<span class="loan-pill loan-pill--success">FINALIZADO</span>';
-                }
-
-                return '<span class="loan-pill loan-pill--neutral">--</span>';
-            })
-            ->addColumn('estado_prestamo', function ($row) {
-                $estadoHtml = match ((int) $row->estado_prestamo) {
-                    0 => '<span class="loan-pill loan-pill--warning">PRESTADO</span>',
-                    1 => '<span class="loan-pill loan-pill--success">DEVUELTO</span>',
-                    2 => '<span class="loan-pill loan-pill--danger">TARDANZA</span>',
-                    3 => '<span class="loan-pill loan-pill--dark">DETERIORO</span>',
-                    default => '<span class="loan-pill loan-pill--neutral">--</span>',
-                };
-
-                $lugarHtml = (int) ($row->prestamo_lugar ?? 0) === 1
-                    ? '<span class="loan-pill loan-pill--info loan-pill--sm">A CASA</span>'
-                    : '<span class="loan-pill loan-pill--info loan-pill--sm">EN SALA</span>';
-
-                $libreHtml = $row->es_libre
-                    ? '<span class="loan-pill loan-pill--libre loan-pill--sm" title="Préstamo libre por DNI">LIBRE</span>'
+                $lugar = (int) ($row->prestamo_lugar ?? 0) === Prestamo::A_CASA
+                    ? '<span class="loan-tag"><i class="bi bi-house-door"></i>A casa</span>'
+                    : '<span class="loan-tag"><i class="bi bi-door-open"></i>En sala</span>';
+                $libre = $row->es_libre
+                    ? '<span class="loan-tag loan-tag--libre" title="Préstamo libre por DNI"><i class="bi bi-person-vcard"></i>Libre</span>'
                     : '';
 
-                return '<div class="loan-status-stack">' . $estadoHtml . $lugarHtml . $libreHtml . '</div>';
+                return '<div class="loan-dates">' .
+                    '<span class="loan-dates__main">' . ($fp ?: '-') . '</span>' .
+                    '<span class="loan-dates__sub">Límite ' . $fl . '</span>' .
+                    '<div class="loan-tags">' . $lugar . $libre . '</div>' .
+                '</div>';
             })
-            ->addColumn('prestamo_lugar', function ($row) {
-                return (int) ($row->prestamo_lugar ?? $row->prestamo ?? 0) === 1
-                    ? '<span class="loan-pill loan-pill--info">A CASA</span>'
-                    : '<span class="loan-pill loan-pill--info">EN SALA</span>';
+            ->addColumn('estado', function ($row) use ($vigencia, $ahora) {
+                $tipo = $vigencia($row);
+
+                if ($tipo === 'done') {
+                    $devuelto = $row->fecha_devolucion?->format('d/m/Y H:i');
+
+                    return '<span class="loan-due loan-due--done"><i class="bi bi-check2-circle"></i>Cerrado</span>' .
+                        ($devuelto ? '<small class="loan-due__sub">' . $devuelto . '</small>' : '');
+                }
+
+                if ($tipo === 'late') {
+                    return '<span class="loan-due loan-due--late"><i class="bi bi-exclamation-octagon"></i>Fuera de plazo</span>' .
+                        '<small class="loan-due__sub">Venció ' . e($row->fecha_limite_real->locale('es')->diffForHumans()) . '</small>';
+                }
+
+                $segundos = (int) $ahora->diffInSeconds($row->fecha_limite_real, false);
+
+                return '<span class="loan-due loan-due--' . $tipo . '"><i class="bi bi-hourglass-split"></i><span class="countdown" data-seconds="' . $segundos . '"></span></span>' .
+                    '<small class="loan-due__sub">' . ($tipo === 'soon' ? 'Vence pronto' : 'En plazo') . '</small>';
+            })
+            ->addColumn('estado_prestamo', function ($row) {
+                [$clase, $texto] = match ((int) $row->estado_prestamo) {
+                    0 => ['prestado', 'Prestado'],
+                    1 => ['devuelto', 'Devuelto'],
+                    2 => ['tardanza', 'Con tardanza'],
+                    3 => ['deterioro', 'Deterioro'],
+                    default => ['neutral', 'Sin estado'],
+                };
+
+                return '<span class="loan-state loan-state--' . $clase . '">' . $texto . '</span>';
             })
             ->addColumn('acciones', function ($row) {
                 return (int) $row->estado === 1
-                    ? '<button class="btn btn-sm btn-success devolverPrestamo" data-id="' . $row->id . '">
-                        <i class="fas fa-check"></i> Devolver
-                    </button>'
-                    : '';
+                    ? '<button type="button" class="loan-return-btn devolverPrestamo" data-id="' . $row->id . '"><i class="bi bi-box-arrow-in-down-left"></i><span>Devolver</span></button>'
+                    : '<span class="loan-return-done" title="Préstamo cerrado"><i class="bi bi-check2-all"></i></span>';
             })
             ->filterColumn('lector', function ($query, $keyword) {
                 $query->whereHas('lector', function ($q) use ($keyword) {
@@ -202,21 +248,30 @@ class PrestamoController extends Controller
                       });
                 });
             })
+            // La columna muestra libro y ejemplar: se busca por titulo, ISBN o codigos del ejemplar.
             ->filterColumn('libro', function ($query, $keyword) {
-                $query->whereHas('ejemplar.libro', function ($q) use ($keyword) {
-                    $q->where('titulo', 'like', "%{$keyword}%")
-                      ->orWhere('isbn', 'like', "%{$keyword}%");
-                });
-            })
-            ->filterColumn('ejemplar', function ($query, $keyword) {
                 $query->whereHas('ejemplar', function ($q) use ($keyword) {
                     $q->where('codigo_ant', 'like', "%{$keyword}%")
                       ->orWhere('codigo_dewey', 'like', "%{$keyword}%")
-                      ->orWhere('codigo_interno', 'like', "%{$keyword}%");
+                      ->orWhere('codigo_interno', 'like', "%{$keyword}%")
+                      ->orWhereHas('libro', function ($l) use ($keyword) {
+                          $l->where('titulo', 'like', "%{$keyword}%")
+                            ->orWhere('isbn', 'like', "%{$keyword}%");
+                      });
                 });
             })
-            ->rawColumns(['acciones', 'fechas', 'fecha_prestamo', 'fecha_limite', 'libro', 'ejemplar', 'lector', 'estado', 'estado_prestamo', 'prestamo_lugar'])
+            ->rawColumns(['libro', 'lector', 'fechas', 'estado', 'estado_prestamo', 'acciones'])
+            ->with('resumen', $resumen)
             ->toJson();
+    }
+
+    // Dos letras para el avatar del lector.
+    private function iniciales(string $texto): string
+    {
+        return collect(preg_split('/[\s,]+/u', trim($texto), -1, PREG_SPLIT_NO_EMPTY))
+            ->take(2)
+            ->map(fn ($parte) => mb_strtoupper(mb_substr($parte, 0, 1)))
+            ->implode('') ?: '?';
     }
 
     public function nuevoPrestamo(Request $request)
@@ -463,6 +518,7 @@ class PrestamoController extends Controller
             'nombre' => trim($info['apellido_paterno'] . ' ' . $info['apellido_materno']) . ', ' . $info['nombres'],
             'codigo' => $info['codigo'],
             'carrera' => $info['carrera'],
+            'carrera_id' => $info['carrera_id'],
             'email' => $info['email'],
             'registrado' => $consulta['registrado'],
             'es_lector' => $consulta['es_lector'],
@@ -476,6 +532,8 @@ class PrestamoController extends Controller
     {
         $request->validate([
             'dni'           => ['required', 'string', 'regex:/^[0-9]{8}$/'],
+            'nombre'        => 'nullable|string|max:255',
+            'carrera_id'    => 'nullable|integer|exists:carreras,id',
             'ejemplar_id'   => 'required|exists:ejemplares,id',
             'observaciones' => 'nullable|string',
         ], [
@@ -489,13 +547,20 @@ class PrestamoController extends Controller
         // La API se consulta antes de abrir la transaccion.
         $consulta = $servicio->consultar($request->dni);
 
-        if (! $consulta['ok']) {
-            return response()->json(['error' => $consulta['message']], $consulta['status']);
+        if ($consulta['ok']) {
+            $info = $consulta['info'];
+            // Si la carrera del sistema academico no esta en el catalogo, vale la elegida a mano.
+            $info['carrera_id'] = $info['carrera_id'] ?: ($request->integer('carrera_id') ?: null);
+        } elseif (filled($request->nombre) && $request->filled('carrera_id')) {
+            // Sin datos en el sistema academico: se usan los ingresados por el bibliotecario.
+            $info = $servicio->infoManual($request->dni, $request->nombre, $request->integer('carrera_id'));
+        } else {
+            return response()->json(['error' => $consulta['message'] . ' Ingresa el nombre completo y la carrera del estudiante.'], 422);
         }
 
         $resultado = $this->registrarPrestamo(
             $request,
-            fn () => $servicio->usuarioParaPrestamo($request->dni, $consulta['info'])->id,
+            fn () => $servicio->usuarioParaPrestamo($request->dni, $info)->id,
             Prestamo::EN_SALA,
             0,
             true

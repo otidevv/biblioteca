@@ -13,8 +13,9 @@ use Illuminate\Support\Str;
  * Prestamo libre: el estudiante se identifica solo con su DNI.
  *
  * Si ya existe en el sistema se usa su usuario. Si no, se consulta la API institucional
- * y se registra como usuario "libre": sin rol de lector y sin acceso al sistema
- * (estado 0), de modo que solo puede recibir prestamos en sala por esta via.
+ * (o, si no figura ahi, los datos que ingresa el bibliotecario) y se registra como usuario
+ * "libre": sin rol de lector y sin acceso al sistema (estado 0), de modo que solo puede
+ * recibir prestamos en sala por esta via.
  */
 class LectorLibreService
 {
@@ -48,6 +49,7 @@ class LectorLibreService
                     'email' => $persona->user->email,
                     'email_personal' => (string) $persona->email_personal,
                     'carrera' => (string) $persona->carrera?->nombre,
+                    'carrera_id' => $persona->carrera_id,
                     'facultad' => '',
                 ],
                 'carnet' => $persona->tipo_carnet,
@@ -69,7 +71,30 @@ class LectorLibreService
             Cache::put($cacheKey, $info, now()->addMinutes(30));
         }
 
+        $info['carrera_id'] = $info['carrera'] !== '' ? Carrera::where('nombre', $info['carrera'])->value('id') : null;
+
         return ['ok' => true, 'status' => 200, 'registrado' => false, 'es_lector' => false, 'info' => $info];
+    }
+
+    /**
+     * Datos ingresados a mano por el bibliotecario cuando el DNI no figura en el sistema academico.
+     */
+    public function infoManual(string $dni, string $nombreCompleto, int $carreraId): array
+    {
+        [$nombres, $paterno, $materno] = $this->separarNombre($nombreCompleto);
+
+        return [
+            'dni' => $dni,
+            'codigo' => '',
+            'nombres' => $nombres,
+            'apellido_paterno' => $paterno,
+            'apellido_materno' => $materno,
+            'email' => '',
+            'email_personal' => '',
+            'carrera' => '',
+            'carrera_id' => $carreraId,
+            'facultad' => '',
+        ];
     }
 
     /**
@@ -84,7 +109,7 @@ class LectorLibreService
             'apellido_materno' => $info['apellido_materno'] ?: null,
             'email_personal' => $info['email_personal'] ? Str::lower($info['email_personal']) : null,
             'codigo_institucional' => $this->codigoDisponible($info['codigo']),
-            'carrera_id' => $info['carrera'] ? Carrera::where('nombre', $info['carrera'])->value('id') : null,
+            'carrera_id' => $info['carrera_id'] ?? null,
         ]);
 
         if ($persona->user) {
@@ -100,6 +125,32 @@ class LectorLibreService
             'tipo_usuario' => self::TIPO_USUARIO,
             'persona_id' => $persona->id,
         ]);
+    }
+
+    /**
+     * Acepta "Apellidos, Nombres" (como lo muestra el sistema) o "Nombres Apellido_paterno Apellido_materno".
+     */
+    private function separarNombre(string $nombreCompleto): array
+    {
+        $texto = Str::upper(Str::squish($nombreCompleto));
+
+        if (str_contains($texto, ',')) {
+            [$apellidos, $nombres] = array_map('trim', explode(',', $texto, 2));
+            $apellidos = explode(' ', $apellidos, 2);
+
+            return [$nombres, $apellidos[0], $apellidos[1] ?? ''];
+        }
+
+        $partes = explode(' ', $texto);
+
+        if (count($partes) < 3) {
+            return [$partes[0], $partes[1] ?? '', ''];
+        }
+
+        $materno = array_pop($partes);
+        $paterno = array_pop($partes);
+
+        return [implode(' ', $partes), $paterno, $materno];
     }
 
     private function codigoDisponible(string $codigo): ?string

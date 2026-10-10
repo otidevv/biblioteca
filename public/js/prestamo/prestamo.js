@@ -62,12 +62,82 @@ function cargarPreviewSancion() {
         });
 }
 
+// ── Filtros de la tabla: biblioteca y estado ─────────────────────────────────
+
+const FILTRO_BIBLIOTECA_KEY = 'prestamos.registro.biblioteca';
+let filtroBiblioteca = '';
+let filtroEstado = 'curso';
+
+function guardarFiltroBiblioteca(valor) {
+    try { localStorage.setItem(FILTRO_BIBLIOTECA_KEY, valor); } catch (e) { /* sin almacenamiento */ }
+}
+
+function leerFiltroBiblioteca() {
+    try { return localStorage.getItem(FILTRO_BIBLIOTECA_KEY); } catch (e) { return null; }
+}
+
+function formatoNumero(n) {
+    return (Number(n) || 0).toLocaleString('es-PE');
+}
+
+// Activa la pestaña de biblioteca recordada (o la primera) antes de la primera carga.
+function iniciarFiltroBiblioteca() {
+    const $libs = $('.loan-lib');
+    if (! $libs.length) return;
+
+    const recordada = leerFiltroBiblioteca();
+    const $inicial = $libs.filter(function () { return $(this).attr('data-biblioteca') === recordada; }).first();
+    marcarBiblioteca($inicial.length ? $inicial : $libs.first());
+}
+
+function marcarBiblioteca($lib) {
+    $('.loan-lib').removeClass('is-active').attr('aria-selected', 'false');
+    $lib.addClass('is-active').attr('aria-selected', 'true');
+    filtroBiblioteca = $lib.attr('data-biblioteca') || '';
+    // Con una sola biblioteca elegida, el nombre en cada fila sobra.
+    $('#loan-board').toggleClass('loan-board--una-biblioteca', filtroBiblioteca !== '' || $('.loan-lib').length === 1);
+}
+
+// Contadores que llegan con cada respuesta de la tabla.
+function pintarResumen(resumen) {
+    if (! resumen) return;
+
+    const porBiblioteca = resumen.bibliotecas || {};
+    let totalCurso = 0;
+    let totalVencidos = 0;
+
+    $('.loan-lib[data-biblioteca!=""]').each(function () {
+        const datos = porBiblioteca[$(this).attr('data-biblioteca')] || { en_curso: 0, vencidos: 0 };
+        totalCurso += datos.en_curso;
+        totalVencidos += datos.vencidos;
+        pintarContadorBiblioteca($(this), datos.en_curso, datos.vencidos);
+    });
+    pintarContadorBiblioteca($('.loan-lib[data-biblioteca=""]'), totalCurso, totalVencidos);
+
+    const estados = resumen.estados || {};
+    $('[data-estado-count]').each(function () {
+        $(this).text(formatoNumero(estados[$(this).attr('data-estado-count')]));
+    });
+}
+
+function pintarContadorBiblioteca($lib, enCurso, vencidos) {
+    $lib.find('[data-lib-curso]').text(formatoNumero(enCurso));
+    $lib.find('[data-lib-vencidos]')
+        .toggleClass('d-none', ! vencidos)
+        .text(vencidos > 99 ? '99+' : vencidos)
+        .attr('title', vencidos === 1 ? '1 préstamo fuera de plazo' : vencidos + ' préstamos fuera de plazo');
+}
+
 $(document).ready(function () {
+    iniciarFiltroBiblioteca();
+
     tabla = $('#tabla-prestamos').DataTable({
         processing: true,
         serverSide: true,
-        pageLength: 50,
+        pageLength: 25,
+        lengthMenu: [10, 25, 50, 100],
         order: [],
+        ordering: false,
         scrollX: false,
         autoWidth: false,
 
@@ -76,40 +146,59 @@ $(document).ready(function () {
             type: "GET",
             xhrFields: { withCredentials: true },
             data: function (d) {
-                d.tipo_usuario = $('#tipo_usuario').val();
+                d.biblioteca_id = filtroBiblioteca;
+                d.estado = filtroEstado;
+            },
+            dataSrc: function (json) {
+                pintarResumen(json.resumen);
+                return json.data;
             },
             error: default_error_handler
         },
 
         columns: [
-            { data: 'fechas',         name: 'fecha_prestamo',  className: 'loan-col loan-col--date',   searchable: false },
-            { data: 'libro',          name: 'libro',           className: 'loan-col loan-col--book' },
-            { data: 'ejemplar',       name: 'ejemplar',        className: 'loan-col loan-col--code' },
-            { data: 'lector',         name: 'lector',          className: 'loan-col loan-col--reader' },
-            { data: 'estado_prestamo',name: 'estado_prestamo', className: 'loan-col loan-col--status', searchable: false, orderable: false },
-            { data: 'estado',         name: 'estado',          className: 'loan-col loan-col--badge',  searchable: false, orderable: false },
-            {
-                data: 'acciones',
-                name: 'acciones',
-                orderable: false,
-                searchable: false,
-                className: 'loan-col loan-col--actions'
-            }
+            { data: 'libro',           name: 'libro',           className: 'loan-col loan-col--book' },
+            { data: 'lector',          name: 'lector',          className: 'loan-col loan-col--reader' },
+            { data: 'fechas',          name: 'fecha_prestamo',  className: 'loan-col loan-col--date',    searchable: false },
+            { data: 'estado',          name: 'estado',          className: 'loan-col loan-col--due',     searchable: false },
+            { data: 'estado_prestamo', name: 'estado_prestamo', className: 'loan-col loan-col--status',  searchable: false },
+            { data: 'acciones',        name: 'acciones',        className: 'loan-col loan-col--actions', searchable: false }
         ],
 
-        dom: default_datatable_dom,
-        language: default_datatable_language,
+        dom: "<'loan-board__dt-search'f>" +
+             "<'loan-board__scroll'tr>" +
+             "<'loan-board__footer'<'loan-board__length'l><'loan-board__info'i><'loan-board__pages'p>>",
+        language: $.extend({}, default_datatable_language, {
+            lengthMenu: 'Filas _MENU_',
+            info: 'Mostrando _START_–_END_ de _TOTAL_',
+            searchPlaceholder: 'Buscar libro, código o lector',
+            emptyTable: '<div class="loan-empty"><i class="bi bi-inboxes"></i><strong>No hay préstamos en esta vista</strong><span>Cambia de biblioteca o de estado para ver otros registros.</span></div>',
+            zeroRecords: '<div class="loan-empty"><i class="bi bi-search"></i><strong>Sin resultados</strong><span>Ningún préstamo coincide con la búsqueda.</span></div>'
+        }),
         initComplete: function () {
             default_datatable_buttons.call(this);
-            decorateTableActionButtons('#tabla-prestamos');
-        },
-        drawCallback: function () {
-            decorateTableActionButtons('#tabla-prestamos');
+            // El buscador va en la barra de filtros, junto a las pestañas de estado.
+            $('#loan-search-slot').append($(this.api().table().container()).find('.dataTables_filter'));
         }
     });
 
     $('#tabla-prestamos').on('draw.dt', function () {
         iniciarCountdown();
+    });
+
+    $('.loan-lib').on('click', function () {
+        if ($(this).hasClass('is-active')) return;
+        marcarBiblioteca($(this));
+        guardarFiltroBiblioteca(filtroBiblioteca);
+        tabla.ajax.reload();
+    });
+
+    $('.loan-status__tab').on('click', function () {
+        if ($(this).hasClass('is-active')) return;
+        $('.loan-status__tab').removeClass('is-active').attr('aria-selected', 'false');
+        $(this).addClass('is-active').attr('aria-selected', 'true');
+        filtroEstado = $(this).attr('data-estado');
+        tabla.ajax.reload();
     });
 
     modal = new bootstrap.Modal(document.getElementById('modalPrestamo'));
@@ -124,10 +213,10 @@ $(document).ready(function () {
         $('#prestamo_id').val(data.id);
 
         let libroEl = $('<div>').html(data.libro);
-        $('#libro_nombre').text(libroEl.find('.loan-table__book').text() || libroEl.text());
-
-        let ejemplarEl = $('<div>').html(data.ejemplar);
-        $('#ejemplar_codigo').text(ejemplarEl.find('.loan-table__code').text() || ejemplarEl.text());
+        $('#libro_nombre').text(libroEl.find('.loan-book__title').text());
+        $('#ejemplar_codigo').text(
+            libroEl.find('.loan-book__meta > span:not(.loan-book__lib)').map(function () { return $(this).text(); }).get().join(' · ')
+        );
 
         // DataTables envia el campo escapado; se decodifica para mostrarlo como texto.
         const obsPrestamo = (new DOMParser()
@@ -205,7 +294,10 @@ $(document).ready(function () {
     let modalPD = null;
     // 'lector': lector registrado | 'libre': estudiante por DNI, solo en sala
     let pdModo = 'lector';
+    // DNI ya consultado (con o sin datos en el sistema académico) y n° de la última consulta,
+    // para descartar respuestas de un DNI que se volvió a editar.
     let pdLibreDni = null;
+    let pdLibreConsulta = 0;
     // Carnet del lector elegido en cada modo:
     // { tipo: 'ORIGINAL'|'DUPLICADO'|null, fecha: 'dd/mm/aaaa'|null, sinCarnet: bool } o null si no hay lector elegido.
     let pdCarnetLector = null;
@@ -273,19 +365,15 @@ $(document).ready(function () {
         pdStep = 1;
         pdLectorId = null;
         pdEjemplarId = null;
-        pdLibreDni = null;
         pdCarnetLector = null;
-        pdCarnetLibre = null;
         pdMostrarCarnet($('#pd-lector-carnet'), null);
-        pdMostrarCarnet($('#pd-libre-carnet'), null);
         pdMostrarCarnet($('#pd-ctx-carnet'), null);
 
         $('#pd-lector-q').val('');
         $('#pd-lector-results').empty();
         $('#pd-lector-sel').addClass('d-none');
-        $('#pd-libre-dni').val('');
-        $('#pd-libre-msg').empty();
-        $('#pd-libre-sel').addClass('d-none');
+        $('#pd-libre-dni').val('').data('dni', '');
+        pdLibreLimpiar();
         $('#pd-modo-lector').prop('checked', true);
         pdCambiarModo('lector');
         $('#pd-libro-q').val('');
@@ -298,6 +386,25 @@ $(document).ready(function () {
         pdActualizarFechaLimite();
 
         pdShowStep(1);
+    }
+
+    // Vacía los datos del estudiante libre y bloquea nombre y carrera hasta consultar un DNI.
+    function pdLibreLimpiar() {
+        pdLibreConsulta++;
+        pdLibreDni = null;
+        pdCarnetLibre = null;
+        pdMostrarCarnet($('#pd-libre-carnet'), null);
+        $('#pd-libre-cargando').addClass('d-none');
+        $('#pd-libre-msg').attr('class', 'pd-libre-msg').empty();
+        $('#pd-libre-nombre').val('').prop('disabled', true);
+        $('#pd-libre-carrera').val('').prop('disabled', true);
+    }
+
+    // tipo: 'muted' | 'ok' | 'warn'
+    function pdLibreMensaje(tipo, icono, texto) {
+        $('#pd-libre-msg')
+            .attr('class', 'pd-libre-msg pd-libre-msg--' + tipo)
+            .html('<i class="bi ' + icono + '"></i><span>' + esc(texto) + '</span>');
     }
 
     function pdCambiarModo(modo) {
@@ -517,64 +624,74 @@ $(document).ready(function () {
             pdCambiarModo($(this).val());
         });
 
+        // Al completar los 8 dígitos se consulta solo; cualquier cambio del DNI descarta los datos anteriores.
         $('#pd-libre-dni').on('input', function () {
-            $(this).val($(this).val().replace(/\D/g, '').slice(0, 8));
+            const dni = $(this).val().replace(/\D/g, '').slice(0, 8);
+            $(this).val(dni);
+            if (dni === $(this).data('dni')) return;
+
+            $(this).data('dni', dni);
+            pdLibreLimpiar();
+            if (dni.length === 8) consultarLibre(dni);
         });
 
-        function consultarLibre() {
-            const dni = $('#pd-libre-dni').val().trim();
-            if (! /^\d{8}$/.test(dni)) { alerta('El DNI debe tener 8 dígitos.', false); return; }
+        // Sin datos en el sistema académico: el bibliotecario completa nombre y carrera.
+        function pdLibreManual(dni, texto) {
+            pdLibreDni = dni;
+            pdLibreMensaje('warn', 'bi-pencil-square', texto);
+            $('#pd-libre-nombre').val('').prop('disabled', false).trigger('focus');
+            $('#pd-libre-carrera').val('').prop('disabled', false);
 
-            pdLibreDni = null;
-            pdCarnetLibre = null;
-            pdMostrarCarnet($('#pd-libre-carnet'), null);
-            $('#pd-libre-sel').addClass('d-none');
-            $('#pd-libre-msg').html(
-                '<div class="text-muted small py-3 text-center"><i class="bi bi-hourglass-split me-1"></i>Consultando en el sistema académico...</div>'
-            );
-            const btn = $('#pd-libre-buscar').prop('disabled', true);
+            pdCarnetLibre = { tipo: null, fecha: null, sinCarnet: true };
+            pdMostrarCarnet($('#pd-libre-carnet'), pdCarnetLibre);
+        }
+
+        function consultarLibre(dni) {
+            const consulta = pdLibreConsulta;
+            const vigente  = () => consulta === pdLibreConsulta;
+
+            $('#pd-libre-cargando').removeClass('d-none');
+            pdLibreMensaje('muted', 'bi-hourglass-split', 'Consultando en el sistema académico...');
 
             fetch('/api/prestamos/libre/estudiante?dni=' + encodeURIComponent(dni), {
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })
-                .then(r => r.json().then(data => ({ ok: r.ok, data })))
-                .then(({ ok, data }) => {
+                .then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })))
+                .then(({ ok, status, data }) => {
+                    if (! vigente()) return;
+
                     if (! ok) {
-                        $('#pd-libre-msg').html($('<div class="text-danger small p-2">').text(data.error || data.message || 'No se pudo consultar el DNI.'));
+                        pdLibreManual(dni, status === 404
+                            ? 'El DNI no está registrado en el sistema académico: completa el nombre y la carrera.'
+                            : 'No se pudo consultar el sistema académico: completa el nombre y la carrera.');
                         return;
                     }
 
-                    pdLibreDni = data.dni;
+                    pdLibreDni = dni;
                     const estado = data.es_lector
                         ? 'Lector registrado'
                         : (data.registrado ? 'Ya registrado en el sistema' : 'Datos del sistema académico');
+                    // Si su carrera no está en el catálogo, se elige a mano (salvo que ya esté registrado).
+                    const elegirCarrera = ! data.carrera_id && ! data.registrado;
 
-                    $('#pd-libre-nombre').text(data.nombre);
-                    $('#pd-libre-info').text(
-                        ['DNI ' + data.dni, data.codigo ? 'Cód. ' + data.codigo : '', data.carrera].filter(Boolean).join(' · ')
+                    $('#pd-libre-nombre').val(data.nombre);
+                    $('#pd-libre-carrera').val(data.carrera_id || '').prop('disabled', ! elegirCarrera);
+                    pdLibreMensaje('ok', 'bi-check-circle-fill',
+                        [estado, data.codigo ? 'Cód. ' + data.codigo : ''].filter(Boolean).join(' · ') +
+                        (elegirCarrera ? '. Selecciona su carrera profesional.' : '')
                     );
-                    $('#pd-libre-estado').text(estado);
-                    $('#pd-libre-msg').empty();
-                    $('#pd-libre-sel').removeClass('d-none');
 
                     // Quien no es lector no tiene carnet de biblioteca: se identifica con el DNI.
                     pdCarnetLibre = { tipo: data.carnet || null, fecha: data.carnet_fecha || null, sinCarnet: ! data.es_lector };
                     pdMostrarCarnet($('#pd-libre-carnet'), pdCarnetLibre);
                 })
-                .catch(() => $('#pd-libre-msg').html('<div class="text-danger small p-2">Error al consultar el DNI.</div>'))
-                .finally(() => btn.prop('disabled', false));
+                .catch(() => {
+                    if (vigente()) pdLibreManual(dni, 'No se pudo consultar el sistema académico: completa el nombre y la carrera.');
+                })
+                .finally(() => {
+                    if (vigente()) $('#pd-libre-cargando').addClass('d-none');
+                });
         }
-
-        $('#pd-libre-buscar').on('click', consultarLibre);
-        $('#pd-libre-dni').on('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); consultarLibre(); } });
-
-        $('#pd-libre-cambiar').on('click', function () {
-            pdLibreDni = null;
-            pdCarnetLibre = null;
-            pdMostrarCarnet($('#pd-libre-carnet'), null);
-            $('#pd-libre-sel').addClass('d-none');
-            $('#pd-libre-dni').val('').focus();
-        });
 
         // ── Buscar ejemplar ──
         function buscarEjemplar() {
@@ -644,8 +761,14 @@ $(document).ready(function () {
         $('#pd-btn-next').on('click', function () {
             if (pdStep === 1) {
                 if (pdModo === 'libre') {
-                    if (! pdLibreDni) { alerta('Consulta el DNI del estudiante antes de continuar.', false); return; }
-                    $('#pd-ctx-lector').text($('#pd-libre-nombre').text() + ' · Préstamo libre');
+                    const dni     = $('#pd-libre-dni').val();
+                    const nombre  = $('#pd-libre-nombre').val().trim();
+                    const carrera = $('#pd-libre-carrera');
+                    if (dni.length !== 8) { alerta('Ingresa el DNI del estudiante (8 dígitos).', false); return; }
+                    if (pdLibreDni !== dni) { alerta('Espera a que termine la consulta del DNI.', false); return; }
+                    if (! nombre) { alerta('Ingresa el nombre completo del estudiante.', false); return; }
+                    if (! carrera.prop('disabled') && ! carrera.val()) { alerta('Selecciona la carrera profesional del estudiante.', false); return; }
+                    $('#pd-ctx-lector').text(nombre + ' · Préstamo libre');
                 } else {
                     if (! pdLectorId) { alerta('Debes seleccionar un lector antes de continuar.', false); return; }
                     $('#pd-ctx-lector').text($('#pd-lector-sel-nombre').text());
@@ -677,6 +800,8 @@ $(document).ready(function () {
             const payload = libre
                 ? {
                     dni:            pdLibreDni,
+                    nombre:         $('#pd-libre-nombre').val().trim(),
+                    carrera_id:     $('#pd-libre-carrera').val() || null,
                     ejemplar_id:    pdEjemplarId,
                     observaciones:  $('#pd-obs').val()
                 }
@@ -715,35 +840,43 @@ $(document).ready(function () {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Un solo temporizador para todas las cuentas regresivas: la tabla se redibuja seguido
+// y un intervalo por fila se quedaba corriendo sobre filas que ya no existen.
+let countdownTimer = null;
+
 function iniciarCountdown() {
+    const ahora = Date.now();
+
     $('.countdown').each(function () {
-        let el = $(this);
+        const el = $(this);
+        if (el.data('fin') === undefined) {
+            el.data('fin', ahora + (parseInt(el.data('seconds'), 10) || 0) * 1000);
+        }
+    });
 
-        if (el.data('iniciado')) return;
+    actualizarCountdowns();
+    if (! countdownTimer) countdownTimer = setInterval(actualizarCountdowns, 1000);
+}
 
-        let seconds = parseInt(el.data('seconds'));
+function actualizarCountdowns() {
+    const dosDigitos = n => String(n).padStart(2, '0');
 
-        if (isNaN(seconds) || seconds <= 0) {
+    $('.countdown').each(function () {
+        const el = $(this);
+        const seconds = Math.floor((el.data('fin') - Date.now()) / 1000);
+
+        if (! (seconds > 0)) {
             el.text('Vencido');
+            el.closest('.loan-due').removeClass('loan-due--ok loan-due--soon').addClass('loan-due--late');
             return;
         }
 
-        el.data('iniciado', true);
+        const d = Math.floor(seconds / 86400);
+        const h = Math.floor((seconds % 86400) / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
 
-        let interval = setInterval(function () {
-            let d = Math.floor(seconds / 86400);
-            let h = Math.floor((seconds % 86400) / 3600);
-            let m = Math.floor((seconds % 3600) / 60);
-            let s = seconds % 60;
-
-            el.text(`${d}d ${h}h ${m}m ${s}s`);
-
-            seconds--;
-
-            if (seconds < 0) {
-                el.text('Vencido');
-                clearInterval(interval);
-            }
-        }, 1000);
+        // Con días por delante los segundos solo distraen.
+        el.text(d > 0 ? `${d}d ${h}h ${dosDigitos(m)}m` : `${h}h ${dosDigitos(m)}m ${dosDigitos(s)}s`);
     });
 }

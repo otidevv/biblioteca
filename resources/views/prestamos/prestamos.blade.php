@@ -51,31 +51,78 @@
             <div class="admin-panel__header loan-register__panel-head">
                 <div>
                     <h2 class="admin-panel__title">Prestamos en curso</h2>
-                    <p class="admin-panel__copy">La tabla permite buscar rapidamente por fecha, lector, libro o estado y abrir el flujo de devolucion sin salir del modulo.</p>
+                    <p class="admin-panel__copy">Elige la biblioteca y el estado para revisar sus préstamos; los más recientes aparecen primero.</p>
                 </div>
                 <button class="btn btn-primary" id="btnNuevoPrestamoDirecto" type="button">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo préstamo
                 </button>
             </div>
 
-            <div class="loan-register__table-wrap admin-table-shell table-responsive" role="region" aria-label="Tabla de préstamos activos">
-                <div class="loan-register__scroll-hint" aria-hidden="true">
-                    <i class="bi bi-arrow-left-right"></i>
-                    <span>Desliza para ver más columnas</span>
+            <div class="loan-board" id="loan-board">
+                {{-- Pestañas por biblioteca: solo las asignadas al usuario --}}
+                <div class="loan-libs" role="tablist" aria-label="Bibliotecas">
+                    @if ($bibliotecas->count() > 1)
+                        <button type="button" class="loan-lib" role="tab" data-biblioteca="">
+                            <span class="loan-lib__icon"><i class="bi bi-buildings"></i></span>
+                            <span class="loan-lib__body">
+                                <span class="loan-lib__name">{{ $accesoGlobal ? 'Todas las bibliotecas' : 'Todas mis bibliotecas' }}</span>
+                                <span class="loan-lib__meta"><b data-lib-curso>—</b> en curso</span>
+                            </span>
+                            <span class="loan-lib__alert d-none" data-lib-vencidos title="Préstamos fuera de plazo"></span>
+                        </button>
+                    @endif
+                    @forelse ($bibliotecas as $biblioteca)
+                        <button type="button" class="loan-lib" role="tab" data-biblioteca="{{ $biblioteca->id }}" title="{{ $biblioteca->nombre }}">
+                            <span class="loan-lib__icon"><i class="bi bi-building"></i></span>
+                            <span class="loan-lib__body">
+                                <span class="loan-lib__name">{{ $biblioteca->nombre_corto }}</span>
+                                <span class="loan-lib__meta"><b data-lib-curso>—</b> en curso</span>
+                            </span>
+                            <span class="loan-lib__alert d-none" data-lib-vencidos title="Préstamos fuera de plazo"></span>
+                        </button>
+                    @empty
+                        <div class="loan-libs__empty">
+                            <i class="bi bi-info-circle"></i>
+                            No tienes bibliotecas asignadas. Pide a un administrador que te asigne una para ver sus préstamos.
+                        </div>
+                    @endforelse
                 </div>
-                <table id="tabla-prestamos" class="table table-hover table-bordered align-middle loan-register__table datatable w-100">
-                    <thead>
-                        <tr>
-                            <th>Fechas</th>
-                            <th>Libro</th>
-                            <th>Ejemplar</th>
-                            <th>Lector</th>
-                            <th>Estado</th>
-                            <th>Vigencia</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                </table>
+
+                <div class="loan-board__card">
+                    <div class="loan-board__toolbar">
+                        {{-- Pestañas por estado del préstamo --}}
+                        <div class="loan-status" role="tablist" aria-label="Estado del préstamo">
+                            <button type="button" class="loan-status__tab is-active" role="tab" data-estado="curso">
+                                En curso <span class="loan-status__count" data-estado-count="en_curso">—</span>
+                            </button>
+                            <button type="button" class="loan-status__tab loan-status__tab--danger" role="tab" data-estado="vencidos">
+                                Vencidos <span class="loan-status__count" data-estado-count="vencidos">—</span>
+                            </button>
+                            <button type="button" class="loan-status__tab" role="tab" data-estado="devueltos">
+                                Devueltos <span class="loan-status__count" data-estado-count="devueltos">—</span>
+                            </button>
+                            <button type="button" class="loan-status__tab" role="tab" data-estado="todos">
+                                Todos <span class="loan-status__count" data-estado-count="todos">—</span>
+                            </button>
+                        </div>
+                        <div class="loan-board__search" id="loan-search-slot"></div>
+                    </div>
+
+                    <div class="loan-board__table" role="region" aria-label="Tabla de préstamos">
+                        <table id="tabla-prestamos" class="loan-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>Libro y ejemplar</th>
+                                    <th>Lector</th>
+                                    <th>Préstamo</th>
+                                    <th>Vigencia</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -170,32 +217,31 @@
         <div id="pd-panel-libre" class="d-none">
           <div class="pd-body-intro">
             <i class="bi bi-person-vcard"></i>
-            <span>Para estudiantes que no están registrados como lectores. Ingresa el DNI para consultarlo en el sistema académico. El préstamo libre es <strong>solo en sala</strong>.</span>
+            <span>Para estudiantes que no están registrados como lectores. Al ingresar el DNI se completan sus datos del sistema académico; si no figura ahí, complétalos manualmente. El préstamo libre es <strong>solo en sala</strong>.</span>
           </div>
-          <div class="input-group mb-3">
-            <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
-            <input type="text" id="pd-libre-dni" class="form-control" placeholder="DNI (8 dígitos)" inputmode="numeric" maxlength="8" autocomplete="off">
-            <button class="btn btn-outline-secondary" id="pd-libre-buscar" type="button">Consultar</button>
-          </div>
-          <div id="pd-libre-msg"></div>
-          <div id="pd-libre-sel" class="d-none mt-2 pd-sel-card">
-            <div class="d-flex align-items-center gap-3">
-              <div class="pd-sel-card__avatar flex-shrink-0">
-                <i class="bi bi-person-check-fill fs-5"></i>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" for="pd-libre-dni">DNI</label>
+              <div class="pd-libre-dni-wrap">
+                <input type="text" id="pd-libre-dni" class="form-control" placeholder="8 dígitos" inputmode="numeric" maxlength="8" autocomplete="off">
+                <span class="spinner-border spinner-border-sm text-primary d-none" id="pd-libre-cargando" role="status" aria-label="Consultando DNI"></span>
               </div>
-              <div class="flex-grow-1 min-width-0">
-                <strong class="pd-sel-card__name d-block" id="pd-libre-nombre"></strong>
-                <small class="pd-sel-card__sub d-block" id="pd-libre-info"></small>
-                <div class="d-flex flex-wrap gap-2 mt-1">
-                  <span class="pd-sel-card__tag" id="pd-libre-estado"></span>
-                  <span class="pd-sel-card__tag"><i class="bi bi-building me-1"></i>Solo en sala</span>
-                </div>
-              </div>
-              <button type="button" class="pd-sel-card__btn ms-auto flex-shrink-0" id="pd-libre-cambiar">
-                <i class="bi bi-arrow-repeat"></i> Cambiar
-              </button>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-semibold" for="pd-libre-nombre">Nombre completo</label>
+              <input type="text" id="pd-libre-nombre" class="form-control" placeholder="Ej. Pérez García, Juan Carlos" maxlength="255" autocomplete="off" disabled>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold" for="pd-libre-carrera">Carrera profesional</label>
+              <select id="pd-libre-carrera" class="form-select" disabled>
+                <option value="">Selecciona la carrera</option>
+                @foreach ($carreras as $carrera)
+                  <option value="{{ $carrera->id }}">{{ $carrera->nombre }}</option>
+                @endforeach
+              </select>
             </div>
           </div>
+          <div id="pd-libre-msg" class="pd-libre-msg" aria-live="polite"></div>
           <div id="pd-libre-carnet" class="pd-carnet-alert d-none" role="alert"></div>
         </div>
       </div>

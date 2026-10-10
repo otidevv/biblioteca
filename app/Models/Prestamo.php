@@ -58,6 +58,32 @@ class Prestamo extends Model
         return today()->setTime(self::HORA_CIERRE, 0, 0);
     }
 
+    // Misma regla que fecha_limite_real, en SQL, para filtrar y contar vencidos en la base.
+    public static function sqlFechaLimiteReal(): string
+    {
+        $cierre = sprintf("'%02d:00:00'", self::HORA_CIERRE);
+
+        return "COALESCE("
+            . "CASE WHEN prestamos.fecha_prestamo IS NOT NULL AND prestamos.duracion IS NOT NULL "
+            . "THEN TIMESTAMP(DATE_ADD(DATE(prestamos.fecha_prestamo), INTERVAL prestamos.duracion DAY), {$cierre}) END, "
+            . "TIMESTAMP(prestamos.fecha_limite, {$cierre}))";
+    }
+
+    public function scopeEnCurso($query)
+    {
+        return $query->where('prestamos.estado', 1);
+    }
+
+    public function scopeVencidos($query)
+    {
+        return $query->enCurso()->whereRaw(self::sqlFechaLimiteReal() . ' < ?', [now()]);
+    }
+
+    public function scopeDevueltos($query)
+    {
+        return $query->whereIn('prestamos.estado', [2, 3]);
+    }
+
     public function lector() { return $this->belongsTo(User::class,'lector_id'); }
     public function bibliotecario() { return $this->belongsTo(User::class,'user_id'); }
     public function detalles() { return $this->hasMany(DetallePrestamo::class); }
