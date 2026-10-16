@@ -299,7 +299,55 @@ $(document).ready(function () {
         $('#nombrePdf').text(file ? file.name : '');
     });
 
-    $formLibro.on('submit', function (e) {
+    // Las fotos de celular suelen pasar el limite del servidor (3 MB): se reducen en el
+    // navegador antes de enviarlas. Si el navegador no puede leerla se envia la original.
+    const IMAGEN_LIMITE_BYTES = 2.5 * 1024 * 1024;
+    const IMAGEN_LADO_MAXIMO = 1600;
+
+    function comprimirImagen(file) {
+        return new Promise(function (resolve) {
+            if (!file || !file.type.startsWith('image/') || file.size <= IMAGEN_LIMITE_BYTES) {
+                resolve(file);
+                return;
+            }
+
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+
+                const escala = Math.min(1, IMAGEN_LADO_MAXIMO / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * escala);
+                canvas.height = Math.round(img.height * escala);
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob(function (blob) {
+                    if (!blob) {
+                        resolve(file);
+                        return;
+                    }
+
+                    const nombre = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+                    resolve(new File([blob], nombre, { type: 'image/jpeg' }));
+                }, 'image/jpeg', 0.85);
+            };
+
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                resolve(file);
+            };
+
+            img.src = url;
+        });
+    }
+
+    $formLibro.on('submit', async function (e) {
         e.preventDefault();
 
         const $selectGroups = $formLibro.find('.form-group').has('select');
@@ -316,6 +364,12 @@ $(document).ready(function () {
         const formData = new FormData(this);
 
         $submitLibro.prop('disabled', true).text('Guardando...');
+
+        const imagen = $('#imagen')[0]?.files[0];
+        if (imagen) {
+            const imagenFinal = await comprimirImagen(imagen);
+            formData.set('imagen', imagenFinal, imagenFinal.name);
+        }
 
         $.ajax({
             url: libroActual && libroActual.id ? '/api/inventario/libros/actualizar' : '/api/inventario/libros/guardar',
